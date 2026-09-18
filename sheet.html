@@ -100,6 +100,7 @@ const get=(o,...keys)=>{
     if(combo&&o[combo]){const parts=o[combo].split(/\n|\s\/\s|\|/).map(x=>x.trim()).filter(Boolean);return k==="confidence up"?(parts[0]||""):(parts[1]||"");} return _get(o,k);}
   return _get(o,...keys);};
 const num=s=>{const m=String(s).replace(/,/g,"").match(/\d+(\.\d+)?/);return m?parseFloat(m[0]):null;};
+const numTrigger=s=>{const clean=String(s).replace(/,/g,"");const dollar=clean.match(/\$\s*(\d+(\.\d+)?)/);if(dollar)return parseFloat(dollar[1]);return num(clean);};
 const fmt=p=>p==null?"—":"$"+p.toFixed(p>=100?2:p>=1?3:p>=0.01?4:6);
 const esc=s=>String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
 const stamp=s=>{const d=new Date(s);return isNaN(d)?s:d.toLocaleString("en-US",{timeZone:"America/New_York",month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"})+" EST";};
@@ -110,7 +111,7 @@ const STATUS=s=>{s=s.toLowerCase();if(s.includes("short"))return["b-short","▼ 
 function levels(r){
   const L=[];const add=(role,val,kind,note)=>{const p=num(val);if(p!=null)L.push({role,price:p,kind,note});};
   add("TP3",get(r,"tp3"),"tp","Final target. Runner only.");add("TP2",get(r,"tp2"),"tp","Second scale-out. Move stop to entry or better.");add("TP1",get(r,"tp1"),"tp","First scale-out. Take 70–75% into targets.");
-  [3,2,1].forEach(i=>{const t=get(r,"trigger "+i);if(t){const p=num(t);L.push({role:"TRIGGER "+i,price:p,kind:"res",note:t});}});
+  [3,2,1].forEach(i=>{const t=get(r,"trigger "+i);if(t){const p=numTrigger(t);L.push({role:"TRIGGER "+i,price:p,kind:"res",note:t});}});
   add("SUPPORT / SAFETY NET",get(r,"safety"),"sup","Structure the trade leans on. Stop goes below, not inside.");add("STOP",get(r,"stop"),"stop","Size the position to this. Never tighten the stop to fit the size.");
   return L.filter(l=>l.price!=null).sort((a,b)=>b.price-a.price);
 }
