@@ -18,9 +18,15 @@ h1{font-family:Archivo;font-weight:900;font-size:clamp(34px,6vw,58px);line-heigh
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:30px}
 a.card{display:block;text-decoration:none;color:inherit;border:2px solid var(--pink-line);border-radius:14px;padding:18px 20px;background:#fff;transition:.2s}
 a.card:hover{border-color:var(--pink);box-shadow:0 10px 28px rgba(250,3,152,.14);transform:translateY(-2px)}
+a.card.is-live{border-color:var(--green)}
+a.card.is-live.is-short{border-color:var(--red)}
 .asset{font-family:Archivo;font-weight:900;font-size:30px;letter-spacing:-.01em}
 .pill{display:inline-block;margin:8px 0 10px;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:5px 11px;border-radius:999px;border:2px solid}
 .b-active{background:rgba(34,197,94,.12);border-color:var(--green);color:var(--green-d)}.b-short{background:rgba(239,68,68,.10);border-color:var(--red);color:var(--red-d)}.b-watch{background:#FFF4E0;border-color:var(--orange);color:var(--orange-d)}.b-none{background:#F3F4F6;border-color:var(--gray2);color:#374151}.b-closed{background:#F3F4F6;border-color:#374151;color:#111}.b-invalid{background:rgba(239,68,68,.10);border-color:var(--red);color:var(--red-d)}
+.b-active.pill-flash{animation:flashGreen 1.6s ease-in-out infinite}
+.b-short.pill-flash{animation:flashRed 1.6s ease-in-out infinite}
+@keyframes flashGreen{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.55)}50%{box-shadow:0 0 0 6px rgba(34,197,94,0)}}
+@keyframes flashRed{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.55)}50%{box-shadow:0 0 0 6px rgba(239,68,68,0)}}
 .hl{font-size:14px;font-weight:600;line-height:1.45}.meta{font-family:"JetBrains Mono";font-size:11px;color:var(--gray);margin-top:10px}
 .foot{margin-top:34px;padding-top:18px;border-top:2px solid var(--pink-line);text-align:center}.f1{font-family:Archivo;font-weight:800;font-size:13px;letter-spacing:.18em;color:var(--pink);text-transform:uppercase}.f2{font-size:11.5px;color:var(--gray);margin-top:8px;line-height:1.6}
 .empty{padding:40px;text-align:center;color:var(--gray)}
@@ -33,7 +39,7 @@ a.card:hover{border-color:var(--pink);box-shadow:0 10px 28px rgba(250,3,152,.14)
 <div class="foot"><div class="f1">LEVEL UP ⚡ · NOT FINANCIAL ADVICE · DYOR</div><div class="f2">Educational purposes only. Trading involves risk. Protect your capital.</div></div>
 </div></div>
 <script>
-const SHEET_CSV = "https://docs.google.com/spreadsheets/d/1MqfOX5EzRYvjQbd6U9RZTZ2ujm9_xx0LoT5rAzZxcPI/gviz/tq?tqx=out:csv&gid=1165837241";   // same link as in sheet.html
+const SHEET_CSV = "https://docs.google.com/spreadsheets/d/1MqfOX5EzRYvjQbd6U9RZTZ2ujm9_xx0LoT5rAzZxcPI/gviz/tq?tqx=out:csv&gid=1165837241"; // same link as in sheet.html
 function parseCSV(t){const rows=[];let row=[],cur="",inq=false;for(let i=0;i<t.length;i++){const c=t[i];if(inq){if(c==='"'){if(t[i+1]==='"'){cur+='"';i++;}else inq=false;}else cur+=c;}else{if(c==='"')inq=true;else if(c===","){row.push(cur);cur="";}else if(c==="\n"||c==="\r"){if(c==="\r"&&t[i+1]==="\n")i++;row.push(cur);rows.push(row);row=[];cur="";}else cur+=c;}}if(cur.length||row.length){row.push(cur);rows.push(row);}return rows.filter(r=>r.some(x=>x.trim()));}
 const objs=rows=>{const h=rows[0].map(x=>x.trim().toLowerCase());return rows.slice(1).map(r=>{const o={};h.forEach((k,i)=>o[k]=(r[i]||"").trim());return o;});};
 const get=(o,...k)=>{for(const x of k){const hit=Object.keys(o).find(h=>h.includes(x));if(hit&&o[hit])return o[hit];}return "";};
@@ -42,13 +48,13 @@ const stamp=s=>{const d=new Date(s);return isNaN(d)?s:d.toLocaleString("en-US",{
 const STATUS=s=>{s=s.toLowerCase();if(s.includes("short"))return["b-short","▼ Active short"];if(s.includes("active")||s.includes("long"))return["b-active","▲ Active long"];if(s.includes("watch"))return["b-watch","Watching"];if(s.includes("no trade"))return["b-none","No trade"];if(s.includes("invalid"))return["b-invalid","Invalidated"];if(s.includes("closed"))return["b-closed","Closed — lesson"];return["b-none",s];};
 const ORDER=["b-active","b-short","b-watch","b-none","b-invalid","b-closed"];
 async function load(){
-  let text="";
-  if(SHEET_CSV){try{text=await (await fetch(SHEET_CSV+(SHEET_CSV.includes("?")?"&":"?")+"t="+Date.now())).text();}catch(e){}}
-  if(!text){document.getElementById("grid").innerHTML=`<div class="empty">Hub not wired yet — paste the sheet link into SHEET_CSV.</div>`;return;}
-  const rows=objs(parseCSV(text));const by={};
-  rows.forEach(r=>{const a=get(r,"asset").toUpperCase();if(!a)return;if(!by[a]||new Date(get(r,"timestamp"))>new Date(get(by[a],"timestamp")))by[a]=r;});
-  const cards=Object.entries(by).map(([a,r])=>{const [c,t]=STATUS(get(r,"status"));return {a,r,c,t};}).sort((x,y)=>ORDER.indexOf(x.c)-ORDER.indexOf(y.c)||x.a.localeCompare(y.a));
-  document.getElementById("grid").innerHTML=cards.map(({a,r,c,t})=>`<a class="card" href="sheet.html?asset=${encodeURIComponent(a)}"><div class="asset">${esc(a)}</div><span class="pill ${c}">${t}</span><div class="hl">${esc(get(r,"headline")||"")}</div><div class="meta">updated ${stamp(get(r,"timestamp"))}</div></a>`).join("")||`<div class="empty">No setups yet.</div>`;
+let text="";
+if(SHEET_CSV){try{text=await (await fetch(SHEET_CSV+(SHEET_CSV.includes("?")?"&":"?")+"t="+Date.now())).text();}catch(e){}}
+if(!text){document.getElementById("grid").innerHTML=`<div class="empty">Hub not wired yet — paste the sheet link into SHEET_CSV.</div>`;return;}
+const rows=objs(parseCSV(text));const by={};
+rows.forEach(r=>{const a=get(r,"asset").toUpperCase();if(!a)return;if(!by[a]||new Date(get(r,"timestamp"))>new Date(get(by[a],"timestamp")))by[a]=r;});
+const cards=Object.entries(by).map(([a,r])=>{const [c,t]=STATUS(get(r,"status"));return {a,r,c,t};}).sort((x,y)=>ORDER.indexOf(x.c)-ORDER.indexOf(y.c)||x.a.localeCompare(y.a));
+document.getElementById("grid").innerHTML=cards.map(({a,r,c,t})=>{const isLive=c==="b-active"||c==="b-short";const cardCls=isLive?` is-live${c==="b-short"?" is-short":""}`:"";const pillCls=isLive?" pill-flash":"";return `<a class="card${cardCls}" href="sheet.html?asset=${encodeURIComponent(a)}"><div class="asset">${esc(a)}</div><span class="pill ${c}${pillCls}">${t}</span><div class="hl">${esc(get(r,"headline")||"")}</div><div class="meta">updated ${stamp(get(r,"timestamp"))}</div></a>`;}).join("")||`<div class="empty">No setups yet.</div>`;
 }
 load();setInterval(load,60000);
 </script></body></html>
