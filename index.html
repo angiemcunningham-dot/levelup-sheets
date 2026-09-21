@@ -47,14 +47,16 @@ const esc=s=>String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[
 const stamp=s=>{const d=new Date(s);return isNaN(d)?s:d.toLocaleString("en-US",{timeZone:"America/New_York",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})+" EST";};
 const STATUS=s=>{s=s.toLowerCase();if(s.includes("short"))return["b-short","▼ Active short"];if(s.includes("active")||s.includes("long"))return["b-active","▲ Active long"];if(s.includes("watch"))return["b-watch","Watching"];if(s.includes("no trade"))return["b-none","No trade"];if(s.includes("invalid"))return["b-invalid","Invalidated"];if(s.includes("closed"))return["b-closed","Closed — lesson"];return["b-none",s];};
 const ORDER=["b-active","b-short","b-watch","b-none","b-invalid","b-closed"];
+const DETAIL="sheet.html";
+const isPC=r=>{const s=get(r,"source type");return s?/price/i.test(s):/^\s*price[- ]?check/i.test(get(r,"headline"));};
 async function load(){
 let text="";
 if(SHEET_CSV){try{text=await (await fetch(SHEET_CSV+(SHEET_CSV.includes("?")?"&":"?")+"t="+Date.now())).text();}catch(e){}}
 if(!text){document.getElementById("grid").innerHTML=`<div class="empty">Hub not wired yet — paste the sheet link into SHEET_CSV.</div>`;return;}
-const rows=objs(parseCSV(text));const by={};
-rows.forEach(r=>{const a=get(r,"asset").toUpperCase();if(!a)return;if(!by[a]||new Date(get(r,"timestamp"))>new Date(get(by[a],"timestamp")))by[a]=r;});
+const rows=objs(parseCSV(text));const by={},pc={};
+rows.forEach(r=>{const a=get(r,"asset").toUpperCase();if(!a)return;const newer=o=>!o||new Date(get(r,"timestamp"))>new Date(get(o,"timestamp"));if(isPC(r)){if(newer(pc[a]))pc[a]=r;return;}if(!get(r,"status"))return;if(newer(by[a]))by[a]=r;});
 const cards=Object.entries(by).map(([a,r])=>{const [c,t]=STATUS(get(r,"status"));return {a,r,c,t};}).sort((x,y)=>ORDER.indexOf(x.c)-ORDER.indexOf(y.c)||x.a.localeCompare(y.a));
-document.getElementById("grid").innerHTML=cards.map(({a,r,c,t})=>{const isLive=c==="b-active"||c==="b-short";const cardCls=isLive?` is-live${c==="b-short"?" is-short":""}`:"";const pillCls=isLive?" pill-flash":"";return `<a class="card${cardCls}" href="sheet.html?asset=${encodeURIComponent(a)}"><div class="asset">${esc(a)}</div><span class="pill ${c}${pillCls}">${t}</span><div class="hl">${esc(get(r,"headline")||"")}</div><div class="meta">updated ${stamp(get(r,"timestamp"))}</div></a>`;}).join("")||`<div class="empty">No setups yet.</div>`;
+document.getElementById("grid").innerHTML=cards.map(({a,r,c,t})=>{const isLive=c==="b-active"||c==="b-short";const cardCls=isLive?` is-live${c==="b-short"?" is-short":""}`:"";const pillCls=isLive?" pill-flash":"";const chk=pc[a]?` · last price check ${stamp(get(pc[a],"timestamp"))}`:"";return `<a class="card${cardCls}" href="${DETAIL}?asset=${encodeURIComponent(a)}"><div class="asset">${esc(a)}</div><span class="pill ${c}${pillCls}">${t}</span><div class="hl">${/no trade|closed|invalid/i.test(get(r,"status"))?`<small style="font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6B7280;font-size:10px">Status note · </small>`:""}${esc(get(r,"headline")||"")}</div><div class="meta">status set ${stamp(get(r,"timestamp"))}${chk}</div></a>`;}).join("")||`<div class="empty">No setups yet.</div>`;
 }
 load();setInterval(load,60000);
 </script></body></html>

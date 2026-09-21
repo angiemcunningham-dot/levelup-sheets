@@ -68,10 +68,16 @@ h1 em{font-style:normal;color:var(--pink)}
 .hist .pill{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:999px;border:1px solid}
 .hist .lv{font-size:12px;color:var(--gray);line-height:1.6}.hist .out{font-size:13px;margin-top:8px;line-height:1.6;white-space:pre-line}
 .hist .out b{color:var(--pink)}
+.src{display:inline-block;font-family:Inter;font-size:9.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:999px;border:1px solid;margin-right:6px;vertical-align:middle;white-space:nowrap}
+.s-ch{color:var(--pink);border-color:var(--pink);background:var(--pink-soft)}.s-ad{color:#374151;border-color:var(--gray2);background:#F3F4F6}.s-pc{color:#1D4ED8;border-color:#93C5FD;background:#EFF6FF}.s-ot{color:#92400E;border-color:#FCD34D;background:#FFFBEB}
+.tl{margin:14px 0 4px;border:2px solid var(--pink-line);border-radius:12px;padding:12px 16px;display:grid;gap:8px;font-size:13px;line-height:1.5}
+.tl>div{display:grid;grid-template-columns:130px 1fr;gap:10px;align-items:baseline}.tl b{font-family:Archivo;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gray)}
+.histnote{background:#F3F4F6;border:2px dashed var(--gray2);border-radius:12px;padding:12px 16px;font-size:13px;line-height:1.55;margin:0 0 12px;color:#374151}
+.hist.pcrow{opacity:.78;border-style:dashed}
 .foot{margin-top:32px;padding-top:18px;border-top:2px solid var(--pink-line);text-align:center}.foot .f1{font-family:Archivo;font-weight:800;font-size:13px;letter-spacing:.18em;color:var(--pink);text-transform:uppercase}.foot .f2{font-size:11.5px;color:var(--gray);margin-top:8px;line-height:1.6;max-width:720px;margin-left:auto;margin-right:auto}
 .empty{padding:60px 20px;text-align:center;color:var(--gray)}
 audio,iframe.audio{width:100%;margin-top:10px;border:0;height:80px}
-@media(max-width:640px){.inner{padding:30px 18px 24px}.grid2{grid-template-columns:1fr}.head{flex-direction:column-reverse;align-items:flex-start}.row{grid-template-columns:40px 1fr auto;padding:13px 14px;gap:10px}.rp{font-size:19px}}
+@media(max-width:640px){.tl>div{grid-template-columns:1fr;gap:2px}.inner{padding:30px 18px 24px}.grid2{grid-template-columns:1fr}.head{flex-direction:column-reverse;align-items:flex-start}.row{grid-template-columns:40px 1fr auto;padding:13px 14px;gap:10px}.rp{font-size:19px}}
 </style>
 </head>
 <body>
@@ -93,7 +99,7 @@ const _get=(o,...keys)=>{for(const k of keys){const hit=Object.keys(o).find(h=>h
 const get=(o,...keys)=>{
   const k=keys[0];
   if(/^tp[123]$/.test(k)){const n=+k[2];const single=_get(o,k);const combo=Object.keys(o).find(h=>h.includes("tp1")&&h.includes("tp2"));
-    if(combo&&o[combo]){const nums=o[combo].match(/\d+(\.\d+)?/g)||[];return nums[n-1]||"";} return single;}
+    if(combo&&o[combo]){const txt=o[combo];const lab={};for(const m of txt.matchAll(/TP\s*([123])\s*:\s*\$?\s*(\d[\d,]*(?:\.\d+)?)/gi))lab[m[1]]=m[2].replace(/,/g,"");if(Object.keys(lab).length)return lab[n]||"";if(txt.includes("/")){const seg=txt.split("/").map(x=>(x.match(/\d+(\.\d+)?/)||[])[0]);return seg[n-1]||"";}const nums=txt.match(/\d+(\.\d+)?/g)||[];return nums[n-1]||"";} return single;}
   if(k==="stop")return _get(o,"stop","stp");
   if(k==="trigger 3")return _get(o,"trigger 3","tigger 3");
   if(k==="confidence up"||k==="confidence down"){const combo=Object.keys(o).find(h=>h.includes("confidence up")&&h.includes("down"));
@@ -110,22 +116,47 @@ function chartImg(img,link){const id=driveId(img);if(id)return `https://drive.go
 const STATUS=s=>{s=s.toLowerCase();if(s.includes("short"))return["b-short","▼ ACTIVE SHORT"];if(s.includes("active")||s.includes("long"))return["b-active","▲ ACTIVE LONG"];if(s.includes("watch"))return["b-watch","👀 WATCHING — NO TRIGGER YET"];if(s.includes("no trade"))return["b-none","NO TRADE RIGHT NOW"];if(s.includes("invalid"))return["b-invalid","✕ INVALIDATED — SETUP NO LONGER VALID"];if(s.includes("closed"))return["b-closed","■ CLOSED — SEE THE LESSON"];return["b-none",s.toUpperCase()];};
 
 function levels(r){
-  const L=[];const add=(role,val,kind,note)=>{const p=num(val);if(p!=null)L.push({role,price:p,kind,note});};
+  const L=[];const add=(role,val,kind,note,parse=num)=>{const p=parse(val);if(p!=null)L.push({role,price:p,kind,note});};
   add("TP3",get(r,"tp3"),"tp","Final target. Runner only.");add("TP2",get(r,"tp2"),"tp","Second scale-out. Move stop to entry or better.");add("TP1",get(r,"tp1"),"tp","First scale-out. Take 70–75% into targets.");
   [3,2,1].forEach(i=>{const t=get(r,"trigger "+i);if(t){const p=numTrigger(t);L.push({role:"TRIGGER "+i,price:p,kind:"res",note:t});}});
-  add("SUPPORT / SAFETY NET",get(r,"safety"),"sup","Structure the trade leans on. Stop goes below, not inside.");add("STOP",get(r,"stop"),"stop","Size the position to this. Never tighten the stop to fit the size.");
+  add("SUPPORT / SAFETY NET",get(r,"safety"),"sup","Structure the trade leans on. Stop goes below, not inside.",numTrigger);add("STOP",get(r,"stop"),"stop","Size the position to this. Never tighten the stop to fit the size.");
   return L.filter(l=>l.price!=null).sort((a,b)=>b.price-a.price);
 }
-function diff(cur,prev){if(!prev)return[];const out=[];["tp1","tp2","tp3","stop","safety","trigger 1","trigger 2","trigger 3","status"].forEach(k=>{const a=get(cur,k),b=get(prev,k);if(a!==b)out.push(`${k.toUpperCase()}: ${b||"—"} → ${a||"—"}`);});return out;}
+/* ===== STAGED (sheet-next): source types, authoritative status, setup-source carry-forward ===== */
+const LEVEL_KEYS=["trigger 1","trigger 2","trigger 3","tp1","tp2","tp3","stop","safety"];
+const hasLevels=r=>LEVEL_KEYS.some(k=>get(r,k));
+const rowTs=r=>new Date(get(r,"timestamp"));
+const isPC=r=>{const s=get(r,"source type");return s?/price/i.test(s):/^\s*price[- ]?check/i.test(get(r,"headline"));};
+const srcType=r=>{const s=(get(r,"source type")||"").toLowerCase();
+  if(s.includes("chelsea"))return"CHELSEA SETUP";if(s.includes("admin"))return"ADMIN STATUS";if(s.includes("price"))return"PRICE CHECK";if(s)return"OTHER / UNKNOWN";
+  if(isPC(r))return"PRICE CHECK";if(!get(r,"status"))return"OTHER / UNKNOWN";
+  if(/reactivat|^\s*no update since|^\s*triggered\b|not a new call from chelsea/i.test(get(r,"headline")+" "+get(r,"warning")))return"ADMIN STATUS";
+  return(hasLevels(r)||get(r,"why"))?"CHELSEA SETUP":"ADMIN STATUS";};
+const SRC_CLS={"CHELSEA SETUP":"s-ch","ADMIN STATUS":"s-ad","PRICE CHECK":"s-pc","OTHER / UNKNOWN":"s-ot"};
+const srcBadge=t=>`<span class="src ${SRC_CLS[t]}">${t}</span>`;
+const cut=(s,n)=>{s=String(s||"");return s.length>n?s.slice(0,n-1)+"…":s;};
+const tpTxt=r=>[1,2,3].map(k=>get(r,"tp"+k)||"—").join(" / ");
+const tpRaw=r=>{const k=Object.keys(r).find(h=>h.includes("tp1")&&h.includes("tp2"));return(k&&r[k])||"";};
+const cleanPC=r=>get(r,"headline").replace(/^\s*price[- ]?check(ed)?(\s+update)?\s*[-–—:]*\s*/i,"").trim();
+function diffLevels(a,b){if(!b)return[];const out=[];
+  [["TARGETS",tpRaw],["STOP",r=>get(r,"stop")],["SAFETY",r=>get(r,"safety")],["TRIGGER 1",r=>get(r,"trigger 1")],["TRIGGER 2",r=>get(r,"trigger 2")],["TRIGGER 3",r=>get(r,"trigger 3")]]
+   .forEach(([k,f])=>{if(f(a)!==f(b))out.push(k.toLowerCase());});return out;}
 
-function skoolPost(r){
-  const s=get(r,"status");const T=[1,2,3].map(i=>get(r,"trigger "+i)).filter(Boolean);
-  return [`${STATUS(s)[1].replace(/^[▲▼✕■👀] /,"")} — ${ASSET}`,``,`🔔 Tap the bell on this post. We'll comment when price reaches each level.`,``,
-  T.length?`📍 THE LEVELS\n`+T.map(t=>t).join("\n"):"",``,
-  `🎯 TARGETS — take 70–75% into these\nTP1 ${get(r,"tp1")} · TP2 ${get(r,"tp2")} · TP3 ${get(r,"tp3")}`,``,
-  `🛑 STOP ${get(r,"stop")}${get(r,"safety")?" · safety net "+get(r,"safety"):""}`,``,
-  get(r,"why")?`WHY\n${get(r,"why")}`:"",``,get(r,"warning")?`⚠️ ${get(r,"warning")}`:"",``,
-  `📲 Live sheet: ${location.href.split("#")[0]}`,``,`Levels are structure, not instructions. Your entry, your risk.\nNot financial advice. For educational purposes only. Trading involves risk. Protect your capital. DYOR.\n\nLEVEL UP ⚡`].join("\n").replace(/\n{3,}/g,"\n\n");
+function skoolPost(m){
+  const {cur,S,carried,lastPC}=m;const s=get(cur,"status");const statusLine=STATUS(s)[1].replace(/^[▲▼✕■👀] /,"");
+  const T=[1,2,3].map(i=>get(S,"trigger "+i)).filter(Boolean);
+  const levelBlock=[T.length?`📍 THE LEVELS\n`+T.join("\n"):"",``,
+    `🎯 TARGETS\nTP1 ${get(S,"tp1")} · TP2 ${get(S,"tp2")} · TP3 ${get(S,"tp3")}`,``,
+    `🛑 STOP ${get(S,"stop")}${get(S,"safety")?" · safety net "+get(S,"safety"):""}`,``,
+    get(S,"why")?`WHY\n${get(S,"why")}`:"",``,get(S,"warning")?`⚠️ ${get(S,"warning")}`:""];
+  const foot=[`📲 Live sheet: ${location.href.split("#")[0]}`,``,`Levels are structure, not instructions. Your entry, your risk.\nNot financial advice. For educational purposes only. Trading involves risk. Protect your capital. DYOR.\n\nLEVEL UP ⚡`];
+  const noTradeLike=/no trade|closed|invalid/i.test(s);
+  if(noTradeLike){
+    return [`CURRENT STATUS:\n${statusLine} — ${ASSET}`,``,
+      `PUBLISHED SETUP (Historical — NOT a current trade call):\nChelsea's most recent published setup for ${ASSET} was on ${stamp(get(S,"timestamp"))}. It is shown for reference only. Wait for a new update before treating any level as active.`,``,
+      ...levelBlock,``,
+      `LAST PRICE CHECK:\n${lastPC?stamp(get(lastPC,"timestamp"))+" — "+cleanPC(lastPC):"none recorded in the sheet"}`,``,...foot].join("\n").replace(/\n{3,}/g,"\n\n");}
+  return [`${statusLine} — ${ASSET}`,``,`🔔 Tap the bell on this post. We'll comment when price reaches each level.`,carried?`\nℹ️ Status update — not a new call from Chelsea. Levels below are from Chelsea's published setup of ${stamp(get(S,"timestamp"))}.`:"",``,...levelBlock,``,...foot].join("\n").replace(/\n{3,}/g,"\n\n");
 }
 
 async function load(){
@@ -134,35 +165,79 @@ async function load(){
   if(!text){$("#app").innerHTML=`<div class="empty">Can't read the setup sheet. Share it as <b>Anyone with the link → Viewer</b>.</div>`;return;}
   const rows=objs(parseCSV(text)).filter(r=>get(r,"asset").toUpperCase()===ASSET);
   if(!rows.length){$("#app").innerHTML=`<div class="empty">No setup on file for <b>${esc(ASSET)}</b> yet.</div>`;return;}
-  rows.sort((a,b)=>new Date(get(a,"timestamp"))-new Date(get(b,"timestamp")));
-  const cur=rows[rows.length-1],prev=rows[rows.length-2],ver=rows.length;
+  rows.sort((a,b)=>rowTs(a)-rowTs(b));
+  const auth=rows.filter(r=>!isPC(r)&&get(r,"status"));
+  const cur=auth[auth.length-1]||rows[rows.length-1],prevAuth=auth[auth.length-2];
+  const upto=rows.slice(0,rows.indexOf(cur)+1).reverse();
+  const setupRows=upto.filter(r=>!isPC(r));
+  const S=setupRows.find(r=>srcType(r)==="CHELSEA SETUP"&&(hasLevels(r)||get(r,"why")))||setupRows.find(hasLevels)||setupRows.find(r=>get(r,"why"))||cur;
+  const carried=S!==cur;const lastPC=[...rows].reverse().find(isPC);
   const [bcls,btxt]=STATUS(get(cur,"status"));const closed=/closed|invalid/i.test(get(cur,"status"));const paused=/watch|no trade/i.test(get(cur,"status"));
-  const L=levels(cur);const img=chartImg(get(cur,"chart image"),get(cur,"chart link"));const vm=driveId(get(cur,"voice"));
-  const d=diff(cur,prev);
+  const L=levels(S);const img=chartImg(get(S,"chart image"),get(S,"chart link"));const vm=driveId(get(S,"voice"));
+  const P=rows.filter(r=>!isPC(r)&&hasLevels(r)&&rowTs(r)<rowTs(S)).pop();
+  const ld=P?diffLevels(S,P):[];
+  const noTradeLike=/no trade|closed|invalid/i.test(get(cur,"status"));
+  const days=carried?Math.max(0,Math.round((rowTs(cur)-rowTs(S))/86400000)):0;
 
-  let h=`<div class="banner ${bcls}"><span>${btxt}</span><small>v${ver} · updated ${stamp(get(cur,"timestamp"))}</small></div>`;
-  h+=`<div class="head"><div><div class="kicker">LEVEL UP CRYPTO · LIVE SETUP</div><h1>${esc(ASSET)} <em>${esc(cleanHeadline(ASSET,get(cur,"headline"))||"SETUP")}</em></h1><div class="rule"></div><div class="dateline" id="dateline">Called ${stamp(get(cur,"timestamp"))}</div></div><div class="logo"><img src="${LOGO_SRC}" alt="" onerror="this.parentNode.style.display='none'"></div></div>`;
-  if(d.length)h+=`<div class="diff">Changed since v${ver-1}: ${esc(d.join("  ·  "))}</div>`;
+  let h=`<div class="banner ${bcls}"><span>${btxt}</span><small>CURRENT STATUS · set ${stamp(get(cur,"timestamp"))} ${srcBadge(srcType(cur))}</small></div>`;
+  const st0=get(cur,"status");const rawHl=get(cur,"headline");
+  const statusWord=/invalid/i.test(st0)?"INVALIDATED":/closed/i.test(st0)?"CLOSED":/no trade/i.test(st0)?"NO TRADE RIGHT NOW":btxt;
+  const hasSetup=!!(hasLevels(S)||get(S,"why"));
+  h+=`<div class="head"><div><div class="kicker">LEVEL UP CRYPTO · ${noTradeLike?"CURRENT STATUS":"LIVE SETUP"}</div><h1>${esc(ASSET)} <em>${esc(noTradeLike?statusWord:(cleanHeadline(ASSET,rawHl)||"SETUP"))}</em></h1><div class="rule"></div><div class="dateline" id="dateline">Status set ${stamp(get(cur,"timestamp"))}</div></div><div class="logo"><img src="${LOGO_SRC}" alt="" onerror="this.parentNode.style.display='none'"></div></div>`;
+  if(noTradeLike){
+    h+=`<div class="tl"><div><b>Current status</b><span>${esc(btxt)} · set ${stamp(get(cur,"timestamp"))} ${srcBadge(srcType(cur))}</span></div>${rawHl?`<div><b>Status note</b><span>${esc(rawHl)}</span></div>`:""}</div>`;
+  }else{
+    h+=`<div class="tl"><div><b>Current status</b><span>${esc(btxt)} · set ${stamp(get(cur,"timestamp"))} ${srcBadge(srcType(cur))}</span></div>`
+    +`<div><b>Published setup</b><span>${hasSetup?`${stamp(get(S,"timestamp"))} ${srcBadge(srcType(S))}${carried?` <i>· history, not a current call</i>`:""}`:"none on file"}</span></div>`
+    +`<div><b>Last price check</b><span>${lastPC?`${stamp(get(lastPC,"timestamp"))} · ${esc(cut(cleanPC(lastPC),140))}`:"none recorded in the sheet"}</span></div></div>`;
+  }
+  if(prevAuth&&get(prevAuth,"status")!==get(cur,"status"))h+=`<div class="diff">Status changed: ${esc(get(prevAuth,"status"))} → ${esc(get(cur,"status"))} (${esc(stamp(get(cur,"timestamp")))})</div>`;
+  if(ld.length)h+=`<div class="diff">This published setup differs from the one before it (${esc(stamp(get(P,"timestamp")))}) in: ${esc(ld.join(", "))}. Both are kept in the history below.</div>`;
+  if(cur!==S&&srcType(cur)==="ADMIN STATUS"&&get(cur,"why"))h+=`<div class="histnote"><b>ADMIN NOTE — not Chelsea's words.</b> ${esc(get(cur,"why"))}</div>`;
   if(closed){h+=`<div class="sect"><div class="bar"></div><h2>What happened</h2></div><div class="lesson"><div class="wl">Outcome</div><h3>${esc(get(cur,"outcome")||"Setup closed")}</h3><div class="wl" style="margin-top:14px">The lesson</div><p>${esc(get(cur,"lesson")||"—")}</p></div>`;}
-  if(img)h+=`<div class="chart"><img src="${img}" alt="Chelsea's chart"></div>`;
-  h+=`<div class="btnrow">${get(cur,"chart link")?`<a class="btn" href="${esc(get(cur,"chart link"))}" target="_blank">Open interactive chart</a>`:""}<button class="btn primary" id="copy">Copy Skool post</button></div>`;
-  if(vm)h+=`<div class="card soft"><h3>Chelsea's read — voice</h3><iframe class="audio" src="https://drive.google.com/file/d/${vm}/preview" allow="autoplay"></iframe></div>`;
-  h+=`<div class="${(closed||paused)?"faded":""}">`;
-  if(get(cur,"why"))h+=`<div class="sect"><div class="bar"></div><h2>Why</h2></div><div class="card"><p>${esc(get(cur,"why"))}</p></div>`;
-  const T=[1,2,3].map(i=>get(cur,"trigger "+i)).filter(Boolean);
-  if(T.length){h+=`<div class="sect"><div class="bar"></div><h2>The Levels</h2></div>`;T.forEach((t,i)=>h+=`<div class="card soft"><h3>Trigger ${i+1}</h3><p>${esc(t)}</p></div>`);}
-  if(L.length){h+=`<div class="sect"><div class="bar"></div><h2>The Ladder</h2><div class="hint">live price</div></div><div class="ladder" id="ladder">`;
-    const rowsH=L.map(l=>`<div class="row" data-p="${l.price}"><div class="dot d-${l.kind}"></div><div><div class="rl">${esc(l.role)}</div><div class="rn">${esc(l.note)}</div></div><div class="rp">${fmt(l.price)}<small>${l.kind==="tp"?"target":l.kind==="stop"?"invalidation":"level"}</small></div></div>`);
-    h+=rowsH.join("")+`</div><p class="rn" style="margin-top:10px"><b>Levels are structure, not instructions.</b> Price reaching a level is information. Whether it becomes an entry is your decision and your risk.</p>`;}
-  if(get(cur,"warning"))h+=`<div class="sect"><div class="bar"></div><h2>Warning</h2></div><div class="warn"><div class="wh">Heads up</div><div class="wb">${esc(get(cur,"warning"))}</div></div>`;
-  if(get(cur,"confidence up")||get(cur,"confidence down"))h+=`<div class="sect"><div class="bar"></div><h2>Confidence Check</h2></div><div class="grid2"><div class="inv up"><div class="ih">▲ Confidence up</div><div class="ib">${esc(get(cur,"confidence up"))}</div></div><div class="inv dn"><div class="ih">▼ Confidence down</div><div class="ib">${esc(get(cur,"confidence down"))}</div></div></div>`;
-  h+=`</div>`;
-  if(rows.length>1){h+=`<div class="sect"><div class="bar"></div><h2>Previous calls on ${esc(ASSET)}</h2><div class="hint">newest first · superseded</div></div>`;
-    rows.slice(0,-1).reverse().forEach((r,i)=>{const [c,t]=STATUS(get(r,"status"));const v=rows.indexOf(r)+1;const lv=`TP ${get(r,"tp1")||"—"} / ${get(r,"tp2")||"—"} / ${get(r,"tp3")||"—"} · stop ${get(r,"stop")||"—"}`;
-      h+=`<div class="hist"><div class="hh"><span class="hv">v${v} — ${esc(get(r,"headline")||ASSET)}</span><span class="hd">${stamp(get(r,"timestamp"))}</span><span class="pill ${c}">${t}</span></div><div class="lv">${esc([1,2,3].map(k=>get(r,"trigger "+k)).filter(Boolean).join("  ·  "))}<br>${esc(lv)}</div>${(get(r,"outcome")||get(r,"lesson"))?`<div class="out"><b>What happened:</b> ${esc(get(r,"outcome"))}${get(r,"lesson")?`<br><b>Lesson:</b> ${esc(get(r,"lesson"))}`:""}</div>`:""}</div>`;});}
+
+  const media=()=>{let x="";
+    if(img)x+=`<div class="chart"><img src="${img}" alt="Chelsea's chart"></div>`;
+    x+=`<div class="btnrow">${get(S,"chart link")?`<a class="btn" href="${esc(get(S,"chart link"))}" target="_blank">Open interactive chart${carried?" (setup of "+esc(stamp(get(S,"timestamp")))+")":""}</a>`:""}<button class="btn primary" id="copy">Copy Skool post</button></div>`;
+    if(vm)x+=`<div class="card soft"><h3>Chelsea's read — voice</h3><iframe class="audio" src="https://drive.google.com/file/d/${vm}/preview" allow="autoplay"></iframe></div>`;
+    return x;};
+  const setupHTML=()=>{let x="";
+    if(get(S,"why"))x+=`<div class="sect"><div class="bar"></div><h2>Why</h2></div><div class="card"><p>${esc(get(S,"why"))}</p></div>`;
+    const T=[1,2,3].map(i=>get(S,"trigger "+i)).filter(Boolean);
+    if(T.length){x+=`<div class="sect"><div class="bar"></div><h2>The Levels</h2></div>`;T.forEach((t,i)=>x+=`<div class="card soft"><h3>Trigger ${i+1}</h3><p>${esc(t)}</p></div>`);}
+    if(L.length){x+=`<div class="sect"><div class="bar"></div><h2>The Ladder</h2><div class="hint">live price</div></div><div class="ladder" id="ladder">`;
+      const rowsH=L.map(l=>`<div class="row" data-p="${l.price}"><div class="dot d-${l.kind}"></div><div><div class="rl">${esc(l.role)}</div><div class="rn">${esc(l.note)}</div></div><div class="rp">${fmt(l.price)}<small>${l.kind==="tp"?"target":l.kind==="stop"?"invalidation":"level"}</small></div></div>`);
+      x+=rowsH.join("")+`</div><p class="rn" style="margin-top:10px"><b>Levels are structure, not instructions.</b> Price reaching a level is information. Whether it becomes an entry is your decision and your risk.</p>`;}
+    if(get(S,"warning"))x+=`<div class="sect"><div class="bar"></div><h2>Warning</h2></div><div class="warn"><div class="wh">Heads up</div><div class="wb">${esc(get(S,"warning"))}</div></div>`;
+    if(get(S,"confidence up")||get(S,"confidence down"))x+=`<div class="sect"><div class="bar"></div><h2>Confidence Check</h2></div><div class="grid2"><div class="inv up"><div class="ih">▲ Confidence up</div><div class="ib">${esc(get(S,"confidence up"))}</div></div><div class="inv dn"><div class="ih">▼ Confidence down</div><div class="ib">${esc(get(S,"confidence down"))}</div></div></div>`;
+    return x;};
+  if(noTradeLike){
+    if(hasSetup){
+      h+=`<div class="sect"><div class="bar"></div><h2>Published setup</h2><div class="hint">${esc(stamp(get(S,"timestamp")))}</div></div>`;
+      h+=`<div class="histnote"><b>HISTORICAL — NOT A CURRENT TRADE CALL.</b> The current status is <b>${esc(btxt)}</b>. This is Chelsea's most recent published setup for ${esc(ASSET)}, from ${esc(stamp(get(S,"timestamp")))} ${srcBadge(srcType(S))}${days?` (${days} day${days===1?"":"s"} before the current status)`:""}. It is shown so nothing is lost; its levels may no longer apply.</div>`;
+      h+=media();
+      h+=`<div class="faded">${setupHTML()}</div>`;
+    }else{
+      h+=`<div class="sect"><div class="bar"></div><h2>Published setup</h2></div><div class="histnote">No published setup on file for ${esc(ASSET)}.</div>`+media();
+    }
+    h+=`<div class="sect"><div class="bar"></div><h2>Last price check</h2></div><div class="card soft"><p>${lastPC?`${esc(stamp(get(lastPC,"timestamp")))} — ${esc(cleanPC(lastPC))}`:"None recorded in the sheet."}</p></div>`;
+  }else{
+    if(carried){
+      h+=`<div class="sect"><div class="bar"></div><h2>Most recent published setup</h2><div class="hint">published · ${esc(stamp(get(S,"timestamp")))}</div></div>`;
+      h+=`<div class="histnote"><b>STATUS UPDATE (${esc(srcType(cur))}) — NOT A NEW CALL FROM CHELSEA.</b> The levels below are Chelsea's published setup from ${esc(stamp(get(S,"timestamp")))}.</div>`;
+    }
+    h+=media();
+    h+=`<div class="${(closed||paused)?"faded":""}">${setupHTML()}</div>`;
+  }
+
+  const hist=rows.filter(r=>r!==cur).reverse();
+  if(hist.length){h+=`<div class="sect"><div class="bar"></div><h2>History on ${esc(ASSET)}</h2><div class="hint">newest first · every row preserved</div></div>`;
+    hist.forEach(r=>{const [c,t]=STATUS(get(r,"status"));const st=srcType(r);
+      const lv=hasLevels(r)?`${[1,2,3].map(k=>get(r,"trigger "+k)).filter(Boolean).map(esc).join("  ·  ")}<br>${esc(`TP ${tpTxt(r)} · stop ${get(r,"stop")||"—"}`)}`:"";
+      h+=`<div class="hist${st==="PRICE CHECK"?" pcrow":""}"><div class="hh"><span class="hv">${srcBadge(st)} ${esc(get(r,"headline")||ASSET)}</span><span class="hd">${stamp(get(r,"timestamp"))}</span><span class="pill ${c}">${esc(t||"no status")}</span></div>${lv?`<div class="lv">${lv}</div>`:""}${(carried&&r===S)?`<div class="lv"><b>↑ shown above as the most recent published setup</b></div>`:""}${(get(r,"outcome")||get(r,"lesson"))?`<div class="out"><b>What happened:</b> ${esc(get(r,"outcome"))}${get(r,"lesson")?`<br><b>Lesson:</b> ${esc(get(r,"lesson"))}`:""}</div>`:""}</div>`;});}
   h+=`<div class="foot"><div class="f1">LEVEL UP ⚡ · NOT FINANCIAL ADVICE · DYOR</div><div class="f2">Not financial advice. For educational purposes only. Trading involves risk. Protect your capital. Always use a stop loss. Leverage is a personal choice based on your own risk tolerance. Don't compare trades or position sizes.</div></div>`;
   $("#app").innerHTML=h;
-  $("#copy").onclick=()=>{navigator.clipboard.writeText(skoolPost(cur));$("#copy").textContent="Copied ✓";setTimeout(()=>$("#copy").textContent="Copy Skool post",1500);};
+  if($("#copy"))$("#copy").onclick=()=>{navigator.clipboard.writeText(skoolPost({cur,S,carried,lastPC}));$("#copy").textContent="Copied ✓";setTimeout(()=>$("#copy").textContent="Copy Skool post",1500);};
   livePrice(L);
 }
 
