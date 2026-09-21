@@ -31,7 +31,100 @@ a.card.is-live.is-short{border-color:var(--red)}
 .foot{margin-top:34px;padding-top:18px;border-top:2px solid var(--pink-line);text-align:center}.f1{font-family:Archivo;font-weight:800;font-size:13px;letter-spacing:.18em;color:var(--pink);text-transform:uppercase}.f2{font-size:11.5px;color:var(--gray);margin-top:8px;line-height:1.6}
 .empty{padding:40px;text-align:center;color:var(--gray)}
 @media(max-width:640px){.inner{padding:30px 18px 24px}}
-</style></head>
+</style><style id="att-css">
+/* ===== LIVE ATTENTION (staging addon) — presentation only; tiers map 1:1 to the monitor's attention bands ===== */
+.att{margin-top:30px}
+.att[hidden]{display:none}
+.att-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.att-title{font-family:Archivo,Inter,system-ui,sans-serif;font-weight:900;font-size:24px;letter-spacing:.05em;text-transform:uppercase;line-height:1}
+.att-title em{font-style:normal;color:var(--pink)}
+.att-live{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--gray);letter-spacing:.03em}
+.att-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:6px;vertical-align:middle;animation:attBlink 1.6s ease-in-out infinite}
+.att-dot.off{background:var(--gray2);animation:none}
+.att-note{font-size:11.5px;color:var(--gray);line-height:1.55;margin-top:8px;max-width:820px}
+.att-note b{color:#374151}
+
+/* ticker tape */
+.att-tape{margin-top:14px;overflow:hidden;border:2px solid var(--pink-line);border-radius:999px;background:#fff;position:relative}
+.att-tape-track{display:flex;width:max-content;gap:0;animation:attTape 42s linear infinite}
+.att-tape:hover .att-tape-track{animation-play-state:paused}
+.att-tape-item{display:inline-flex;align-items:center;gap:8px;padding:8px 18px;font-family:"JetBrains Mono",monospace;font-size:12px;white-space:nowrap;color:#374151;text-decoration:none;border-right:1px solid var(--pink-line)}
+.att-tape-item b{font-family:Archivo,Inter,sans-serif;font-weight:900;font-size:13px;color:var(--ink);letter-spacing:.02em}
+.att-tape-item .p{font-weight:800;color:var(--tc,#374151)}
+.att-tape-item.tier-3 .p,.att-tape-item.tier-4 .p{color:var(--pink)}
+
+/* cards */
+.att-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(236px,1fr));gap:12px;margin-top:14px}
+a.att-card{--tc:#9CA3AF;--tg:rgba(156,163,175,.35);position:relative;display:block;text-decoration:none;color:inherit;border:2px solid var(--tc);border-radius:14px;padding:14px 16px 13px;background:#fff;transition:transform .2s,box-shadow .2s}
+a.att-card:hover{transform:translateY(-2px);box-shadow:0 10px 26px var(--tg)}
+.att-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.att-asset{font-family:Archivo,Inter,sans-serif;font-weight:900;font-size:24px;letter-spacing:-.01em}
+.att-dir{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#374151}
+.att-pct{display:flex;align-items:baseline;gap:8px;margin-top:6px;flex-wrap:wrap}
+.att-pct b{font-family:Archivo,Inter,sans-serif;font-weight:900;font-size:30px;line-height:1;color:var(--tc);letter-spacing:-.02em}
+.att-pct span{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--tc)}
+.att-tag{display:inline-block;margin-top:8px;font-size:9.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;padding:4px 9px;border-radius:999px;border:2px solid var(--tc);color:var(--tc);background:#fff}
+.att-bar{height:6px;border-radius:99px;background:#F3F4F6;margin-top:10px;overflow:hidden}
+.att-bar i{display:block;height:100%;border-radius:99px;background:var(--tc);transition:width .6s}
+.att-meta{font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--gray);margin-top:8px;line-height:1.55}
+
+/* tiers = engine bands: 0 NORMAL >3% · 1 ATTENTION ≤3% · 2 MORE NOTICEABLE ≤2% · 3 HIGH ≤1% · 4 MAXIMUM ≤0.5% or inside the zone */
+a.att-card.tier-0{--tc:#6B7280;--tg:rgba(107,114,128,.25);border-color:var(--pink-line)}
+a.att-card.tier-0 .att-pct b{font-size:28px}
+a.att-card.tier-1{--tc:#D9A404;--tg:rgba(217,164,4,.30);background:#FFFBEA}
+a.att-card.tier-1 .att-pct b{font-size:32px}
+a.att-card.tier-2{--tc:#E67E00;--tg:rgba(230,126,0,.32);background:#FFF4E0;border-width:3px}
+a.att-card.tier-2 .att-pct b{font-size:38px}
+a.att-card.tier-3{--tc:#FA0398;--tg:rgba(250,3,152,.32);background:#FFF0F8;border-width:3px;animation:attPulse 2.2s ease-in-out infinite}
+a.att-card.tier-3 .att-pct b{font-size:44px}
+a.att-card.tier-4{--tc:#FA0398;--tg:rgba(250,3,152,.45);background:#FFE1F1;border-width:4px;animation:attPulseFast 1.15s ease-in-out infinite}
+a.att-card.tier-4 .att-pct b{font-size:50px}
+a.att-card.tier-4 .att-tag{background:var(--tc);color:#fff}
+a.att-card.tier-3 .att-tag{background:var(--tc);color:#fff}
+.att-sub{margin-top:18px;font-size:10.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--gray)}
+.att-past{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+a.att-past-chip{display:inline-flex;gap:8px;align-items:center;padding:7px 12px;border:2px dashed var(--gray2);border-radius:999px;font-family:"JetBrains Mono",monospace;font-size:11px;color:#4B5563;text-decoration:none;background:#fff}
+a.att-past-chip b{font-family:Archivo,Inter,sans-serif;font-weight:900;color:var(--ink)}
+.att-empty{padding:16px;border:2px dashed var(--pink-line);border-radius:12px;color:var(--gray);font-size:13px;margin-top:14px}
+
+/* ACTIVE NOW — status-driven section, deliberately different from the proximity cards (solid side bar, no proximity tiers, no pulse) */
+.att.act{margin-top:26px}
+.act-em{font-style:normal;color:var(--green-d)}
+.act-grid{grid-template-columns:repeat(auto-fill,minmax(236px,1fr))}
+a.act-card{--ac:#22C55E;--ad:#15803D;position:relative;display:block;text-decoration:none;color:inherit;border:2px solid var(--ac);border-left-width:10px;border-radius:14px;padding:14px 16px 13px;background:#F0FDF4;transition:transform .2s,box-shadow .2s}
+a.act-card.side-short{--ac:#EF4444;--ad:#B91C1C;background:#FEF2F2}
+a.act-card:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(21,128,61,.18)}
+a.act-card.side-short:hover{box-shadow:0 10px 26px rgba(185,28,28,.18)}
+.act-status{font-family:Archivo,Inter,sans-serif;font-weight:900;font-size:26px;letter-spacing:.01em;color:var(--ad);margin-top:6px;line-height:1.05}
+.act-tag{display:inline-block;margin-top:8px;font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;padding:4px 10px;border-radius:999px;border:2px solid var(--ac);color:var(--ad);background:#fff}
+.att-chip.act{--tc:#15803D;background:#F0FDF4;border-color:#22C55E}
+.att-chip.act.act-short{--tc:#B91C1C;background:#FEF2F2;border-color:#EF4444}
+.att-chip.act span{font-size:12px}
+
+/* chips reused on the existing grid cards and on the per-asset page */
+.att-chip{--tc:#6B7280;--tg:rgba(107,114,128,.25);display:inline-flex;align-items:baseline;gap:7px;flex-wrap:wrap;margin:8px 0 2px;padding:6px 12px;border:2px solid var(--tc);border-radius:10px;background:#fff;font-family:Archivo,Inter,sans-serif;font-weight:900;color:var(--tc);line-height:1.1}
+.att-chip b{font-size:22px;letter-spacing:-.01em}
+.att-chip span{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:800}
+.att-chip small{font-family:"JetBrains Mono",monospace;font-weight:500;font-size:10.5px;color:var(--gray);letter-spacing:0}
+.att-chip.tier-1{--tc:#D9A404;background:#FFFBEA}.att-chip.tier-2{--tc:#E67E00;background:#FFF4E0}
+.att-chip.tier-3{--tc:#FA0398;background:#FFF0F8;animation:attPulse 2.2s ease-in-out infinite}
+.att-chip.tier-4{--tc:#FA0398;background:#FFE1F1;animation:attPulseFast 1.15s ease-in-out infinite}
+.att-chip.tier-4 b,.att-chip.tier-3 b{font-size:26px}
+.att-chip.passed{--tc:#6B7280;border-style:dashed}
+
+@keyframes attPulse{0%,100%{box-shadow:0 0 0 0 var(--tg)}50%{box-shadow:0 0 0 8px rgba(250,3,152,0)}}
+@keyframes attPulseFast{0%,100%{box-shadow:0 0 0 0 var(--tg)}50%{box-shadow:0 0 0 12px rgba(250,3,152,0)}}
+@keyframes attBlink{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes attTape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){
+  a.att-card,a.act-card,.att-chip,.att-dot,.att-tape-track{animation:none!important;transition:none!important}
+  .att-tape{overflow-x:auto}
+  a.att-card.tier-3,a.att-card.tier-4,.att-chip.tier-3,.att-chip.tier-4{box-shadow:0 0 0 4px var(--tg)}
+}
+@media(max-width:640px){.att-title{font-size:20px}.act-grid{grid-template-columns:repeat(2,minmax(0,1fr))}a.act-card{min-width:0;padding:11px 11px 10px}.act-status{font-size:20px}.att-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}a.att-card{min-width:0;padding:11px 11px 10px}.att-top{flex-wrap:wrap}.att-meta{overflow-wrap:anywhere}.att-asset{font-size:21px}.att-pct b{font-size:26px!important}a.att-card.tier-4 .att-pct b{font-size:36px!important}a.att-card.tier-3 .att-pct b{font-size:32px!important}a.att-card.tier-2 .att-pct b{font-size:30px!important}}
+#att-chip{margin:12px 0 18px}
+</style>
+</head>
 <body><div class="sheet"><div class="inner">
 <div class="kicker">LEVEL UP CRYPTO</div><h1>LIVE <em>SETUPS</em></h1><div class="rule"></div>
 <div class="sub">One link per asset. Every read Chelsea makes lands here, with the history and the lesson when it's done.<br>Levels are structure, not instructions. Not financial advice.</div>
@@ -59,4 +152,663 @@ const cards=Object.entries(by).map(([a,r])=>{const [c,t]=STATUS(get(r,"status"))
 document.getElementById("grid").innerHTML=cards.map(({a,r,c,t})=>{const isLive=c==="b-active"||c==="b-short";const cardCls=isLive?` is-live${c==="b-short"?" is-short":""}`:"";const pillCls=isLive?" pill-flash":"";const chk=pc[a]?` · last price check ${stamp(get(pc[a],"timestamp"))}`:"";return `<a class="card${cardCls}" href="${DETAIL}?asset=${encodeURIComponent(a)}"><div class="asset">${esc(a)}</div><span class="pill ${c}${pillCls}">${t}</span><div class="hl">${/no trade|closed|invalid/i.test(get(r,"status"))?`<small style="font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6B7280;font-size:10px">Status note · </small>`:""}${esc(get(r,"headline")||"")}</div><div class="meta">status set ${stamp(get(r,"timestamp"))}${chk}</div></a>`;}).join("")||`<div class="empty">No setups yet.</div>`;
 }
 load();setInterval(load,60000);
-</script></body></html>
+</script><script id="att-core">
+/*
+ * LevelUp shared core — the ONE implementation of:
+ *   Sheet CSV -> rows -> row classification -> source-row selection -> level extraction.
+ * Used by the price monitor (Node) and intended for the board (browser).
+ * Pure functions, no I/O, no network. The Google Sheet is the only source of Chelsea's levels.
+ * It never invents a value: anything it cannot read with certainty is marked absent/ambiguous.
+ */
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) module.exports = factory();
+  else root.LevelUpCore = factory();
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
+
+  /* ---------------- hashing (sync, browser + Node) ---------------- */
+  function cyrb53(str, seed) {
+    let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+    for (let i = 0; i < str.length; i++) {
+      const ch = str.charCodeAt(i);
+      h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677);
+    }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+  }
+  const hash = (s) => cyrb53(String(s), 1).toString(16).padStart(14, '0') + cyrb53(String(s), 2).toString(16).padStart(14, '0');
+
+  /* ---------------- CSV / rows ---------------- */
+  function parseCSV(t) {
+    const rows = []; let row = [], cur = '', inq = false;
+    for (let i = 0; i < t.length; i++) {
+      const c = t[i];
+      if (inq) { if (c === '"') { if (t[i + 1] === '"') { cur += '"'; i++; } else inq = false; } else cur += c; }
+      else {
+        if (c === '"') inq = true;
+        else if (c === ',') { row.push(cur); cur = ''; }
+        else if (c === '\n' || c === '\r') { if (c === '\r' && t[i + 1] === '\n') i++; row.push(cur); rows.push(row); row = []; cur = ''; }
+        else cur += c;
+      }
+    }
+    if (cur.length || row.length) { row.push(cur); rows.push(row); }
+    return rows.filter((r) => r.some((x) => x.trim()));
+  }
+  function loadRows(csvText) {
+    const all = parseCSV(csvText);
+    if (!all.length) return [];
+    const header = all[0].map((x) => x.trim().toLowerCase());
+    const rows = all.slice(1).map((r, i) => {
+      const o = {};
+      header.forEach((k, j) => { o[k] = (r[j] || '').trim(); });
+      Object.defineProperty(o, '__i', { value: i, enumerable: false });
+      return o;
+    });
+    // Durable row identity (T-01): the row's own content, never its position. Timestamp (parsed instant, else its normalized text) + asset.
+    // True duplicates of the same (timestamp, asset) key are numbered #2, #3... in relative CSV order; __idn counts rows sharing the key.
+    const seen = {};
+    rows.forEach((o) => {
+      const ts = _get(o, 'timestamp'); const p = parseSheetTimestamp(ts);
+      const asset = _get(o, 'asset').trim().replace(/\s+/g, ' ').toUpperCase();
+      const base = 'ts:' + (p.utcMs !== null && p.utcMs !== undefined ? p.utcMs + ':' + p.precision : 'raw:' + ts.trim().replace(/\s+/g, ' ').toLowerCase()) + '|' + asset;
+      seen[base] = (seen[base] || 0) + 1;
+      Object.defineProperty(o, '__key', { value: base, enumerable: false });
+      Object.defineProperty(o, '__id', { value: seen[base] > 1 ? base + '#' + seen[base] : base, enumerable: false });
+    });
+    rows.forEach((o) => Object.defineProperty(o, '__idn', { value: seen[o.__key], enumerable: false }));
+    return rows;
+  }
+  // Estimated Sheet row number (row 1 = header, row 2 = stray leftover row that the CSV export folds into the header)
+  const rowRef = (o) => 'R' + (o.__i + 3);
+  // Durable identity of a Sheet row (content-based). row_ref above is a position estimate for DISPLAY ONLY.
+  const rowId = (o) => o.__id;
+
+  const _get = (o, ...keys) => { for (const k of keys) { const h = Object.keys(o).find((x) => x.includes(k)); if (h && o[h]) return o[h]; } return ''; };
+  const F = {
+    asset: (o) => _get(o, 'asset').trim().toUpperCase(),
+    status: (o) => _get(o, 'status'),
+    headline: (o) => _get(o, 'headline'),
+    timestamp: (o) => _get(o, 'timestamp'),
+    why: (o) => _get(o, 'why'),
+    warning: (o) => _get(o, 'warning'),
+    confidence: (o) => _get(o, 'confidence'),
+    trigger: (o, n) => (n === 3 ? _get(o, 'trigger 3', 'tigger 3') : _get(o, 'trigger ' + n)),
+    targets: (o) => { const k = Object.keys(o).find((h) => h.includes('tp1') && h.includes('tp2')); return (k && o[k]) || _get(o, 'tp1'); },
+    stop: (o) => _get(o, 'stop', 'stp'),
+    safety: (o) => _get(o, 'safety'),
+    sourceType: (o) => _get(o, 'source type'),
+  };
+
+  /* ---------------- timestamps: Sheet times are America/New_York ---------------- */
+  const _etFmt = typeof Intl !== 'undefined' ? new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hourCycle: 'h23', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' }) : null;
+  function etOffsetMs(utcMs) { // wall-clock(ET) minus UTC, in ms (negative)
+    const p = {}; _etFmt.formatToParts(new Date(utcMs)).forEach((x) => { p[x.type] = x.value; });
+    const wall = Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour % 24, +p.minute, +p.second);
+    return wall - Math.floor(utcMs / 1000) * 1000;
+  }
+  function etWallToUtcMs(y, mo, d, h, mi, s) {
+    const guess = Date.UTC(y, mo - 1, d, h, mi, s);
+    let t = guess - etOffsetMs(guess); t = guess - etOffsetMs(t); return t;
+  }
+  function parseSheetTimestamp(str) {
+    const m = String(str || '').trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
+    if (!m) return { valid: false, utcMs: null, precision: null, iso: null };
+    const precision = m[4] === undefined ? 'date' : 'second';
+    const ms = etWallToUtcMs(+m[3], +m[1], +m[2], +(m[4] || 0), +(m[5] || 0), +(m[6] || 0));
+    return { valid: true, utcMs: ms, precision, iso: new Date(ms).toISOString() };
+  }
+
+  /* ---------------- row classification (same rules as the deployed board) ---------------- */
+  const isPC = (o) => { const s = F.sourceType(o); return s ? /price/i.test(s) : /^\s*price[- ]?check/i.test(F.headline(o)); };
+  const hasLevels = (o) => !!(F.trigger(o, 1) || F.trigger(o, 2) || F.trigger(o, 3) || F.targets(o) || F.stop(o) || F.safety(o));
+  function srcType(o) {
+    const s = (F.sourceType(o) || '').toLowerCase();
+    if (s.includes('chelsea')) return 'CHELSEA SETUP';
+    if (s.includes('admin')) return 'ADMIN STATUS';
+    if (s.includes('price')) return 'PRICE CHECK';
+    if (s) return 'OTHER / UNKNOWN';
+    if (isPC(o)) return 'PRICE CHECK';
+    if (!F.status(o)) return 'OTHER / UNKNOWN';
+    if (/reactivat|^\s*no update since|^\s*triggered\b|not a new call from chelsea/i.test(F.headline(o) + ' ' + F.warning(o))) return 'ADMIN STATUS';
+    return (hasLevels(o) || F.why(o)) ? 'CHELSEA SETUP' : 'ADMIN STATUS';
+  }
+  function statusClass(text) {
+    const s = String(text || '').toLowerCase();
+    if (/closed/.test(s)) return 'CLOSED';
+    if (/invalid/.test(s)) return 'INVALIDATED';
+    if (/no trade/.test(s)) return 'NO_TRADE';
+    if (/watch/.test(s)) return 'WATCHING';
+    if (/short/.test(s)) return 'ACTIVE_SHORT';
+    if (/active|long/.test(s)) return 'ACTIVE_LONG';
+    return 'UNKNOWN';
+  }
+
+  /* ---------------- number scanning ---------------- */
+  const TF = /^\s*(?:h|hr|hrs|hour|hours|m|min|d|w|r)\b/i; // timeframe / ratio suffix after a number (1H, 1 HR, 1.2R)
+  function scanNumbers(text) {
+    const out = []; const re = /\$?\s*(\d[\d,]*(?:\.\d+)?)/g; let m;
+    while ((m = re.exec(text))) {
+      const idx = m.index + m[0].lastIndexOf(m[1]); const end = idx + m[1].length;
+      const before = text[idx - 1]; const after = text.slice(end);
+      if (before && /[A-Za-z]/.test(before)) continue;      // TP1, H1 style tokens
+      if (TF.test(after)) continue;                          // 1H, 1 HR, 1.2R
+      out.push({ v: parseFloat(m[1].replace(/,/g, '')), idx, end, dollar: /\$/.test(m[0]) });
+    }
+    return out;
+  }
+  function zoneAt(nums, i, text) {
+    const a = nums[i], b = nums[i + 1];
+    if (b && /^\s*[–—-]\s*\$?\s*$/.test(text.slice(a.end, b.idx))) {
+      return { low: Math.min(a.v, b.v), high: Math.max(a.v, b.v), point: null, next: i + 2 };
+    }
+    return { low: a.v, high: a.v, point: a.v, next: i + 1 };
+  }
+  const firstZone = (text) => { const n = scanNumbers(text || ''); return n.length ? zoneAt(n, 0, text) : null; };
+
+  /* ---------------- level objects ---------------- */
+  function mkLevel(id, kind, label, zone, field, raw, state, extra) {
+    return Object.assign({
+      id, kind, label, zone: zone ? { low: zone.low, high: zone.high } : null, point: zone ? zone.point : null,
+      state, field, raw: raw || '', review: false, notes: [],
+    }, extra || {});
+  }
+
+  function parseTrigger(text, n) {
+    const out = { trigger: null, entry: null, dirHint: null };
+    const id = 'TRIGGER_' + n;
+    if (!text) { out.trigger = mkLevel(id, 'trigger', 'Trigger ' + n, null, 'Trigger ' + n, '', 'absent'); return out; }
+    // entry zone phrase (may live in any trigger field)
+    const em = text.match(/entry\s+zone\s+(?:approx\w*\s+)?/i);
+    if (em) {
+      const rest = text.slice(em.index + em[0].length); const nums = scanNumbers(rest);
+      if (nums.length && nums[0].idx <= 3) out.entry = mkLevel('ENTRY_ZONE', 'entry', 'Entry zone', zoneAt(nums, 0, rest), 'Trigger ' + n, text, 'present');
+    }
+    const startsEntry = /^\s*entry\s+zone/i.test(text);
+    const advisory = /^\s*(missed it|wait for|don'?t chase)/i.test(text);
+    if (startsEntry && out.entry) { out.trigger = null; return out; }
+    if (advisory) {
+      const has = scanNumbers(text).length > 0;
+      out.trigger = mkLevel(id, 'trigger', 'Trigger ' + n, null, 'Trigger ' + n, text, has ? 'ambiguous' : 'absent',
+        { notes: [has ? 'advisory text with an embedded number - not a level definition' : 'text only - no numeric level'], advisory: true });
+      return out;
+    }
+    // "open-and-hold above/below <price>" (number must be close behind the direction word)
+    const hm = text.match(/(?:open[\s-]+and[\s-]+hold|open[\s-]*&[\s-]*hold|\bhold)\s+(above|below)\b/i);
+    if (hm) {
+      out.dirHint = hm[1].toLowerCase() === 'above' ? 'long' : 'short';
+      const after = text.slice(hm.index + hm[0].length); const nums = scanNumbers(after.slice(0, 40));
+      if (nums.length) {
+        const z = zoneAt(nums, 0, after);
+        out.trigger = mkLevel(id, 'trigger', 'Trigger ' + n, z, 'Trigger ' + n, text, 'present', { hold: hm[1].toLowerCase() });
+        return out;
+      }
+    }
+    const nums = scanNumbers(text);
+    if (nums.length && nums[0].idx <= 3) {   // text starts with the price / zone
+      out.trigger = mkLevel(id, 'trigger', 'Trigger ' + n, zoneAt(nums, 0, text), 'Trigger ' + n, text, 'present');
+      return out;
+    }
+    if (nums.length) { out.trigger = mkLevel(id, 'trigger', 'Trigger ' + n, null, 'Trigger ' + n, text, 'ambiguous', { review: true, notes: ['numbers found inside prose; no level definition recognised'], candidates: nums.map((x) => x.v) }); return out; }
+    out.trigger = mkLevel(id, 'trigger', 'Trigger ' + n, null, 'Trigger ' + n, text, 'absent', { notes: ['text only - no numeric level'] });
+    return out;
+  }
+
+  function parseTargets(text) {
+    const res = { tps: [null, null, null], extended: null, state: 'absent', notes: [] };
+    if (!text) return res;
+    let t = text;
+    const pm = t.match(/\(\s*extended\s*([^)]*)\)/i);
+    if (pm) { res.extended = firstZone(pm[1]); t = t.replace(pm[0], ' '); }
+    const labelled = [...t.matchAll(/(TP\s*([123])|Extended|Ext\.?)\s*:\s*([^|]*)/gi)];
+    if (labelled.length) {
+      labelled.forEach((m) => { const z = firstZone(m[3]); if (m[2]) res.tps[+m[2] - 1] = z; else if (z) res.extended = z; });
+      res.state = 'present';
+    } else if (t.includes('/')) {
+      const segs = t.split('/').map((s) => s.trim()).filter(Boolean);
+      segs.slice(0, 3).forEach((s, i) => { res.tps[i] = firstZone(s); });
+      res.state = segs.length === 3 ? 'present' : 'ambiguous';
+      if (segs.length !== 3) res.notes.push('expected 3 targets, found ' + segs.length);
+    } else {
+      const nums = scanNumbers(t);
+      if (nums.length === 3 && /^\s*[–—-]\s*$/.test(t.slice(nums[0].end, nums[1].idx)) && /^\s*[–—-]\s*$/.test(t.slice(nums[1].end, nums[2].idx))) {
+        nums.forEach((n, i) => { res.tps[i] = { low: n.v, high: n.v, point: n.v }; }); res.state = 'present';
+      } else { res.state = nums.length ? 'ambiguous' : 'absent'; res.notes.push(nums.length ? 'target format not recognised' : 'no numeric targets'); }
+    }
+    return res;
+  }
+
+  function parseStop(text) {
+    if (!text) return mkLevel('STOP', 'stop', 'Stop', null, 'Stp', '', 'absent');
+    const nums = scanNumbers(text);
+    if (!nums.length) return mkLevel('STOP', 'stop', 'Stop', null, 'Stp', text, 'absent', { notes: ['text only - no numeric level'] });
+    let i = 0;
+    if (nums[0].idx > 3) { const d = nums.findIndex((n) => n.dollar); if (d >= 0) i = d; }
+    return mkLevel('STOP', 'stop', 'Stop', zoneAt(nums, i, text), 'Stp', text, 'present');
+  }
+
+  function parseSafety(text) {
+    if (!text) return mkLevel('SAFETY', 'safety', 'Safety net', null, 'Safety Net', '', 'absent');
+    const nums = scanNumbers(text); const dollars = nums.filter((n) => n.dollar);
+    const cands = dollars.length ? dollars : nums; const distinct = [...new Set(cands.map((c) => c.v))];
+    const core = /\b(core|hard)\b/i.test(text);
+    const id = core ? 'CORE_INVALIDATION' : 'SAFETY'; const kind = core ? 'core' : 'safety'; const label = core ? 'Core / hard invalidation' : 'Safety net / soft invalidation';
+    if (!distinct.length) return mkLevel(id, kind, label, null, 'Safety Net', text, 'absent', { notes: ['text only - no numeric level'] });
+    if (distinct.length > 1) return mkLevel(id, kind, label, null, 'Safety Net', text, 'ambiguous', { review: true, candidates: distinct, notes: ['several different numbers - level not chosen'] });
+    return mkLevel(id, kind, label, { low: distinct[0], high: distinct[0], point: distinct[0] }, 'Safety Net', text, 'present', { qualifier: text });
+  }
+
+  const mid = (l) => (l && l.zone ? (l.zone.low + l.zone.high) / 2 : null);
+  function inferDirection(row, levels, dirHints) {
+    const votes = { long: [], short: [] };
+    dirHints.forEach((h) => votes[h].push('trigger wording (open-and-hold above/below)'));
+    const head = F.headline(row), st = F.status(row);
+    if (/\bshort\b/i.test(head)) votes.short.push('headline'); if (/\blong\b/i.test(head)) votes.long.push('headline');
+    if (/short/i.test(st)) votes.short.push('status'); else if (/active long|\blong\b/i.test(st)) votes.long.push('status');
+    const trig = levels.find((l) => l.kind === 'trigger' && l.state === 'present'), tp1 = levels.find((l) => l.id === 'TP1' && l.state === 'present'), stop = levels.find((l) => l.id === 'STOP' && l.state === 'present');
+    if (trig && tp1) (mid(tp1) > mid(trig) ? votes.long : votes.short).push('target geometry');
+    else if (stop && tp1) (mid(tp1) > mid(stop) ? votes.long : votes.short).push('target vs stop geometry');
+    const L = votes.long.length, S = votes.short.length;
+    if (L >= 2 && S === 0) return { value: 'long', status: 'present', evidence: votes.long };
+    if (S >= 2 && L === 0) return { value: 'short', status: 'present', evidence: votes.short };
+    if (L && S) return { value: null, status: 'ambiguous', evidence: votes, notes: ['conflicting direction evidence'] };
+    return { value: null, status: (L + S) ? 'ambiguous' : 'absent', evidence: votes, notes: ['fewer than two agreeing direction sources'] };
+  }
+
+  /* near / far edges as price approaches the level in the direction of the trade */
+  function edges(level, direction) {
+    if (!level.zone) return null;
+    const { low, high } = level.zone; const d = direction;
+    if (level.kind === 'trigger') return d === 'long' ? { near: low, far: high, pre: 'below' } : { near: high, far: low, pre: 'above' };
+    if (level.kind === 'entry') return d === 'long' ? { near: low, far: high, pre: 'below' } : { near: high, far: low, pre: 'above' };
+    if (level.kind === 'tp' || level.kind === 'extended') return d === 'long' ? { near: low, far: high, pre: 'below' } : { near: high, far: low, pre: 'above' };
+    // stop / safety / core sit against the trade: long -> below entry (price falls into it)
+    return d === 'long' ? { near: high, far: low, pre: 'above' } : { near: low, far: high, pre: 'below' };
+  }
+
+  function extractLevels(row) {
+    const levels = []; const dirHints = []; const flags = [];
+    let entry = null;
+    for (let n = 1; n <= 3; n++) {
+      const r = parseTrigger(F.trigger(row, n), n);
+      if (r.trigger) levels.push(r.trigger);
+      if (r.dirHint) dirHints.push(r.dirHint);
+      if (r.entry && !entry) entry = r.entry; else if (r.entry && entry && (r.entry.zone.low !== entry.zone.low || r.entry.zone.high !== entry.zone.high)) { entry.state = 'ambiguous'; entry.review = true; entry.notes.push('conflicting entry zones'); }
+    }
+    levels.push(entry || mkLevel('ENTRY_ZONE', 'entry', 'Entry zone', null, 'Trigger 1-3', '', 'absent'));
+    const tg = parseTargets(F.targets(row));
+    for (let i = 0; i < 3; i++) {
+      const z = tg.tps[i];
+      levels.push(z ? mkLevel('TP' + (i + 1), 'tp', 'TP' + (i + 1), z, 'TP field', F.targets(row), 'present') : mkLevel('TP' + (i + 1), 'tp', 'TP' + (i + 1), null, 'TP field', F.targets(row), tg.state === 'ambiguous' ? 'ambiguous' : 'absent', { notes: tg.notes }));
+    }
+    levels.push(tg.extended ? mkLevel('EXTENDED', 'extended', 'Extended', tg.extended, 'TP field', F.targets(row), 'present') : mkLevel('EXTENDED', 'extended', 'Extended', null, 'TP field', '', 'absent'));
+    levels.push(parseStop(F.stop(row)));
+    const sf = parseSafety(F.safety(row)); levels.push(sf);
+    if (sf.id === 'SAFETY') levels.push(mkLevel('CORE_INVALIDATION', 'core', 'Core / hard invalidation', null, 'Safety Net', '', 'absent'));
+    else levels.push(mkLevel('SAFETY', 'safety', 'Safety net / soft invalidation', null, 'Safety Net', '', 'absent'));
+    const direction = inferDirection(row, levels, dirHints);
+    // free-text invalidation references (never monitored, always for human review)
+    const known = levels.filter((l) => l.zone).flatMap((l) => [l.zone.low, l.zone.high]);
+    const refs = [];
+    [['WHY', F.why(row)], ['Warning', F.warning(row)], ['Confidence', F.confidence(row)]].forEach(([field, text]) => {
+      (text || '').split(/(?<=[.!?])\s+|\n+/).forEach((sent) => {
+        if (!/invalidat|soft\s+invalid|hard\s+invalid|core\s+(?:structural\s+)?level|\bstop\b/i.test(sent)) return;
+        const nums = scanNumbers(sent).map((n) => n.v).filter((v) => !known.some((k) => Math.abs(k - v) < 1e-12));
+        if (nums.length) refs.push({ field, snippet: sent.trim().slice(0, 200), numbers: [...new Set(nums)] });
+      });
+    });
+    return { levels, direction, free_text_refs: refs, flags };
+  }
+
+  function levelFingerprint(ex) {
+    const parts = ex.levels.filter((l) => l.state === 'present' && l.zone).map((l) => l.id + ':' + l.zone.low + '-' + l.zone.high);
+    return hash((ex.direction.value || '?') + '|' + parts.join(','));
+  }
+
+  /* ---------------- per-asset selection (identical semantics to the repaired board) ---------------- */
+  function groupByAsset(rows) {
+    const m = {}; rows.forEach((r) => { const a = F.asset(r); if (a) (m[a] = m[a] || []).push(r); }); return m;
+  }
+  function sortRows(rows) {
+    return rows.slice().sort((a, b) => {
+      const ta = parseSheetTimestamp(F.timestamp(a)).utcMs, tb = parseSheetTimestamp(F.timestamp(b)).utcMs;
+      const x = ta === null ? -Infinity : ta, y = tb === null ? -Infinity : tb;
+      return x === y ? a.__i - b.__i : (x < y ? -1 : 1);
+    });
+  }
+  const tsInfo = (o) => { const p = parseSheetTimestamp(F.timestamp(o)); return { ts_text: F.timestamp(o), iso: p.iso, utcMs: p.utcMs, precision: p.precision }; };
+
+  function selectRows(assetRows) {
+    const rs = sortRows(assetRows);
+    const auth = rs.filter((o) => !isPC(o) && F.status(o));
+    const cur = auth[auth.length - 1] || rs[rs.length - 1];
+    const upto = rs.slice(0, rs.indexOf(cur) + 1).reverse().filter((o) => !isPC(o));
+    const S = upto.find((o) => srcType(o) === 'CHELSEA SETUP' && (hasLevels(o) || F.why(o))) || upto.find(hasLevels) || upto.find((o) => F.why(o)) || cur;
+    const lastPC = [...rs].reverse().find(isPC) || null;
+    return { rows: rs, cur, S, lastPC, carried: S !== cur };
+  }
+
+  function buildSetup(asset, assetRows) {
+    const sel = selectRows(assetRows);
+    const ex = extractLevels(sel.S);
+    const fp = levelFingerprint(ex);
+    // publication time = earliest non-price-check row carrying the identical level set
+    const same = sel.rows.filter((o) => !isPC(o) && hasLevels(o) && levelFingerprint(extractLevels(o)) === fp);
+    const pubRow = same[0] || sel.S;
+    const stClass = statusClass(F.status(sel.cur));
+    const flags = [];
+    const present = ex.levels.filter((l) => l.state === 'present' && l.zone).length;
+    if (!ex.levels.some((l) => l.kind === 'trigger' && l.state === 'present')) flags.push('NO_NUMERIC_TRIGGER');
+    if (ex.direction.status !== 'present') flags.push('DIRECTION_' + ex.direction.status.toUpperCase());
+    if (ex.levels.some((l) => l.review)) flags.push('AMBIGUOUS_LEVEL');
+    if (ex.free_text_refs.length) flags.push('FREE_TEXT_INVALIDATION_REFERENCE');
+    if (!present) flags.push('NO_MONITORABLE_LEVELS');
+    if (tsInfo(pubRow).precision === 'date') flags.push('PUBLICATION_DATE_ONLY');
+    // Row-identity data quality (T-01): the status/setup row shares its (timestamp, asset) key with another row, or its time cannot be read.
+    if (sel.cur.__idn > 1 || sel.S.__idn > 1) flags.push('DUPLICATE_ROW_IDENTITY');
+    if (tsInfo(sel.cur).utcMs === null || tsInfo(sel.S).utcMs === null) flags.push('UNPARSEABLE_ROW_TIMESTAMP');
+    return {
+      asset,
+      status: { text: F.status(sel.cur), class: stClass, row_ref: rowRef(sel.cur), row_id: rowId(sel.cur), source_type: srcType(sel.cur), ...tsInfo(sel.cur) },
+      setup_row: { row_ref: rowRef(sel.S), row_id: rowId(sel.S), source_type: srcType(sel.S), ...tsInfo(sel.S) },
+      carried: sel.carried,
+      publication: { row_ref: rowRef(pubRow), row_id: rowId(pubRow), rows_with_same_levels: same.map(rowRef), ...tsInfo(pubRow) },
+      direction: ex.direction,
+      levels: ex.levels,
+      free_text_refs: ex.free_text_refs,
+      fingerprint: fp,
+      last_price_check: sel.lastPC ? { row_ref: rowRef(sel.lastPC), ...tsInfo(sel.lastPC), headline: F.headline(sel.lastPC) } : null,
+      row_counts: sel.rows.reduce((a, o) => { const t = srcType(o); a[t] = (a[t] || 0) + 1; a.total++; return a; }, { total: 0 }),
+      history_row_refs: sel.rows.map(rowRef),
+      data_quality_flags: flags,
+      reasoning_reference: { asset, setup_row: rowRef(sel.S), setup_timestamp: F.timestamp(sel.S), board: 'sheet.html?asset=' + asset },
+    };
+  }
+
+  function buildAll(csvText) {
+    const rows = loadRows(csvText); const by = groupByAsset(rows); const out = {};
+    Object.keys(by).sort().forEach((a) => { out[a] = buildSetup(a, by[a]); });
+    return out;
+  }
+
+  return {
+    hash, parseCSV, loadRows, rowRef, rowId, F, srcType, isPC, hasLevels, statusClass,
+    parseSheetTimestamp, scanNumbers, firstZone, parseTrigger, parseTargets, parseStop, parseSafety,
+    extractLevels, levelFingerprint, edges, groupByAsset, selectRows, buildSetup, buildAll,
+  };
+});
+
+</script>
+<script id="att-module">
+/*
+ * LevelUp board — trigger-proximity ("LIVE ATTENTION") logic.  STAGING.
+ *
+ * This module does NOT define trigger distance itself. It re-uses:
+ *   - LevelUpCore.buildAll / LevelUpCore.edges  (the shared parser the monitor uses; parity-tested against the deployed board)
+ *   - the monitor's attention-band definitions from monitor/engine.js (BAND_NAMES, bandOrd, sidePre, distTo, and the
+ *     "nearest not-yet-passed trigger, distance to its NEAR edge, 0 when inside the zone" rule).
+ * The five one-line helpers below are byte-for-byte the engine's; test/attention.parity.test.js fails if they ever diverge
+ * (it runs the real engine on every asset over a grid of prices and compares distance, band and inside/passed state).
+ *
+ * Scope: mechanical price proximity to Chelsea's PUBLISHED trigger zone. It never says entered/triggered/valid and never
+ * changes a status. Chelsea's confirmation rules (1H hold, MAs, retest) are not evaluated here.
+ */
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) module.exports = factory(require(process.env.LEVELUP_CORE || '../../LevelUp_Monitor_Rebuild/core/levelup-core.js'));
+  else root.LevelUpAttention = factory(root.LevelUpCore);
+})(typeof self !== 'undefined' ? self : this, function (C) {
+  'use strict';
+
+  /* ---- IDENTICAL to monitor/engine.js (lines 18, 19, 52, 53) ---- */
+  const BAND_NAMES = ['NORMAL', 'ATTENTION', 'MORE NOTICEABLE', 'HIGH', 'MAXIMUM'];
+  const bandOrd = (d) => (d == null || !isFinite(d) ? null : d <= 0.5 ? 4 : d <= 1 ? 3 : d <= 2 ? 2 : d <= 3 ? 1 : 0);
+  const sidePre = (p, e) => (e.pre === 'below' ? (p < e.near ? 'pre' : p <= e.far ? 'inside' : 'beyond') : (p > e.near ? 'pre' : p >= e.far ? 'inside' : 'beyond'));
+  const distTo = (p, edge) => Math.abs(p - edge) / edge * 100;
+
+  /* Which statuses get a trigger-proximity card. The engine computes TRIGGER bands for WATCHING and NO_TRADE; the board
+     shows students only WATCHING (a No Trade card is not actionable). Pass {includeNoTrade:true} to mirror the engine exactly. */
+  function applicable(setup, opts) {
+    const o = opts || {};
+    const dir = setup.direction && setup.direction.value;
+    const st = setup.status && setup.status.class;
+    if (!dir) return false;
+    return st === 'WATCHING' || (!!o.includeNoTrade && st === 'NO_TRADE');
+  }
+
+  /* Returns one of:
+       {state:'NA'}                                    not a watching setup / no direction / no numeric trigger
+       {state:'NOPRICE'}                               price unavailable
+       {state:'APPROACHING', distance_pct, band, band_ord, level_id, near_edge, far_edge, direction}
+       {state:'INSIDE',      distance_pct:0, band:'MAXIMUM', band_ord:4, ...}
+       {state:'PASSED', ...}                           price is beyond EVERY published trigger zone (engine: bands.TRIGGER = null)  */
+  function triggerProximity(setup, price, opts) {
+    if (!applicable(setup, opts)) return { state: 'NA' };
+    const dir = setup.direction.value;
+    const trig = setup.levels.filter((l) => l.kind === 'trigger' && l.state === 'present' && l.zone);
+    if (!trig.length) return { state: 'NA' };
+    if (price == null || !isFinite(price) || price <= 0) return { state: 'NOPRICE', direction: dir, triggers: trig.map((l) => ({ id: l.id, zone: l.zone })) };
+    let best = null;
+    for (const level of trig) {
+      const ed = C.edges(level, dir); const s = sidePre(price, ed);
+      if (s === 'beyond') continue;
+      const d = s === 'inside' ? 0 : distTo(price, ed.near);
+      if (!best || d < best.dist) best = { level, ed, dist: d, inside: s === 'inside' };
+    }
+    if (!best) {
+      const l = trig[trig.length - 1]; const ed = C.edges(l, dir);
+      return { state: 'PASSED', direction: dir, level_id: l.id, near_edge: ed.near, far_edge: ed.far, zone: l.zone, past_pct: distTo(price, ed.far) };
+    }
+    const ord = bandOrd(best.dist);
+    return { state: best.inside ? 'INSIDE' : 'APPROACHING', distance_pct: best.dist, band: BAND_NAMES[ord], band_ord: ord, level_id: best.level.id, near_edge: best.ed.near, far_edge: best.ed.far, zone: best.level.zone, direction: dir, inside: best.inside };
+  }
+
+  /* Ordering for the LIVE ATTENTION list: inside the zone first, then ascending % distance, then "past the zone",
+     then no-price. Ties broken alphabetically. */
+  const RANK = { INSIDE: 0, APPROACHING: 1, PASSED: 2, NOPRICE: 3, NA: 4 };
+  function sortAttention(items) {
+    return items.slice().sort((a, b) => (RANK[a.prox.state] - RANK[b.prox.state])
+      || ((a.prox.distance_pct || 0) - (b.prox.distance_pct || 0))
+      || ((a.prox.past_pct || 0) - (b.prox.past_pct || 0))
+      || String(a.asset).localeCompare(String(b.asset)));
+  }
+
+  /* Display: one decimal, never rounds a non-zero distance down to "0.0". */
+  function fmtPct(d) {
+    if (d == null || !isFinite(d)) return '–';
+    if (d === 0) return '0.0';
+    if (d < 0.1) return '<0.1';
+    return d.toFixed(1);
+  }
+  function fmtPrice(p) {
+    if (p == null || !isFinite(p)) return '–';
+    const a = Math.abs(p);
+    if (a >= 1000) return p.toLocaleString('en-US', { maximumFractionDigits: 2 });
+    if (a >= 1) return p.toFixed(a >= 100 ? 2 : 3);
+    if (a >= 0.01) return p.toFixed(4);
+    return p.toPrecision(3);
+  }
+  const zoneText = (z) => (z ? (z.low === z.high ? fmtPrice(z.low) : fmtPrice(z.low) + '–' + fmtPrice(z.high)) : '–');
+
+  /* ACTIVE NOW: the authority is the Sheet's CURRENT ADMINISTRATIVE STATUS (core statusClass of the newest status row — the same
+     value the board banner uses). Nothing about trade state is recalculated or inferred from price. */
+  function activeNow(setups) {
+    const out = [];
+    Object.keys(setups).sort().forEach((a) => {
+      const s = setups[a]; const cls = s.status && s.status.class;
+      if (cls === 'ACTIVE_LONG' || cls === 'ACTIVE_SHORT') out.push({ asset: a, cls, side: cls === 'ACTIVE_LONG' ? 'long' : 'short', label: cls === 'ACTIVE_LONG' ? 'ACTIVE LONG' : 'ACTIVE SHORT', status_text: s.status.text, status_iso: s.status.iso || null, setup: s });
+    });
+    return out;
+  }
+  const triggeredLabel = (cls) => 'TRIGGERED — ' + (cls === 'ACTIVE_SHORT' ? 'ACTIVE SHORT' : 'ACTIVE LONG');
+
+  /* Visual tier from the engine band (0..4) — presentation only. */
+  function tier(prox) {
+    if (prox.state === 'INSIDE') return 4;
+    if (prox.state === 'APPROACHING') return prox.band_ord;
+    return -1;
+  }
+
+  /* ---- prices (browser): Binance public batch (the monitor's primary), per-symbol retry, Coinbase per-asset fallback
+         (the monitor's confirmation source). No CoinGecko, no keys. ---- */
+  async function fetchPrices(assets, fetchFn, symbolOverrides) {
+    const g = typeof self !== 'undefined' ? self : globalThis;
+    const f = fetchFn || (typeof g.fetch === 'function' ? g.fetch.bind(g) : null);
+    if (!f) return { prices: {}, sources: {}, at: 0 };
+    const ov = symbolOverrides || {};
+    const out = {}; const src = {};
+    const sym = (a) => (ov[a] && ov[a].binance) || (a + 'USDT');
+    try {
+      const url = 'https://data-api.binance.vision/api/v3/ticker/price?symbols=' + encodeURIComponent(JSON.stringify(assets.map(sym)));
+      const r = await f(url); if (r.ok) { const j = await r.json(); const m = {}; j.forEach((x) => { m[x.symbol] = parseFloat(x.price); }); assets.forEach((a) => { const p = m[sym(a)]; if (p > 0) { out[a] = p; src[a] = 'binance'; } }); }
+    } catch (e) { /* fall through to per-asset */ }
+    for (const a of assets) {
+      if (out[a]) continue;
+      try { const r = await f('https://data-api.binance.vision/api/v3/ticker/price?symbol=' + sym(a)); if (r.ok) { const p = parseFloat((await r.json()).price); if (p > 0) { out[a] = p; src[a] = 'binance'; continue; } } } catch (e) { /* next */ }
+      try { const cb = (ov[a] && ov[a].coinbase) || (a + '-USD'); const r = await f('https://api.exchange.coinbase.com/products/' + cb + '/ticker'); if (r.ok) { const p = parseFloat((await r.json()).price); if (p > 0) { out[a] = p; src[a] = 'coinbase'; } } } catch (e) { /* unavailable */ }
+    }
+    return { prices: out, sources: src, at: Date.now() };
+  }
+
+  return { BAND_NAMES, bandOrd, sidePre, distTo, applicable, triggerProximity, sortAttention, fmtPct, fmtPrice, zoneText, tier, fetchPrices, RANK, activeNow, triggeredLabel };
+});
+
+</script>
+<script id="att-ui">
+/* LIVE ATTENTION — landing page addon (STAGING). Appended after the existing page script; the baseline code is untouched.
+   Reads the same Google Sheet CSV, computes trigger proximity with the shared core + the monitor's band definitions
+   (LevelUpAttention, parity-tested), and never writes anything. Any failure leaves the original page exactly as it was. */
+(function () {
+  'use strict';
+  try {
+    var A = window.LevelUpAttention, C = window.LevelUpCore;
+    if (!A || !C) return;
+    var CSV = (typeof SHEET_CSV !== 'undefined' && SHEET_CSV) || '';
+    var grid = document.getElementById('grid');
+    if (!CSV || !grid) return;
+    var PRICE_MS = 30000, SHEET_MS = 60000, STALE_MS = 150000;
+    var opts = { includeNoTrade: !!window.LEVELUP_ATTENTION_INCLUDE_NO_TRADE };   // default: Watching only (No Trade is not actionable)
+    var setups = null, ps = { prices: {}, sources: {}, at: 0 }, sheetErr = false;
+    var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+    var etTime = function (ms) { return new Date(ms).toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: '2-digit', second: '2-digit' }) + ' ET'; };
+    var srcName = { binance: 'Binance', coinbase: 'Coinbase' };
+
+    var sec = document.createElement('section');
+    sec.className = 'att'; sec.id = 'attention'; sec.hidden = true; sec.setAttribute('aria-label', 'Live attention: setups ranked by distance to trigger');
+    grid.parentNode.insertBefore(sec, grid);
+    var secA = document.createElement('section');
+    secA.className = 'att act'; secA.id = 'active-now'; secA.hidden = true; secA.setAttribute('aria-label', 'Active now: setups whose current status is Active Long or Active Short');
+    grid.parentNode.insertBefore(secA, grid);
+
+    function view() {
+      if (!setups) return null;
+      var fresh = !!ps.at && (Date.now() - ps.at) < STALE_MS && Object.keys(ps.prices).length > 0;
+      var items = [];
+      Object.keys(setups).forEach(function (a) {
+        var s = setups[a]; if (!A.applicable(s, opts)) return;
+        var price = fresh ? ps.prices[a] : null;
+        var prox = A.triggerProximity(s, price, opts);
+        if (prox.state === 'NA') return;
+        items.push({ asset: a, setup: s, price: price, prox: prox });
+      });
+      return { fresh: fresh, items: A.sortAttention(items) };
+    }
+
+    function tagFor(p) { return p.state === 'INSIDE' ? 'Trigger zone' : (p.band_ord >= 1 ? p.band : ''); }
+    function cardHtml(it) {
+      var p = it.prox, t = A.tier(p), dir = p.direction === 'short' ? '▼ SHORT' : '▲ LONG', gauge = Math.max(0, Math.min(100, 100 - p.distance_pct * 20));
+      var tag = tagFor(p);
+      return '<a class="att-card tier-' + t + '" href="sheet.html?asset=' + encodeURIComponent(it.asset) + '" data-asset="' + esc(it.asset) + '" data-tier="' + t + '" data-pct="' + p.distance_pct.toFixed(4) + '">' +
+        '<div class="att-top"><span class="att-asset">' + esc(it.asset) + '</span><span class="att-dir">Watching · ' + dir + '</span></div>' +
+        '<div class="att-pct"><b>' + A.fmtPct(p.distance_pct) + '%</b><span>to trigger</span></div>' +
+        (tag ? '<span class="att-tag">' + esc(tag) + '</span>' : '') +
+        '<div class="att-bar" aria-hidden="true"><i style="width:' + gauge.toFixed(0) + '%"></i></div>' +
+        '<div class="att-meta">LIVE $' + A.fmtPrice(it.price) + ' <span title="market price, not a Chelsea level">(' + (srcName[ps.sources[it.asset]] || 'live') + ')</span><br>Chelsea trigger $' + A.zoneText(p.zone) + '</div></a>';
+    }
+    function pastHtml(it) {
+      return '<a class="att-past-chip" href="sheet.html?asset=' + encodeURIComponent(it.asset) + '" data-asset="' + esc(it.asset) + '"><b>' + esc(it.asset) + '</b> price past Chelsea’s trigger zone · live $' + A.fmtPrice(it.price) + ' · zone $' + A.zoneText(it.prox.zone) + '</a>';
+    }
+    function tapeHtml(list) {
+      var one = list.map(function (it) { var p = it.prox; return '<a class="att-tape-item tier-' + A.tier(p) + '" href="sheet.html?asset=' + encodeURIComponent(it.asset) + '"><b>' + esc(it.asset) + '</b><span class="p">' + A.fmtPct(p.distance_pct) + '%</span> to trigger</a>'; }).join('');
+      return '<div class="att-tape" role="marquee" aria-label="Setups closest to trigger"><div class="att-tape-track">' + one + '<span aria-hidden="true" style="display:contents">' + one + '</span></div></div>';
+    }
+
+    function render() {
+      var v = view();
+      if (!v) { sec.hidden = true; return; }
+      var near = v.items.filter(function (i) { return i.prox.state === 'APPROACHING' || i.prox.state === 'INSIDE'; });
+      var past = v.items.filter(function (i) { return i.prox.state === 'PASSED'; });
+      var noPx = v.items.filter(function (i) { return i.prox.state === 'NOPRICE'; });
+      if (!v.items.length) { sec.hidden = true; decorate(v); return; }
+      sec.hidden = false;
+      var head = '<div class="att-head"><div class="att-title">Live <em>attention</em></div><div class="att-live" aria-live="polite"><span class="att-dot' + (v.fresh ? '' : ' off') + '"></span>' + (v.fresh ? 'prices updated ' + etTime(ps.at) : 'live prices unavailable — distances hidden') + '</div></div>' +
+        '<div class="att-note">Watching setups, closest to Chelsea’s published trigger first. <b>% to trigger</b> is the gap between the live price and the nearest edge of the published trigger zone — the same calculation and 3% / 2% / 1% / 0.5% bands the price monitor uses. It is a distance to a price level only: not a signal, not trade quality or probability. Chelsea’s confirmation rules still decide.</div>';
+      var body = '';
+      if (near.length) body += (near.length > 1 ? tapeHtml(near.slice(0, 10)) : '') + '<div class="att-grid">' + near.map(cardHtml).join('') + '</div>';
+      else if (v.fresh) body += '<div class="att-empty">No watching setup is currently below its trigger zone.</div>';
+      if (past.length) body += '<div class="att-sub">Price already past the trigger zone (mechanical observation — see each setup)</div><div class="att-past">' + past.map(pastHtml).join('') + '</div>';
+      if (noPx.length && !v.fresh) body += '<div class="att-empty">Waiting for live prices for: ' + noPx.map(function (i) { return esc(i.asset); }).join(', ') + '</div>';
+      sec.innerHTML = head + body;
+      decorate(v);
+    }
+
+    /* the same chip on the existing status cards (grid is re-rendered by the page every 60s, so we re-apply) */
+    var obs = new MutationObserver(function () { decorate(view()); });
+    function decorate(v) {
+      obs.disconnect();
+      try {
+        var byAsset = {}; if (v) v.items.forEach(function (i) { byAsset[i.asset] = i; });
+        Array.prototype.forEach.call(grid.querySelectorAll('a.card'), function (c) {
+          var m = /[?&]asset=([^&]+)/.exec(c.getAttribute('href') || ''); if (!m) return; var a = decodeURIComponent(m[1]).toUpperCase();
+          var old = c.querySelector('.att-chip'); if (old) old.remove();
+          var it = byAsset[a]; if (!it) return;
+          var p = it.prox, html = '';
+          if (p.state === 'APPROACHING' || p.state === 'INSIDE') html = '<div class="att-chip tier-' + A.tier(p) + '"><b>' + A.fmtPct(p.distance_pct) + '%</b><span>to trigger</span><small>live $' + A.fmtPrice(it.price) + '</small></div>';
+          else if (p.state === 'PASSED') html = '<div class="att-chip passed"><span>price past trigger zone</span><small>live $' + A.fmtPrice(it.price) + '</small></div>';
+          if (!html) return;
+          var pill = c.querySelector('.pill'); var d = document.createElement('div'); d.innerHTML = html;
+          if (pill && pill.parentNode) pill.parentNode.insertBefore(d.firstChild, pill.nextSibling);
+        });
+      } catch (e) { /* never break the page */ }
+      obs.observe(grid, { childList: true });
+    }
+
+    /* ACTIVE NOW — status-driven (the Sheet's current administrative status); prices are shown only as context and never decide anything */
+    function etStamp(iso) { if (!iso) return ''; var d = new Date(iso); return isNaN(d) ? '' : d.toLocaleString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) + ' ET'; }
+    function renderActive() {
+      if (!setups) { secA.hidden = true; return; }
+      var list = A.activeNow(setups);
+      if (!list.length) { secA.hidden = true; return; }
+      var fresh = !!ps.at && (Date.now() - ps.at) < STALE_MS;
+      secA.hidden = false;
+      secA.innerHTML = '<div class="att-head"><div class="att-title">Active <em class="act-em">now</em></div></div>' +
+        '<div class="att-note">Setups whose current status in the Sheet is <b>Active Long</b> or <b>Active Short</b>. This is a status label from the published record — not a recommendation and not a new entry.</div>' +
+        '<div class="att-grid act-grid">' + list.map(function (it) {
+          var px = fresh ? ps.prices[it.asset] : null;
+          return '<a class="act-card side-' + it.side + '" href="sheet.html?asset=' + encodeURIComponent(it.asset) + '" data-asset="' + esc(it.asset) + '" data-side="' + it.side + '">' +
+            '<div class="att-top"><span class="att-asset">' + esc(it.asset) + '</span></div>' +
+            '<div class="act-status">' + esc(it.label) + '</div><span class="act-tag">Triggered</span>' +
+            '<div class="att-meta">' + (px ? 'LIVE $' + A.fmtPrice(px) + ' (' + (srcName[ps.sources[it.asset]] || 'live') + ')<br>' : '') + (it.status_iso ? 'status set ' + esc(etStamp(it.status_iso)) : '') + '</div></a>';
+        }).join('') + '</div>';
+    }
+
+    function loadSheet() {
+      return fetch(CSV + (CSV.indexOf('?') > -1 ? '&' : '?') + 't=' + Date.now()).then(function (r) { return r.text(); }).then(function (t) { setups = C.buildAll(t); sheetErr = false; renderActive(); }).catch(function () { sheetErr = true; });
+    }
+    function loadPrices() {
+      if (!setups) return Promise.resolve();
+      var assets = Object.keys(setups).filter(function (a) { return A.applicable(setups[a], opts) && A.triggerProximity(setups[a], 1, opts).state !== 'NA'; });
+      A.activeNow(setups).forEach(function (it) { if (assets.indexOf(it.asset) < 0) assets.push(it.asset); });   // active assets: price is context only
+      if (!assets.length) { render(); return Promise.resolve(); }
+      return A.fetchPrices(assets).then(function (r) { if (Object.keys(r.prices).length) ps = r; render(); renderActive(); }).catch(function () { render(); renderActive(); });
+    }
+    loadSheet().then(loadPrices);
+    setInterval(function () { loadSheet().then(loadPrices); }, SHEET_MS);
+    setInterval(loadPrices, PRICE_MS);
+    setInterval(function () { render(); renderActive(); }, 15000);      // re-evaluate staleness even if a fetch hangs
+    obs.observe(grid, { childList: true });
+    window.__attention = { render: render, view: view, state: function () { return { setups: setups, ps: ps }; } };   // test hook (read-only)
+  } catch (e) { if (window.console) console.warn('attention addon disabled:', e); }
+})();
+
+</script>
+</body></html>
