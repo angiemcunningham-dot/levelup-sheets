@@ -200,7 +200,17 @@ const get=(o,...keys)=>{
   return _get(o,...keys);};
 const num=s=>{const m=String(s).replace(/,/g,"").match(/\d+(\.\d+)?/);return m?parseFloat(m[0]):null;};
 const numTrigger=s=>{const clean=String(s).replace(/,/g,"");const dollar=clean.match(/\$\s*(\d+(\.\d+)?)/);if(dollar)return parseFloat(dollar[1]);return num(clean);};
-const fmt=p=>p==null?"—":"$"+p.toFixed(p>=100?2:p>=1?3:p>=0.01?4:6);
+/* Low-price precision fix (2026-09-23): below $0.01, a fixed decimal count collapsed distinct published
+   levels into the same string (e.g. SHIB's 0.0000057 and 0.00000575 both showed as "$0.000006"). This
+   shows the exact zero-count + significant digits instead (standard exchange convention, e.g.
+   $0.0₄675 = 0.0000675), never rounding away a digit that makes one level distinguishable from another.
+   Presentation only - the raw number (data-p on each row, and every calculation) is untouched. Values
+   >= $0.01 are formatted exactly as before. Does not touch fmtPrice() (the separate LIVE ATTENTION
+   formatter) - that is a known, separate follow-up, not part of this fix. */
+const SUBSCRIPTS="₀₁₂₃₄₅₆₇₈₉";
+const toSubscript=n=>String(n).split("").map(d=>SUBSCRIPTS[+d]).join("");
+function splitLowPrice(p){const s=p.toFixed(18).replace(/0+$/,"").replace(/\.$/,"");const m=s.match(/^0\.(0*)([1-9]\d*)$/);return m?{zeros:m[1].length,sig:m[2]}:null;}
+const fmt=p=>{if(p==null)return"—";if(p>=0.01)return"$"+p.toFixed(p>=100?2:p>=1?3:4);const sp=splitLowPrice(p);if(!sp)return"$"+p.toFixed(6);return sp.zeros<=3?"$0."+"0".repeat(sp.zeros)+sp.sig:"$0.0"+toSubscript(sp.zeros-1)+sp.sig;};
 const cleanHeadline=(a,h)=>{const esc_a=String(a).replace(/[.*+?^${}()|[\]\\]/g,"\\$&");const re=new RegExp("^\\s*"+esc_a+"\\s*[—–\\-:]*\\s*","i");return String(h||"").replace(re,"").trim();};
 const esc=s=>String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
 const stamp=s=>{const d=new Date(s);return isNaN(d)?s:d.toLocaleString("en-US",{timeZone:"America/New_York",month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"})+" EST";};
