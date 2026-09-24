@@ -876,4 +876,89 @@ load();setInterval(load,60000);
 })();
 
 </script>
+<style id="mech-css">
+/* MECHANICAL FEED (staging addon) - durable trigger/TP/stop facts computed from real market candles by the monitor,
+   published separately from the Sheet. Purely additive: the Sheet stays the only authority for setup + status text. */
+.mech-row{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 2px}
+.mech-tick{font-family:"JetBrains Mono",monospace;font-size:10px;font-weight:700;letter-spacing:.04em;padding:3px 8px;border-radius:999px;border:1.5px solid var(--gray2);color:var(--gray)}
+.mech-tick.on{border-color:var(--green);color:var(--green-d);background:rgba(34,197,94,.08)}
+.mech-tick.stop{border-color:var(--red);color:var(--red-d);background:rgba(239,68,68,.08)}
+.mech-tick.complete{border-color:var(--pink);color:var(--pink);background:rgba(250,3,152,.06)}
+.mech-note{font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--gray2);margin:4px 0 0}
+</style>
+<script id="mech-feed">
+/* MECHANICAL FEED (staging addon). Reads the published monitor feed - durable trigger/TP/stop facts computed from
+   real market candles, independent of the Sheet's Status column - and overlays a small ticks row on each card.
+   Additive only: never touches cardHtml()/load(), never replaces the Sheet-driven pill/status text. Any failure
+   (feed missing, malformed, unreachable) leaves the existing Sheet-driven board exactly as it renders today. */
+(function () {
+  'use strict';
+  try {
+    var FEED_URL = 'monitor-feed.json';
+    var STALE_MS = 45 * 60000; // 45 min - mechanical facts change far less often than price
+    var feed = null;
+
+    function fmtAgo(iso) {
+      var ms = Date.parse(iso); if (isNaN(ms)) return '';
+      var mins = Math.round((Date.now() - ms) / 60000);
+      if (mins < 1) return 'just now'; if (mins < 60) return mins + 'm ago'; return Math.round(mins / 60) + 'h ago';
+    }
+    function fetchFeed() {
+      return fetch(FEED_URL + '?t=' + Date.now()).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(function (j) { if (!j || j.kind !== 'levelup-public-feed' || !j.assets || !j.receipts) throw new Error('malformed feed'); return j; })
+        .catch(function () { return null; });
+    }
+    /* Prefer the asset's LIVE lifecycle; if it's no longer monitorable (e.g. Sheet status moved to Closed) fall
+       back to its most recent terminal receipt so a completed setup's facts remain visible after closure. */
+    function mechanicalFor(asset) {
+      if (!feed) return null;
+      var a = feed.assets[asset]; var lc = a && a.lifecycle;
+      if (!lc) { var r = (feed.receipts || []).filter(function (x) { return x.asset === asset; })[0]; lc = r ? r.lifecycle : null; }
+      if (!lc) return null;
+      var triggered = !!(lc.trigger && lc.trigger.reached_at);
+      if (!triggered) return null;   // never show TP/stop ticks ahead of a confirmed closed-candle trigger
+      var tp = (lc.targets || []).filter(function (t) { return /^TP[0-9]+$/.test(t.level_id); })
+        .sort(function (x, y) { return x.level_id.localeCompare(y.level_id, undefined, { numeric: true }); })
+        .map(function (t) { return !!t.reached_at; });
+      return { triggered: true, tp: tp, stopped: lc.state === 'STOP_BOUNDARY_REACHED', complete: lc.state === 'OBJECTIVES_EXHAUSTED' };
+    }
+    function badgeHtml(m) {
+      if (!m) return '';
+      var parts = ['<span class="mech-tick on">&#10003; TRIGGERED</span>'];
+      m.tp.forEach(function (hit, i) { parts.push('<span class="mech-tick' + (hit ? ' on' : '') + '">' + (hit ? '&#10003;' : '&#9675;') + ' TP' + (i + 1) + '</span>'); });
+      if (m.stopped) parts.push('<span class="mech-tick stop">&#9632; STOPPED</span>');
+      else if (m.complete) parts.push('<span class="mech-tick complete">&#10003; COMPLETE</span>');
+      return '<div class="mech-row" title="Mechanical observation of Chelsea’s published levels - not a signal, not the Sheet status">' + parts.join('') + '</div>';
+    }
+    function decorate() {
+      obs.disconnect();
+      try {
+        Array.prototype.forEach.call(document.querySelectorAll('a.card'), function (c) {
+          var m = /[?&]asset=([^&]+)/.exec(c.getAttribute('href') || ''); if (!m) return;
+          var asset = decodeURIComponent(m[1]).toUpperCase();
+          var old = c.querySelector('.mech-row'); if (old) old.remove();
+          var html = badgeHtml(mechanicalFor(asset)); if (!html) return;
+          var d = document.createElement('div'); d.innerHTML = html;
+          var pill = c.querySelector('.pill');
+          if (pill && pill.parentNode) pill.parentNode.insertBefore(d.firstChild, pill.nextSibling);
+        });
+        var note = feed ? ('Mechanical feed updated ' + fmtAgo(feed.generated_at) + ((Date.now() - Date.parse(feed.generated_at)) > STALE_MS ? ' (may be stale)' : '')) : '';
+        var head = document.querySelector('.section-head');
+        var n = document.getElementById('mech-note');
+        if (note && head) { if (!n) { n = document.createElement('div'); n.id = 'mech-note'; n.className = 'mech-note'; head.parentNode.insertBefore(n, head.nextSibling); } n.textContent = note; }
+        else if (n) n.remove();
+      } catch (e) { /* never break the page */ }
+      grid.parentNode && obs.observe(grid.parentNode, { childList: true, subtree: true });
+    }
+    var grid = document.getElementById('grid');
+    if (!grid) return;
+    var obs = new MutationObserver(decorate);
+    function load() { return fetchFeed().then(function (f) { feed = f; decorate(); }); }
+    load();
+    setInterval(load, 60000);
+    obs.observe(grid.parentNode, { childList: true, subtree: true });
+    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, decorate: decorate };   // test hook (read-only)
+  } catch (e) { if (window.console) console.warn('mechanical feed addon disabled:', e); }
+})();
+</script>
 </body></html>
