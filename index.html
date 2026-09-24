@@ -31,6 +31,16 @@ a.card.is-live.is-short{border-color:var(--red)}
 .foot{margin-top:34px;padding-top:18px;border-top:2px solid var(--pink-line);text-align:center}.f1{font-family:Archivo;font-weight:800;font-size:13px;letter-spacing:.18em;color:var(--pink);text-transform:uppercase}.f2{font-size:11.5px;color:var(--gray);margin-top:8px;line-height:1.6}
 .empty{padding:40px;text-align:center;color:var(--gray)}
 @media(max-width:640px){.inner{padding:30px 18px 24px}}
+.section-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-top:32px;margin-bottom:2px}
+.section-title{font-family:Archivo;font-weight:900;font-size:22px;letter-spacing:.03em;text-transform:uppercase}
+.section-title em{font-style:normal;color:var(--pink)}
+.section-sub{font-size:11px;color:var(--gray);font-family:"JetBrains Mono"}
+.hist-toggle{margin-top:34px;border:2px solid var(--pink-line);border-radius:14px;overflow:hidden}
+.hist-toggle>summary{cursor:pointer;list-style:none;padding:14px 18px;font-family:Archivo;font-weight:800;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gray);display:flex;align-items:center;justify-content:space-between;background:#F8F8FA}
+.hist-toggle>summary::-webkit-details-marker{display:none}
+.hist-toggle>summary::after{content:"View \25BE";font-family:Inter;letter-spacing:0;font-weight:700;color:var(--pink)}
+.hist-toggle[open]>summary::after{content:"Hide \25B4"}
+.hist-toggle .grid{padding:16px 18px 18px;margin-top:0}
 </style><style id="att-css">
 /* ===== LIVE ATTENTION (staging addon) — presentation only; tiers map 1:1 to the monitor's attention bands ===== */
 .att{margin-top:30px}
@@ -128,7 +138,9 @@ a.act-card.side-short:hover{box-shadow:0 10px 26px rgba(185,28,28,.18)}
 <body><div class="sheet"><div class="inner">
 <div class="kicker">LEVEL UP CRYPTO</div><h1>LIVE <em>SETUPS</em></h1><div class="rule"></div>
 <div class="sub">One link per asset. Every read Chelsea makes lands here, with the history and the lesson when it's done.<br>Levels are structure, not instructions. Not financial advice.</div>
+<div class="section-head"><div class="section-title">Today's <em>Setups</em></div><div class="section-sub" id="today-sub"></div></div>
 <div class="grid" id="grid"><div class="empty">Loading…</div></div>
+<details class="hist-toggle" id="hist-wrap"><summary>Previous Calls / History<span id="hist-count"></span></summary><div class="grid" id="grid-history"></div></details>
 <div class="foot"><div class="f1">LEVEL UP ⚡ · NOT FINANCIAL ADVICE · DYOR</div><div class="f2">Educational purposes only. Trading involves risk. Protect your capital.</div></div>
 </div></div>
 <script>
@@ -142,14 +154,36 @@ const STATUS=s=>{s=s.toLowerCase();if(s.includes("short"))return["b-short","▼ 
 const ORDER=["b-active","b-short","b-watch","b-none","b-invalid","b-closed"];
 const DETAIL="sheet.html";
 const isPC=r=>{const s=get(r,"source type");return s?/price/i.test(s):/^\s*price[- ]?check/i.test(get(r,"headline"));};
+/* Same hasLevels definition already used by sheet.html / core/levelup-core.js - not a new interpretation. */
+const LEVEL_KEYS=["trigger 1","trigger 2","trigger 3","tp1","tp2","tp3","stop","safety"];
+const hasLevels=r=>LEVEL_KEYS.some(k=>get(r,k));
+function cardHtml(a,r,c,t,pc){
+  const isLive=c==="b-active"||c==="b-short";const cardCls=isLive?` is-live${c==="b-short"?" is-short":""}`:"";const pillCls=isLive?" pill-flash":"";const chk=pc[a]?` · last price check ${stamp(get(pc[a],"timestamp"))}`:"";
+  return `<a class="card${cardCls}" href="${DETAIL}?asset=${encodeURIComponent(a)}"><div class="asset">${esc(a)}</div><span class="pill ${c}${pillCls}">${t}</span><div class="hl">${/no trade|closed|invalid/i.test(get(r,"status"))?`<small style="font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6B7280;font-size:10px">Status note · </small>`:""}${esc(get(r,"headline")||"")}</div><div class="meta">status set ${stamp(get(r,"timestamp"))}${chk}</div></a>`;
+}
 async function load(){
 let text="";
 if(SHEET_CSV){try{text=await (await fetch(SHEET_CSV+(SHEET_CSV.includes("?")?"&":"?")+"t="+Date.now())).text();}catch(e){}}
-if(!text){document.getElementById("grid").innerHTML=`<div class="empty">Hub not wired yet — paste the sheet link into SHEET_CSV.</div>`;return;}
-const rows=objs(parseCSV(text));const by={},pc={};
-rows.forEach(r=>{const a=get(r,"asset").toUpperCase();if(!a)return;const newer=o=>!o||new Date(get(r,"timestamp"))>new Date(get(o,"timestamp"));if(isPC(r)){if(newer(pc[a]))pc[a]=r;return;}if(!get(r,"status"))return;if(newer(by[a]))by[a]=r;});
-const cards=Object.entries(by).map(([a,r])=>{const [c,t]=STATUS(get(r,"status"));return {a,r,c,t};}).sort((x,y)=>ORDER.indexOf(x.c)-ORDER.indexOf(y.c)||x.a.localeCompare(y.a));
-document.getElementById("grid").innerHTML=cards.map(({a,r,c,t})=>{const isLive=c==="b-active"||c==="b-short";const cardCls=isLive?` is-live${c==="b-short"?" is-short":""}`:"";const pillCls=isLive?" pill-flash":"";const chk=pc[a]?` · last price check ${stamp(get(pc[a],"timestamp"))}`:"";return `<a class="card${cardCls}" href="${DETAIL}?asset=${encodeURIComponent(a)}"><div class="asset">${esc(a)}</div><span class="pill ${c}${pillCls}">${t}</span><div class="hl">${/no trade|closed|invalid/i.test(get(r,"status"))?`<small style="font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6B7280;font-size:10px">Status note · </small>`:""}${esc(get(r,"headline")||"")}</div><div class="meta">status set ${stamp(get(r,"timestamp"))}${chk}</div></a>`;}).join("")||`<div class="empty">No setups yet.</div>`;
+if(!text){document.getElementById("grid").innerHTML=`<div class="empty">Hub not wired yet — paste the sheet link into SHEET_CSV.</div>`;document.getElementById("grid-history").innerHTML="";return;}
+const rows=objs(parseCSV(text));const by={},pc={},all={};
+rows.forEach(r=>{const a=get(r,"asset").toUpperCase();if(!a)return;(all[a]=all[a]||[]).push(r);const newer=o=>!o||new Date(get(r,"timestamp"))>new Date(get(o,"timestamp"));if(isPC(r)){if(newer(pc[a]))pc[a]=r;return;}if(!get(r,"status"))return;if(newer(by[a]))by[a]=r;});
+/* "Today's Setups" = the single most recent calendar day (America/New_York) on which Chelsea published a real,
+   level-bearing setup row - never admin/price-check rows, never invented. Computed fresh from the live Sheet every
+   load; nothing here is a hardcoded asset list, so it stays correct as soon as a new daily batch is published. */
+const dayKey=iso=>{const d=new Date(iso);return isNaN(d)?null:d.toLocaleDateString("en-US",{timeZone:"America/New_York"});};
+let latestDay=null,latestDayMs=-Infinity;
+rows.forEach(r=>{if(isPC(r)||!get(r,"status")||!hasLevels(r))return;const ms=new Date(get(r,"timestamp")).getTime();if(isNaN(ms))return;if(ms>latestDayMs){latestDayMs=ms;latestDay=dayKey(get(r,"timestamp"));}});
+const isTodayBatch=a=>latestDay&&(all[a]||[]).some(r=>!isPC(r)&&get(r,"status")&&hasLevels(r)&&dayKey(get(r,"timestamp"))===latestDay);
+const cards=Object.entries(by).map(([a,r])=>{const [c,t]=STATUS(get(r,"status"));return {a,r,c,t,isActive:c==="b-active"||c==="b-short",today:isTodayBatch(a)};});
+/* Genuinely active/holding trades stay in the existing ACTIVE NOW section above (unchanged) rather than being
+   duplicated here as an unstriggered "current setup" card - a live trade is never shown as "no trigger yet". */
+const today=cards.filter(x=>x.today&&!x.isActive).sort((x,y)=>x.a.localeCompare(y.a));
+const rest=cards.filter(x=>!(x.today&&!x.isActive)).sort((x,y)=>ORDER.indexOf(x.c)-ORDER.indexOf(y.c)||x.a.localeCompare(y.a));
+document.getElementById("today-sub").textContent=latestDay?("published "+latestDay):"";
+document.getElementById("grid").innerHTML=today.map(({a,r,c,t})=>cardHtml(a,r,c,t,pc)).join("")||`<div class="empty">No current setups yet today — see history below, or Active Now above.</div>`;
+const histEl=document.getElementById("grid-history");
+if(histEl){histEl.innerHTML=rest.map(({a,r,c,t})=>cardHtml(a,r,c,t,pc)).join("")||`<div class="empty">Nothing here yet.</div>`;}
+const hc=document.getElementById("hist-count");if(hc)hc.textContent=" ("+rest.length+")";
 }
 load();setInterval(load,60000);
 </script><script id="att-core">
