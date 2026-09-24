@@ -41,6 +41,15 @@ a.card.is-live.is-short{border-color:var(--red)}
 .hist-toggle>summary::after{content:"View \25BE";font-family:Inter;letter-spacing:0;font-weight:700;color:var(--pink)}
 .hist-toggle[open]>summary::after{content:"Hide \25B4"}
 .hist-toggle .grid{padding:16px 18px 18px;margin-top:0}
+.reset-watch{margin-top:32px}
+.reset-watch[hidden]{display:none}
+.reset-watch .rw-note{font-size:11.5px;color:var(--gray);font-family:"JetBrains Mono";line-height:1.6;margin:6px 0 12px;max-width:760px}
+.reset-watch .grid{margin-top:12px}
+a.rw-card{display:block;text-decoration:none;color:inherit;border:2px dashed var(--orange);border-radius:14px;padding:16px 18px;background:#FFFBF2;transition:.2s}
+a.rw-card:hover{border-style:solid;box-shadow:0 10px 24px rgba(255,149,0,.16)}
+.rw-tag{display:inline-block;margin:8px 0 6px;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:5px 11px;border-radius:999px;border:2px solid var(--orange);color:var(--orange-d);background:#FFF4E0}
+.rw-headline{font-size:13.5px;line-height:1.55;color:#3A2E18}
+.rw-foot{font-family:"JetBrains Mono";font-size:10.5px;color:var(--gray);margin-top:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
 </style><style id="att-css">
 /* ===== LIVE ATTENTION (staging addon) — presentation only; tiers map 1:1 to the monitor's attention bands ===== */
 .att{margin-top:30px}
@@ -140,6 +149,11 @@ a.act-card.side-short:hover{box-shadow:0 10px 26px rgba(185,28,28,.18)}
 <div class="sub">One link per asset. Every read Chelsea makes lands here, with the history and the lesson when it's done.<br>Levels are structure, not instructions. Not financial advice.</div>
 <div class="section-head"><div class="section-title">Today's <em>Setups</em></div><div class="section-sub" id="today-sub"></div></div>
 <div class="grid" id="grid"><div class="empty">Loading…</div></div>
+<section class="reset-watch" id="reset-watch" hidden aria-label="Reset watch - potential setups requiring a retest or reset, not formal trade setups">
+  <div class="section-head"><div class="section-title">Reset <em>Watch</em></div></div>
+  <div class="rw-note">Same setup family, requiring a retest/reset before anything is a live setup. <b>Potential setup — retest/reset required. No trigger = no trade.</b> Not a short signal, not an entry, not tracked as an active trade.</div>
+  <div class="grid" id="grid-reset"></div>
+</section>
 <details class="hist-toggle" id="hist-wrap"><summary>Previous Calls / History<span id="hist-count"></span></summary><div class="grid" id="grid-history"></div></details>
 <div class="foot"><div class="f1">LEVEL UP ⚡ · NOT FINANCIAL ADVICE · DYOR</div><div class="f2">Educational purposes only. Trading involves risk. Protect your capital.</div></div>
 </div></div>
@@ -154,6 +168,12 @@ const STATUS=s=>{s=s.toLowerCase();if(s.includes("short"))return["b-short","▼ 
 const ORDER=["b-active","b-short","b-watch","b-none","b-invalid","b-closed"];
 const DETAIL="sheet.html";
 const isPC=r=>{const s=get(r,"source type");return s?/price/i.test(s):/^\s*price[- ]?check/i.test(get(r,"headline"));};
+/* Reset Watch: a DELIBERATE marker only - the Sheet's existing "source type" column (the same column that already
+   marks Admin Status / Price Check rows). Never inferred from ordinary trigger language ("retest", "reset the MAs")
+   because real Chelsea triggers use those words constantly - fuzzy headline matching would false-positive on
+   formal setups. Nothing renders here until a row is explicitly marked this way; today that's zero rows, which is
+   correct, not a bug. */
+const isResetWatch=r=>{const s=get(r,"source type");return /reset/i.test(s);};
 /* Same hasLevels definition already used by sheet.html / core/levelup-core.js - not a new interpretation. */
 const LEVEL_KEYS=["trigger 1","trigger 2","trigger 3","tp1","tp2","tp3","stop","safety"];
 const hasLevels=r=>LEVEL_KEYS.some(k=>get(r,k));
@@ -161,12 +181,15 @@ function cardHtml(a,r,c,t,pc){
   const isLive=c==="b-active"||c==="b-short";const cardCls=isLive?` is-live${c==="b-short"?" is-short":""}`:"";const pillCls=isLive?" pill-flash":"";const chk=pc[a]?` · last price check ${stamp(get(pc[a],"timestamp"))}`:"";
   return `<a class="card${cardCls}" href="${DETAIL}?asset=${encodeURIComponent(a)}"><div class="asset">${esc(a)}</div><span class="pill ${c}${pillCls}">${t}</span><div class="hl">${/no trade|closed|invalid/i.test(get(r,"status"))?`<small style="font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6B7280;font-size:10px">Status note · </small>`:""}${esc(get(r,"headline")||"")}</div><div class="meta">status set ${stamp(get(r,"timestamp"))}${chk}</div></a>`;
 }
+function resetCardHtml(a,r){
+  return `<a class="rw-card" href="${DETAIL}?asset=${encodeURIComponent(a)}"><div class="asset">${esc(a)}</div><span class="rw-tag">Potential setup · retest/reset required</span><div class="rw-headline">${esc(get(r,"headline")||get(r,"why")||"")}</div><div class="rw-foot">No trigger = no trade · set ${stamp(get(r,"timestamp"))}</div></a>`;
+}
 async function load(){
 let text="";
 if(SHEET_CSV){try{text=await (await fetch(SHEET_CSV+(SHEET_CSV.includes("?")?"&":"?")+"t="+Date.now())).text();}catch(e){}}
 if(!text){document.getElementById("grid").innerHTML=`<div class="empty">Hub not wired yet — paste the sheet link into SHEET_CSV.</div>`;document.getElementById("grid-history").innerHTML="";return;}
-const rows=objs(parseCSV(text));const by={},pc={},all={};
-rows.forEach(r=>{const a=get(r,"asset").toUpperCase();if(!a)return;(all[a]=all[a]||[]).push(r);const newer=o=>!o||new Date(get(r,"timestamp"))>new Date(get(o,"timestamp"));if(isPC(r)){if(newer(pc[a]))pc[a]=r;return;}if(!get(r,"status"))return;if(newer(by[a]))by[a]=r;});
+const rows=objs(parseCSV(text));const by={},pc={},all={},rw={};
+rows.forEach(r=>{const a=get(r,"asset").toUpperCase();if(!a)return;(all[a]=all[a]||[]).push(r);const newer=o=>!o||new Date(get(r,"timestamp"))>new Date(get(o,"timestamp"));if(isResetWatch(r)){if(newer(rw[a]))rw[a]=r;return;}if(isPC(r)){if(newer(pc[a]))pc[a]=r;return;}if(!get(r,"status"))return;if(newer(by[a]))by[a]=r;});
 /* "Today's Setups" = the single most recent calendar day (America/New_York) on which Chelsea published a real,
    level-bearing setup row - never admin/price-check rows, never invented. Computed fresh from the live Sheet every
    load; nothing here is a hardcoded asset list, so it stays correct as soon as a new daily batch is published. */
@@ -184,6 +207,9 @@ document.getElementById("grid").innerHTML=today.map(({a,r,c,t})=>cardHtml(a,r,c,
 const histEl=document.getElementById("grid-history");
 if(histEl){histEl.innerHTML=rest.map(({a,r,c,t})=>cardHtml(a,r,c,t,pc)).join("")||`<div class="empty">Nothing here yet.</div>`;}
 const hc=document.getElementById("hist-count");if(hc)hc.textContent=" ("+rest.length+")";
+const rwEntries=Object.entries(rw).sort((x,y)=>x[0].localeCompare(y[0]));
+const rwSec=document.getElementById("reset-watch"),rwGrid=document.getElementById("grid-reset");
+if(rwSec&&rwGrid){if(rwEntries.length){rwSec.hidden=false;rwGrid.innerHTML=rwEntries.map(([a,r])=>resetCardHtml(a,r)).join("");}else{rwSec.hidden=true;rwGrid.innerHTML="";}}
 }
 load();setInterval(load,60000);
 </script><script id="att-core">
