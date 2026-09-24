@@ -7,10 +7,14 @@
 <style>
 :root{--pink:#FA0398;--pink-line:#F9C8E3;--ink:#111114;--gray:#6B7280;--gray2:#9CA3AF;--orange:#FF9500;--orange-d:#D97A00;--green:#22C55E;--green-d:#15803D;--red:#EF4444;--red-d:#B91C1C}
 *{margin:0;padding:0;box-sizing:border-box}html,body{background:#ECECF1;font-family:Inter,system-ui,sans-serif;color:var(--ink)}
-body{display:flex;justify-content:center;padding:24px 12px}
-.sheet{position:relative;width:100%;max-width:1080px;background:#fff;box-shadow:0 18px 60px rgba(13,13,15,.16);overflow:hidden}
+body{display:flex;justify-content:center;padding:24px 20px}
+/* Dashboard width, not a narrow document column: 1080px left large unused margins on any normal desktop monitor.
+   1600px lets the existing auto-fill card grids (.grid/.att-grid/.act-grid, all minmax(Npx,1fr)) naturally add
+   columns as space allows - no per-grid width changes needed. Still capped well short of ultra-wide monitors so
+   card rows don't become absurdly wide, and the existing max-width:640px mobile query is untouched. */
+.sheet{position:relative;width:100%;max-width:1600px;background:#fff;box-shadow:0 18px 60px rgba(13,13,15,.16);overflow:hidden}
 .sheet::before,.sheet::after{content:"";position:absolute;left:0;right:0;height:7px;background:linear-gradient(90deg,var(--orange),var(--pink))}.sheet::before{top:0}.sheet::after{bottom:0}
-.inner{padding:38px 40px 30px}
+.inner{padding:38px 48px 30px}
 .kicker{font-size:13px;font-weight:700;letter-spacing:.22em;color:var(--pink);text-transform:uppercase}
 h1{font-family:Archivo;font-weight:900;font-size:clamp(34px,6vw,58px);line-height:.95;margin:10px 0 0;text-transform:uppercase}h1 em{font-style:normal;color:var(--pink)}
 .rule{height:8px;background:var(--pink);width:260px;margin:14px 0 12px;border-radius:2px}
@@ -104,7 +108,12 @@ a.att-card.tier-4 .att-pct b{font-size:50px}
 a.att-card.tier-4 .att-tag{background:var(--tc);color:#fff}
 a.att-card.tier-3 .att-tag{background:var(--tc);color:#fff}
 .att-sub{margin-top:18px;font-size:10.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--gray)}
-.att-past{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+/* Compact/collapsible - diagnostic supporting info, not primary content. Reuses .hist-toggle's exact visual
+   pattern (border + summary bar + expand arrow) so it reads as the same "secondary, expandable" affordance as
+   Previous Calls / History, rather than another full card wall. */
+.att-past-toggle{margin-top:18px}
+.att-past-toggle summary span{font-weight:600;text-transform:none;letter-spacing:0;color:var(--gray2)}
+.att-past{display:flex;flex-wrap:wrap;gap:8px;padding:14px 18px 16px}
 a.att-past-chip{display:inline-flex;gap:8px;align-items:center;padding:7px 12px;border:2px dashed var(--gray2);border-radius:999px;font-family:"JetBrains Mono",monospace;font-size:11px;color:#4B5563;text-decoration:none;background:#fff}
 a.att-past-chip b{font-family:Archivo,Inter,sans-serif;font-weight:900;color:var(--ink)}
 .att-empty{padding:16px;border:2px dashed var(--pink-line);border-radius:12px;color:var(--gray);font-size:13px;margin-top:14px}
@@ -752,11 +761,12 @@ load();setInterval(load,60000);
     var CSV = (typeof SHEET_CSV !== 'undefined' && SHEET_CSV) || '';
     var grid = document.getElementById('grid');
     if (!CSV || !grid) return;
-    /* Anchor LIVE ATTENTION / ACTIVE NOW above the *entire* "Today's Setups" heading+grid block, not
-       between the heading and its own grid (that placement made the two addon sections read as if they
-       were the Today's Setups content). Falls back to the grid itself if the heading isn't found, so a
-       future markup change can't silently break the addon. */
-    var todaysHead = (document.getElementById('today-sub') && document.getElementById('today-sub').closest('.section-head')) || grid;
+    /* Anchor LIVE ATTENTION / ACTIVE NOW AFTER the entire "Today's Setups" heading+grid block (operational
+       priority: today's Chelsea-published setups read first, then what's actually active, then what's merely
+       being watched). Falls back to the grid itself if reset-watch isn't found, so a future markup change can't
+       silently break the addon. Insertion order below matters: whichever is inserted SECOND lands closer to the
+       anchor - active-now first, then attention, produces grid -> active-now -> attention -> reset-watch. */
+    var afterToday = document.getElementById('reset-watch') || grid.nextSibling || grid;
     var PRICE_MS = 30000, SHEET_MS = 60000, STALE_MS = 150000;
     var opts = { includeNoTrade: !!window.LEVELUP_ATTENTION_INCLUDE_NO_TRADE };   // default: Watching only (No Trade is not actionable)
     var setups = null, ps = { prices: {}, sources: {}, at: 0 }, sheetErr = false;
@@ -764,12 +774,12 @@ load();setInterval(load,60000);
     var etTime = function (ms) { return new Date(ms).toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: '2-digit', second: '2-digit' }) + ' ET'; };
     var srcName = { binance: 'Binance', coinbase: 'Coinbase' };
 
-    var sec = document.createElement('section');
-    sec.className = 'att'; sec.id = 'attention'; sec.hidden = true; sec.setAttribute('aria-label', 'Live attention: setups ranked by distance to trigger');
-    todaysHead.parentNode.insertBefore(sec, todaysHead);
     var secA = document.createElement('section');
     secA.className = 'att act'; secA.id = 'active-now'; secA.hidden = true; secA.setAttribute('aria-label', 'Active now: setups whose current status is Active Long or Active Short');
-    todaysHead.parentNode.insertBefore(secA, todaysHead);
+    afterToday.parentNode.insertBefore(secA, afterToday);
+    var sec = document.createElement('section');
+    sec.className = 'att'; sec.id = 'attention'; sec.hidden = true; sec.setAttribute('aria-label', 'Live attention: setups ranked by distance to trigger');
+    afterToday.parentNode.insertBefore(sec, afterToday);
 
     function view() {
       if (!setups) return null;
@@ -817,7 +827,7 @@ load();setInterval(load,60000);
       var body = '';
       if (near.length) body += (near.length > 1 ? tapeHtml(near.slice(0, 10)) : '') + '<div class="att-grid">' + near.map(cardHtml).join('') + '</div>';
       else if (v.fresh) body += '<div class="att-empty">No watching setup is currently below its trigger zone.</div>';
-      if (past.length) body += '<div class="att-sub">Price already past the trigger zone (mechanical observation — see each setup)</div><div class="att-past">' + past.map(pastHtml).join('') + '</div>';
+      if (past.length) body += '<details class="hist-toggle att-past-toggle"><summary>Price past trigger zone<span> (' + past.length + ')</span></summary><div class="att-past">' + past.map(pastHtml).join('') + '</div></details>';
       if (noPx.length && !v.fresh) body += '<div class="att-empty">Waiting for live prices for: ' + noPx.map(function (i) { return esc(i.asset); }).join(', ') + '</div>';
       sec.innerHTML = head + body;
       decorate(v);
@@ -916,11 +926,19 @@ load();setInterval(load,60000);
         .catch(function () { return null; });
     }
     /* Prefer the asset's LIVE lifecycle; if it's no longer monitorable (e.g. Sheet status moved to Closed) fall
-       back to its most recent terminal receipt so a completed setup's facts remain visible after closure. */
+       back to its most recent terminal receipt - but ONLY one whose setup_instance_key matches the asset's
+       CURRENT instance (feed.assets[asset].setup_instance_key, always present even when lifecycle is null). An
+       old, superseded instance's receipt must never speak for a new current setup (e.g. a fresh Chelsea re-call
+       on the same asset) - this is the same setup-instance identity the whole project already uses, not a new
+       identity system. */
     function mechanicalFor(asset) {
       if (!feed) return null;
-      var a = feed.assets[asset]; var lc = a && a.lifecycle;
-      if (!lc) { var r = (feed.receipts || []).filter(function (x) { return x.asset === asset; })[0]; lc = r ? r.lifecycle : null; }
+      var a = feed.assets[asset]; if (!a) return null;
+      var lc = a.lifecycle;
+      if (!lc) {
+        var r = (feed.receipts || []).filter(function (x) { return x.asset === asset && x.setup_instance_key === a.setup_instance_key; })[0];
+        lc = r ? r.lifecycle : null;
+      }
       if (!lc) return null;
       var triggered = !!(lc.trigger && lc.trigger.reached_at);
       if (!triggered) return null;   // never show TP/stop ticks ahead of a confirmed closed-candle trigger
@@ -928,6 +946,23 @@ load();setInterval(load,60000);
         .sort(function (x, y) { return x.level_id.localeCompare(y.level_id, undefined, { numeric: true }); })
         .map(function (t) { return !!t.reached_at; });
       return { triggered: true, tp: tp, stopped: lc.state === 'STOP_BOUNDARY_REACHED', complete: lc.state === 'OBJECTIVES_EXHAUSTED' };
+    }
+    /* LIVE ATTENTION suppression: a Watching setup whose CURRENT instance has already mechanically triggered no
+       longer belongs in a "not yet triggered" proximity list - it belongs in Today's Setups/history with its
+       badges instead. Implemented as a wrapper around the existing att-module's own applicable() rather than any
+       change to att-core/att-module/att-ui themselves (those files are byte-for-byte unchanged) - every one of
+       att-ui's own derived views (grid, tape, past-trigger list) flows through this single function, so wrapping
+       it here suppresses consistently everywhere, for free. mechanicalFor() is already instance-safe (above), so
+       an OLD triggered instance can never suppress a NEW current Watching instance of the same asset. */
+    if (window.LevelUpAttention && !window.LevelUpAttention.__mechWrapped) {
+      var origApplicable = window.LevelUpAttention.applicable;
+      window.LevelUpAttention.applicable = function (setup, opts2) {
+        if (!origApplicable(setup, opts2)) return false;
+        var m = mechanicalFor(setup.asset);
+        if (m && m.triggered) return false;
+        return true;
+      };
+      window.LevelUpAttention.__mechWrapped = true;
     }
     function badgeHtml(m) {
       if (!m) return '';
@@ -960,7 +995,15 @@ load();setInterval(load,60000);
     var grid = document.getElementById('grid');
     if (!grid) return;
     var obs = new MutationObserver(decorate);
-    function load() { return fetchFeed().then(function (f) { feed = f; decorate(); }); }
+    /* Re-run att-ui's own render() (unchanged function, just re-invoked) right after the feed loads, so the
+       applicable() wrapper's effect on LIVE ATTENTION shows up immediately instead of waiting for att-ui's own
+       next scheduled 15s tick. window.__attention is att-ui's own existing read-only test hook - reused here,
+       not new API surface. Active Now is untouched by the wrapper (it reads status.class directly, not
+       applicable()), so nothing needs re-triggering there. */
+    function reRenderAttention() {
+      try { if (window.__attention) window.__attention.render(); } catch (e) { /* never break the page */ }
+    }
+    function load() { return fetchFeed().then(function (f) { feed = f; decorate(); reRenderAttention(); }); }
     load();
     setInterval(load, 60000);
     obs.observe(grid.parentNode, { childList: true, subtree: true });
