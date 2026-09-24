@@ -52,7 +52,10 @@ a.rw-card:hover{border-style:solid;box-shadow:0 10px 24px rgba(255,149,0,.16)}
 .rw-foot{font-family:"JetBrains Mono";font-size:10.5px;color:var(--gray);margin-top:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
 </style><style id="att-css">
 /* ===== LIVE ATTENTION (staging addon) — presentation only; tiers map 1:1 to the monitor's attention bands ===== */
-.att{margin-top:30px}
+/* Boxed (border + background wash), same treatment as Reset Watch and Active Now, so this section reads as its
+   own distinct region instead of visually blurring into whatever sits directly above/below it. .att.act (Active
+   Now) overrides the border/background color further down - this base box applies to both. */
+.att{margin-top:30px;border:2px solid var(--pink-line);background:#FFFBFD;border-radius:16px;padding:18px 20px 16px}
 .att[hidden]{display:none}
 .att-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .att-title{font-family:Archivo,Inter,system-ui,sans-serif;font-weight:900;font-size:24px;letter-spacing:.05em;text-transform:uppercase;line-height:1}
@@ -106,8 +109,12 @@ a.att-past-chip{display:inline-flex;gap:8px;align-items:center;padding:7px 12px;
 a.att-past-chip b{font-family:Archivo,Inter,sans-serif;font-weight:900;color:var(--ink)}
 .att-empty{padding:16px;border:2px dashed var(--pink-line);border-radius:12px;color:var(--gray);font-size:13px;margin-top:14px}
 
-/* ACTIVE NOW — status-driven section, deliberately different from the proximity cards (solid side bar, no proximity tiers, no pulse) */
-.att.act{margin-top:26px}
+/* ACTIVE NOW — status-driven section, deliberately different from the proximity cards (solid side bar, no proximity tiers, no pulse).
+   Boxed (border + background wash), like Reset Watch already is, so it reads as its own distinct region rather than
+   blurring into the LIVE ATTENTION grid directly above it - both sections keep their real headings and DOM order,
+   this is a visual-boundary fix only, not a change to which cards belong where (that was already correct). */
+.att.act{margin-top:26px;border:2px solid #BBF7D0;background:#F7FEF9;border-radius:16px;padding:18px 20px 16px}
+.att.act .att-title{color:var(--green-d)}
 .act-em{font-style:normal;color:var(--green-d)}
 .act-grid{grid-template-columns:repeat(auto-fill,minmax(236px,1fr))}
 a.act-card{--ac:#22C55E;--ad:#15803D;position:relative;display:block;text-decoration:none;color:inherit;border:2px solid var(--ac);border-left-width:10px;border-radius:14px;padding:14px 16px 13px;background:#F0FDF4;transition:transform .2s,box-shadow .2s}
