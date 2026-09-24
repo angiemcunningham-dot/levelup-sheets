@@ -745,6 +745,11 @@ load();setInterval(load,60000);
     var CSV = (typeof SHEET_CSV !== 'undefined' && SHEET_CSV) || '';
     var grid = document.getElementById('grid');
     if (!CSV || !grid) return;
+    /* Anchor LIVE ATTENTION / ACTIVE NOW above the *entire* "Today's Setups" heading+grid block, not
+       between the heading and its own grid (that placement made the two addon sections read as if they
+       were the Today's Setups content). Falls back to the grid itself if the heading isn't found, so a
+       future markup change can't silently break the addon. */
+    var todaysHead = (document.getElementById('today-sub') && document.getElementById('today-sub').closest('.section-head')) || grid;
     var PRICE_MS = 30000, SHEET_MS = 60000, STALE_MS = 150000;
     var opts = { includeNoTrade: !!window.LEVELUP_ATTENTION_INCLUDE_NO_TRADE };   // default: Watching only (No Trade is not actionable)
     var setups = null, ps = { prices: {}, sources: {}, at: 0 }, sheetErr = false;
@@ -754,10 +759,10 @@ load();setInterval(load,60000);
 
     var sec = document.createElement('section');
     sec.className = 'att'; sec.id = 'attention'; sec.hidden = true; sec.setAttribute('aria-label', 'Live attention: setups ranked by distance to trigger');
-    grid.parentNode.insertBefore(sec, grid);
+    todaysHead.parentNode.insertBefore(sec, todaysHead);
     var secA = document.createElement('section');
     secA.className = 'att act'; secA.id = 'active-now'; secA.hidden = true; secA.setAttribute('aria-label', 'Active now: setups whose current status is Active Long or Active Short');
-    grid.parentNode.insertBefore(secA, grid);
+    todaysHead.parentNode.insertBefore(secA, todaysHead);
 
     function view() {
       if (!setups) return null;
