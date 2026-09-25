@@ -902,6 +902,17 @@ load();setInterval(load,60000);
 .mech-tick.stop{border-color:var(--red);color:var(--red-d);background:rgba(239,68,68,.08)}
 .mech-tick.complete{border-color:var(--pink);color:var(--pink);background:rgba(250,3,152,.06)}
 .mech-note{font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--gray2);margin:4px 0 0}
+.mech-headline{font-family:"Archivo",sans-serif;font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;margin:2px 0 4px}
+.mech-headline.mech-active{color:var(--green-d)}
+.mech-headline.mech-stopped{color:var(--red-d)}
+.mech-headline.mech-complete{color:var(--pink)}
+.pill.mech-demoted{opacity:.55;font-size:10px;transform:scale(.92);transform-origin:left center}
+/* Active Now's base .act-status (26px/900, styled for short text like "ACTIVE LONG") wraps the longer reconciled
+   labels ("ACTIVE LONG — TP1 HIT") across 3-4 lines with the dash stranded alone. Higher specificity than both the
+   base rule and its own 640px media-query override (two classes beats one), so this applies at every width without
+   touching att-ui/the base stylesheet. Full wording is unchanged - only the size/line-height differ. */
+.act-status.mech-reconciled{font-size:15px;line-height:1.25;letter-spacing:.005em}
+.mech-pill-label{display:inline-block;font-family:"JetBrains Mono",monospace;font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--gray2);margin-right:5px;vertical-align:middle}
 </style>
 <script id="mech-feed">
 /* MECHANICAL FEED (staging addon). Reads the published monitor feed - durable trigger/TP/stop facts computed from
@@ -947,6 +958,40 @@ load();setInterval(load,60000);
         .map(function (t) { return !!t.reached_at; });
       return { triggered: true, tp: tp, stopped: lc.state === 'STOP_BOUNDARY_REACHED', complete: lc.state === 'OBJECTIVES_EXHAUSTED' };
     }
+    /* CURRENT-STATE RECONCILIATION (staging). Turns the same instance-safe mechanicalFor() facts above into ONE
+       reconciled current-state headline, shared by this grid, Active Now here, and sheet.html's copy of this same
+       script for the detail-page banner - so the two surfaces can never again show CAKE-style contradictory current
+       states for the same setup_instance_key. Never fabricates a fact: if the trigger isn't mechanically confirmed
+       yet (SEI-shaped), or direction can't be evidenced, this returns null and the existing Sheet-driven display is
+       left exactly as it renders today - the Sheet stays primary until the mechanical facts say otherwise. */
+    function directionFor(asset) {
+      try {
+        var st = window.__attention && window.__attention.state();
+        var s = st && st.setups && st.setups[asset];
+        var v = s && s.direction && s.direction.value;
+        if (v === 'long') return 'LONG';
+        if (v === 'short') return 'SHORT';
+      } catch (e) { /* fall through to the Sheet-status fallback below */ }
+      var a = feed && feed.assets && feed.assets[asset];
+      var cls = a && a.sheet_status && a.sheet_status.class;
+      if (cls === 'ACTIVE_LONG') return 'LONG';
+      if (cls === 'ACTIVE_SHORT') return 'SHORT';
+      return null;
+    }
+    function resolveCurrentState(asset) {
+      var m = mechanicalFor(asset);
+      if (!m || !m.triggered) return null;   // not mechanically confirmed yet - Sheet stays primary (SEI-shaped)
+      if (m.stopped) return { text: 'STOPPED', kind: 'stopped' };
+      if (m.complete) return { text: 'COMPLETE', kind: 'complete' };
+      var dir = directionFor(asset);
+      if (!dir) return null;                  // never fabricate a direction we can't evidence
+      var hit = -1;
+      m.tp.forEach(function (v, i) { if (v) hit = i; });
+      var suffix = hit >= 0 ? ('TP' + (hit + 1) + ' HIT') : 'TRIGGERED';
+      // non-breaking spaces around the dash: keeps it glued to a neighboring word so it can never end up
+      // stranded alone on its own line when this text wraps in a tight card (Active Now's fixed-size badge).
+      return { text: 'ACTIVE ' + dir + ' — ' + suffix, kind: 'active', dir: dir, tpHit: hit + 1 };
+    }
     /* LIVE ATTENTION suppression: a Watching setup whose CURRENT instance has already mechanically triggered no
        longer belongs in a "not yet triggered" proximity list - it belongs in Today's Setups/history with its
        badges instead. Implemented as a wrapper around the existing att-module's own applicable() rather than any
@@ -972,6 +1017,20 @@ load();setInterval(load,60000);
       else if (m.complete) parts.push('<span class="mech-tick complete">&#10003; COMPLETE</span>');
       return '<div class="mech-row" title="Mechanical observation of Chelsea’s published levels - not a signal, not the Sheet status">' + parts.join('') + '</div>';
     }
+    /* ACTIVE NOW reconciliation: att-ui's renderActive() (untouched) always writes a static "ACTIVE LONG"/"Triggered"
+       label from the Sheet status alone. Once the mechanical feed confirms more (a specific TP hit, or a terminal
+       stop/complete for that same current instance), patch just the two text nodes to the reconciled label - never
+       touches renderActive() itself, so a feed outage leaves the Sheet-driven "ACTIVE LONG" exactly as before. */
+    function decorateActiveNow() {
+      var sec = document.getElementById('active-now'); if (!sec) return;
+      Array.prototype.forEach.call(sec.querySelectorAll('a.act-card'), function (c) {
+        var asset = (c.getAttribute('data-asset') || '').toUpperCase(); if (!asset) return;
+        var resolved = resolveCurrentState(asset); if (!resolved) return;
+        var statusEl = c.querySelector('.act-status');
+        if (statusEl) { statusEl.textContent = resolved.text; statusEl.classList.add('mech-reconciled'); }
+        var tagEl = c.querySelector('.act-tag'); if (tagEl) tagEl.style.display = 'none';
+      });
+    }
     function decorate() {
       obs.disconnect();
       try {
@@ -979,11 +1038,27 @@ load();setInterval(load,60000);
           var m = /[?&]asset=([^&]+)/.exec(c.getAttribute('href') || ''); if (!m) return;
           var asset = decodeURIComponent(m[1]).toUpperCase();
           var old = c.querySelector('.mech-row'); if (old) old.remove();
+          var pill = c.querySelector('.pill');
+          var oldHead = c.querySelector('.mech-headline'); if (oldHead) oldHead.remove();
+          var oldLabel = c.querySelector('.mech-pill-label'); if (oldLabel) oldLabel.remove();
+          var resolved = resolveCurrentState(asset);
+          if (pill) {
+            if (resolved) {
+              pill.classList.add('mech-demoted');
+              var hd = document.createElement('div'); hd.innerHTML = '<div class="mech-headline mech-' + resolved.kind + '">' + resolved.text + '</div>';
+              pill.parentNode.insertBefore(hd.firstChild, pill);
+              // label the demoted pill so it reads as Chelsea's source status, not a second current-state claim
+              var lbl = document.createElement('span'); lbl.innerHTML = '<span class="mech-pill-label">Chelsea status:</span>';
+              pill.parentNode.insertBefore(lbl.firstChild, pill);
+            } else {
+              pill.classList.remove('mech-demoted');
+            }
+          }
           var html = badgeHtml(mechanicalFor(asset)); if (!html) return;
           var d = document.createElement('div'); d.innerHTML = html;
-          var pill = c.querySelector('.pill');
           if (pill && pill.parentNode) pill.parentNode.insertBefore(d.firstChild, pill.nextSibling);
         });
+        decorateActiveNow();
         var note = feed ? ('Mechanical feed updated ' + fmtAgo(feed.generated_at) + ((Date.now() - Date.parse(feed.generated_at)) > STALE_MS ? ' (may be stale)' : '')) : '';
         var head = document.querySelector('.section-head');
         var n = document.getElementById('mech-note');
@@ -1007,7 +1082,7 @@ load();setInterval(load,60000);
     load();
     setInterval(load, 60000);
     obs.observe(grid.parentNode, { childList: true, subtree: true });
-    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, decorate: decorate };   // test hook (read-only)
+    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, resolveCurrentState: resolveCurrentState, directionFor: directionFor, decorate: decorate, decorateActiveNow: decorateActiveNow };   // test hook (read-only)
   } catch (e) { if (window.console) console.warn('mechanical feed addon disabled:', e); }
 })();
 </script>

@@ -943,6 +943,14 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
 .mech-item.on{border-color:#22C55E;color:#15803D;background:rgba(34,197,94,.08)}
 .mech-item.stop{border-color:#EF4444;color:#B91C1C;background:rgba(239,68,68,.08)}
 .mech-item.complete{border-color:#FA0398;color:#FA0398;background:rgba(250,3,152,.06)}
+.mech-headline{margin:0 0 22px;padding:14px 18px;border-radius:12px;font-family:Archivo,sans-serif;font-weight:800;font-size:15px;letter-spacing:.08em;text-transform:uppercase;display:flex;flex-direction:column;gap:4px}
+.mech-headline.mech-active{background:rgba(34,197,94,.12);color:#15803D}
+.mech-headline.mech-stopped{background:rgba(239,68,68,.10);color:#B91C1C}
+.mech-headline.mech-complete{background:rgba(250,3,152,.06);color:#FA0398}
+.mech-headline-sub{font-family:Inter,sans-serif;font-weight:600;font-size:12px;letter-spacing:.02em;text-transform:none;opacity:.85}
+/* Hides the stale "price past trigger zone" chip once the current instance is mechanically resolved - scoped via a
+   body-level class (see suppressStaleChip()'s comment for why this must never touch #att-chip's own attributes). */
+body.mech-hide-passed-chip #att-chip.passed{display:none}
 </style>
 <script id="mech-feed">
 /* MECHANICAL FEED (staging addon). Reads the published monitor feed - durable trigger/TP/stop facts computed from
@@ -971,8 +979,14 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
     }
     function mechanicalFor(asset) {
       if (!feed) return null;
-      var a = feed.assets[asset]; var lc = a && a.lifecycle;
-      if (!lc) { var r = (feed.receipts || []).filter(function (x) { return x.asset === asset; })[0]; lc = r ? r.lifecycle : null; }
+      var a = feed.assets[asset]; if (!a) return null;
+      var lc = a.lifecycle;
+      if (!lc) {
+        /* instance-safe fallback: an OLD, superseded instance's receipt must never speak for a new current setup -
+           same fix as index.html's mechanicalFor(), which already required this match; sheet.html's copy had not. */
+        var r = (feed.receipts || []).filter(function (x) { return x.asset === asset && x.setup_instance_key === a.setup_instance_key; })[0];
+        lc = r ? r.lifecycle : null;
+      }
       if (!lc) return null;
       var triggered = !!(lc.trigger && lc.trigger.reached_at);
       if (!triggered) return null;
@@ -980,6 +994,80 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
         .sort(function (x, y) { return x.level_id.localeCompare(y.level_id, undefined, { numeric: true }); })
         .map(function (t) { return !!t.reached_at; });
       return { triggered: true, tp: tp, stopped: lc.state === 'STOP_BOUNDARY_REACHED', complete: lc.state === 'OBJECTIVES_EXHAUSTED' };
+    }
+    /* CURRENT-STATE RECONCILIATION (staging) - see index.html's copy of this same script for the full rationale.
+       This page has no shared parsed-setup cache to read direction from (att-ui here keeps its own private `setup`
+       var), so it fetches+parses the Sheet CSV independently via the already-loaded LevelUpCore - the same
+       redundant-fetch pattern this page's other addons already use, never touching att-core/att-module/att-ui. */
+    var directionVal = null, directionAsset = null;
+    function loadDirection() {
+      var CSV = (typeof SHEET_CSV !== 'undefined' && SHEET_CSV) || '';
+      var Core = window.LevelUpCore;
+      if (!CSV || !Core) return Promise.resolve();
+      return fetch(CSV + (CSV.indexOf('?') > -1 ? '&' : '?') + 't=' + Date.now()).then(function (r) { return r.text(); })
+        .then(function (t) {
+          var s = Core.buildAll(t)[ASSET_];
+          var v = s && s.direction && s.direction.value;
+          directionVal = v === 'long' ? 'LONG' : v === 'short' ? 'SHORT' : null;
+          directionAsset = ASSET_;
+        }).catch(function () { /* leave directionVal as-is - never break the page */ });
+    }
+    function directionFor(asset) {
+      if (directionAsset === asset && directionVal) return directionVal;
+      var a = feed && feed.assets && feed.assets[asset];
+      var cls = a && a.sheet_status && a.sheet_status.class;
+      if (cls === 'ACTIVE_LONG') return 'LONG';
+      if (cls === 'ACTIVE_SHORT') return 'SHORT';
+      return null;
+    }
+    function resolveCurrentState(asset) {
+      var m = mechanicalFor(asset);
+      if (!m || !m.triggered) return null;   // not mechanically confirmed yet - Sheet stays primary (SEI-shaped)
+      if (m.stopped) return { text: 'STOPPED', kind: 'stopped' };
+      if (m.complete) return { text: 'COMPLETE', kind: 'complete' };
+      var dir = directionFor(asset);
+      if (!dir) return null;                  // never fabricate a direction we can't evidence
+      var hit = -1;
+      m.tp.forEach(function (v, i) { if (v) hit = i; });
+      var suffix = hit >= 0 ? ('TP' + (hit + 1) + ' HIT') : 'TRIGGERED';
+      // non-breaking spaces around the dash - keeps it glued to a neighboring word (see index.html's copy for why)
+      return { text: 'ACTIVE ' + dir + ' — ' + suffix, kind: 'active', dir: dir, tpHit: hit + 1 };
+    }
+    function escH(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+    /* Patches just the banner's visibility + inserts one reconciled headline node - never edits the base render()'s
+       own banner markup/text, so a feed outage or resolveCurrentState() returning null leaves the Sheet-driven
+       banner exactly as it renders today. Chelsea's Sheet status/timestamp is preserved as a secondary sub-line,
+       never erased - just no longer the PRIMARY current-state statement when the mechanical facts say more. */
+    function ensureHeadline() {
+      var banner = app.querySelector('.banner'); if (!banner) return;
+      var old = document.getElementById('mech-headline');
+      var resolved = resolveCurrentState(ASSET_);
+      if (!resolved) { banner.style.display = ''; if (old) old.remove(); return; }
+      var a = feed && feed.assets && feed.assets[ASSET_];
+      var sheetTxt = (a && a.sheet_status && a.sheet_status.text) || '';
+      var pubAgo = (a && a.instance_published_at) ? fmtAgo(a.instance_published_at) : '';
+      banner.style.display = 'none';
+      var html = '<div id="mech-headline" class="mech-headline mech-' + resolved.kind + '">'
+        + '<span class="mech-headline-main">' + resolved.text + '</span>'
+        + (sheetTxt ? '<small class="mech-headline-sub">Chelsea’s Sheet status: ' + escH(sheetTxt) + (pubAgo ? ' · published ' + pubAgo : '') + '</small>' : '')
+        + '</div>';
+      var d = document.createElement('div'); d.innerHTML = html;
+      if (old) old.replaceWith(d.firstChild); else banner.parentNode.insertBefore(d.firstChild, banner);
+      relabelSourceStatus();
+    }
+    /* Surgical label swap only - never touches the value text/timestamp/source-badge next to it, and never touches
+       the base render() template that builds this row. Only runs once a reconciled state exists, so an asset the
+       Sheet is still the sole authority for (e.g. SEI, pre-trigger) never has this row touched at all. Re-applied
+       every ensureHeadline() cycle because the base render() rebuilds this DOM node (with the original label) on
+       every re-render - if a future page edit renames/restructures this row, the textContent match below simply
+       stops finding anything and this becomes a no-op, it never throws. */
+    function relabelSourceStatus() {
+      var tl = app.querySelector('.tl'); if (!tl) return;
+      var rows = tl.children;
+      for (var i = 0; i < rows.length; i++) {
+        var b = rows[i].querySelector && rows[i].querySelector('b');
+        if (b && b.textContent === 'Current status') { b.textContent = 'Original Chelsea published status'; return; }
+      }
     }
     function panelHtml(m) {
       if (!m) return '';
@@ -1004,13 +1092,38 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
       var afterEl = chip || banner;
       if (old) old.replaceWith(panel); else afterEl.parentNode.insertBefore(panel, afterEl.nextSibling);
     }
-    var obs = new MutationObserver(function () { obs.disconnect(); ensure(); obs.observe(app, { childList: true }); });
-    function load() { return fetchFeed().then(function (f) { feed = f; ensure(); }); }
+    /* The client-side "PRICE PAST TRIGGER ZONE" chip (att-ui's own #att-chip, unconfirmed live-tick proximity)
+       predates this reconciliation layer and isn't aware of it. Root cause: att-ui's chipHtml() calls
+       A.triggerProximity(setup, price) directly (att-ui:907) - a different code path than the applicable()
+       suppression wrapper on index.html, because triggerProximity()'s internal "is this even watchable" gate
+       (att-module:795, `if (!applicable(setup, opts)) ...`) calls the module's own CLOSURE-LOCAL applicable
+       function, not window.LevelUpAttention.applicable - reassigning that exported property (as index.html's
+       wrapper does) never reaches this internal call, so no existing wrapper touches it, on either page.
+       Once the CURRENT instance has a mechanically confirmed trigger, this specific "still waiting, price just
+       passed the zone" chip is stale and would contradict the reconciled headline above it.
+       IMPORTANT: this must NEVER mutate the #att-chip node's own attributes (class/style). att-ui's own ensure()
+       (att-ui:917-923) decides whether to replace that node by comparing old.outerHTML against a freshly-built
+       chip's outerHTML - an attribute we add would make that comparison mismatch forever, so att-ui would keep
+       replacing the (now un-hidden) node, which re-triggers this script's own MutationObserver on #app, which
+       re-hides it, which mismatches again - an infinite mutual rebuild loop between the two scripts (this was
+       caught live in the browser; the Node test harness's fake MutationObserver never invokes callbacks, so it
+       could not catch it). Toggling a class on <body> instead - completely outside #app - hides the chip via CSS
+       without ever touching the node att-ui diffs, so att-ui always sees "no change" and never re-triggers. */
+    function suppressStaleChip() {
+      var chip = document.getElementById('att-chip');
+      var shouldHide = !!(chip && chip.classList && chip.classList.contains('passed') && resolveCurrentState(ASSET_));
+      document.body.classList.toggle('mech-hide-passed-chip', shouldHide);
+    }
+    function applyAll() { ensure(); ensureHeadline(); suppressStaleChip(); }
+    var obs = new MutationObserver(function () { obs.disconnect(); applyAll(); obs.observe(app, { childList: true }); });
+    function load() { return fetchFeed().then(function (f) { feed = f; applyAll(); }); }
     load();
+    loadDirection().then(applyAll);
     setInterval(load, 60000);
-    setInterval(ensure, 15000);
+    setInterval(function () { loadDirection().then(applyAll); }, 60000);
+    setInterval(applyAll, 15000);
     obs.observe(app, { childList: true });
-    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, ensure: ensure };   // test hook (read-only)
+    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, resolveCurrentState: resolveCurrentState, directionFor: directionFor, ensure: ensure, ensureHeadline: ensureHeadline, suppressStaleChip: suppressStaleChip };   // test hook (read-only)
   } catch (e) { if (window.console) console.warn('mechanical feed addon disabled:', e); }
 })();
 </script>
