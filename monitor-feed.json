@@ -1,10 +1,10 @@
 {
  "schema_version": 1,
  "kind": "levelup-public-feed",
- "generated_at": "2026-09-25T12:57:27.693Z",
+ "generated_at": "2026-09-25T15:59:18.088Z",
  "notice": "Mechanical observations of Chelsea's published levels. Not a Sheet status, not a signal, and not a record of anyone's entry or exit.",
  "monitor": {
-  "last_successful_check_at": "2026-09-25T12:57:27.693Z"
+  "last_successful_check_at": "2026-09-25T15:59:18.088Z"
  },
  "assets": {
   "AAVE": {
@@ -99,7 +99,7 @@
       "low": 0.246,
       "high": 0.248
      },
-     "reached_at": "2026-09-22T12:00:00.000Z"
+     "reached_at": "2026-09-22T11:00:00.000Z"
     },
     "targets": [
      {
@@ -187,7 +187,7 @@
       "low": 0.5781,
       "high": 0.5781
      },
-     "reached_at": "2026-09-14T20:00:00.000Z"
+     "reached_at": "2026-09-14T19:00:00.000Z"
     },
     "targets": [
      {
@@ -276,7 +276,7 @@
       "low": 0.1122,
       "high": 0.1125
      },
-     "reached_at": "2026-09-24T16:00:00.000Z"
+     "reached_at": "2026-09-24T15:00:00.000Z"
     },
     "targets": [
      {
@@ -360,7 +360,7 @@
       "low": 0.78,
       "high": 0.786
      },
-     "reached_at": "2026-09-21T13:00:00.000Z"
+     "reached_at": "2026-09-21T10:00:00.000Z"
     },
     "targets": [
      {
@@ -446,7 +446,7 @@
       "low": 0.222,
       "high": 0.225
      },
-     "reached_at": "2026-09-21T10:00:00.000Z"
+     "reached_at": "2026-09-21T09:00:00.000Z"
     },
     "targets": [
      {
@@ -523,10 +523,17 @@
     "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "WAITING_FOR_TRIGGER",
-    "state_since": "2026-09-24T15:46:40.841Z",
+    "state": "TRIGGERED",
+    "state_since": "2026-09-25T15:59:18.088Z",
     "published_at": "2026-09-23T11:23:09.000Z",
-    "trigger": null,
+    "trigger": {
+     "level_id": "TRIGGER_1",
+     "zone": {
+      "low": 1.832,
+      "high": 1.84
+     },
+     "reached_at": "2026-09-25T12:00:00.000Z"
+    },
     "targets": [
      {
       "level_id": "TP1",
@@ -609,7 +616,7 @@
       "low": 8,
       "high": 8.1
      },
-     "reached_at": "2026-09-18T14:00:00.000Z"
+     "reached_at": "2026-09-18T11:00:00.000Z"
     },
     "targets": [
      {
@@ -671,8 +678,8 @@
     "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "TRIGGERED",
-    "state_since": "2026-09-24T15:46:40.841Z",
+    "state": "STOP_BOUNDARY_REACHED",
+    "state_since": "2026-09-25T15:59:18.088Z",
     "published_at": "2026-09-22T11:16:39.000Z",
     "trigger": {
      "level_id": "TRIGGER_1",
@@ -680,7 +687,7 @@
       "low": 789,
       "high": 795
      },
-     "reached_at": "2026-09-23T03:00:00.000Z"
+     "reached_at": "2026-09-22T12:00:00.000Z"
     },
     "targets": [
      {
@@ -731,17 +738,21 @@
       "high": 782
      },
      "reached_at": "2026-09-22T14:00:00.000Z",
-     "in_trade": false,
+     "in_trade": true,
      "relation_to_final_tp": null
     },
-    "evidence_grade": null,
-    "confirm": null,
-    "terminal_at": null,
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-09-25T12:57:00.000Z",
+     "close": 777.98,
+     "level_id": "STOP"
+    },
+    "terminal_at": "2026-09-22T14:00:00.000Z",
     "later_evidence": null,
     "public_display": {
-     "kind": null,
-     "ready": false,
-     "evidence_grade": null,
+     "kind": "STOP_BOUNDARY",
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
      "blockers": []
     }
    }
@@ -850,7 +861,7 @@
       "low": 2.65,
       "high": 2.67
      },
-     "reached_at": "2026-09-24T13:00:00.000Z"
+     "reached_at": "2026-09-24T12:00:00.000Z"
     },
     "targets": [
      {
@@ -1086,7 +1097,7 @@
       "low": 9.43,
       "high": 9.5
      },
-     "reached_at": "2026-09-24T13:00:00.000Z"
+     "reached_at": "2026-09-24T12:00:00.000Z"
     },
     "targets": [
      {
@@ -1246,7 +1257,7 @@
       "low": 0.984,
       "high": 0.995
      },
-     "reached_at": "2026-09-24T15:00:00.000Z"
+     "reached_at": "2026-09-24T14:00:00.000Z"
     },
     "targets": [
      {
@@ -1330,7 +1341,7 @@
       "low": 0.077,
       "high": 0.078
      },
-     "reached_at": "2026-09-18T14:00:00.000Z"
+     "reached_at": "2026-09-18T11:00:00.000Z"
     },
     "targets": [
      {
@@ -1397,7 +1408,7 @@
       "low": 5.68,
       "high": 5.85
      },
-     "reached_at": "2026-09-18T04:00:00.000Z"
+     "reached_at": "2026-09-17T14:00:00.000Z"
     },
     "targets": [
      {
@@ -1475,7 +1486,7 @@
       "low": 12.95,
       "high": 13.02
      },
-     "reached_at": "2026-09-22T13:00:00.000Z"
+     "reached_at": "2026-09-22T11:00:00.000Z"
     },
     "targets": [
      {
@@ -1571,7 +1582,7 @@
       "low": 2.705,
       "high": 2.725
      },
-     "reached_at": "2026-09-24T13:00:00.000Z"
+     "reached_at": "2026-09-24T12:00:00.000Z"
     },
     "targets": [
      {
@@ -1724,10 +1735,17 @@
     "class": "NO_TRADE"
    },
    "lifecycle": {
-    "state": "WAITING_FOR_TRIGGER",
-    "state_since": "2026-09-24T15:46:40.841Z",
+    "state": "STOP_BOUNDARY_REACHED",
+    "state_since": "2026-09-25T15:59:18.088Z",
     "published_at": "2026-09-18T11:15:12.000Z",
-    "trigger": null,
+    "trigger": {
+     "level_id": "TRIGGER_1",
+     "zone": {
+      "low": 61.5,
+      "high": 62
+     },
+     "reached_at": "2026-09-18T12:00:00.000Z"
+    },
     "targets": [
      {
       "level_id": "TP1",
@@ -1770,17 +1788,21 @@
       "high": 66
      },
      "reached_at": "2026-09-18T13:00:00.000Z",
-     "in_trade": false,
+     "in_trade": true,
      "relation_to_final_tp": null
     },
-    "evidence_grade": null,
-    "confirm": null,
-    "terminal_at": null,
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-09-25T12:00:00.000Z",
+     "close": 94.61,
+     "level_id": "STOP"
+    },
+    "terminal_at": "2026-09-18T13:00:00.000Z",
     "later_evidence": null,
     "public_display": {
-     "kind": null,
-     "ready": false,
-     "evidence_grade": null,
+     "kind": "STOP_BOUNDARY",
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
      "blockers": []
     }
    }
@@ -1803,7 +1825,7 @@
       "low": 0.0615,
       "high": 0.0618
      },
-     "reached_at": "2026-09-24T20:00:00.000Z"
+     "reached_at": "2026-09-23T11:00:00.000Z"
     },
     "targets": [
      {
@@ -1854,19 +1876,24 @@
       "high": 0.0602
      },
      "reached_at": "2026-09-23T11:00:00.000Z",
-     "in_trade": false,
+     "in_trade": true,
      "relation_to_final_tp": "BEFORE"
     },
-    "evidence_grade": "WICK_ONLY",
-    "confirm": null,
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-09-25T12:00:00.000Z",
+     "close": 0.06772,
+     "level_id": "TP3"
+    },
     "terminal_at": "2026-09-25T11:00:00.000Z",
     "later_evidence": null,
     "public_display": {
      "kind": "TRADE_COMPLETE",
      "ready": false,
-     "evidence_grade": "WICK_ONLY",
+     "evidence_grade": "CLOSE_CONFIRMED",
      "blockers": [
-      "AWAITING_CLOSE_CONFIRMATION"
+      "STOP_BOUNDARY_TOUCHED_BEFORE_FINAL_TP",
+      "CONFLICTING_EVIDENCE"
      ]
     }
    }
@@ -2181,7 +2208,7 @@
       "low": 0.001,
       "high": 0.00103
      },
-     "reached_at": "2026-09-21T14:00:00.000Z"
+     "reached_at": "2026-09-21T08:00:00.000Z"
     },
     "targets": [
      {
@@ -2248,7 +2275,7 @@
       "low": 8.95,
       "high": 9.02
      },
-     "reached_at": "2026-09-21T12:00:00.000Z"
+     "reached_at": "2026-09-21T09:00:00.000Z"
     },
     "targets": [
      {
@@ -2326,7 +2353,7 @@
       "low": 0.188,
       "high": 0.19
      },
-     "reached_at": "2026-09-18T14:00:00.000Z"
+     "reached_at": "2026-09-18T13:00:00.000Z"
     },
     "targets": [
      {
@@ -3997,6 +4024,179 @@
    }
   },
   {
+   "receipt_id": "rcpt_0377b062ed51221b04301dc70f29",
+   "asset": "BNB",
+   "setup_instance_key": "BNB|1790075799000|18a61c6c74fd301480919dfbb097",
+   "setup_fingerprint": "18a61c6c74fd301480919dfbb097",
+   "outcome": "STOP_BOUNDARY_REACHED",
+   "opened_at": "2026-09-25T15:59:18.088Z",
+   "superseded": false,
+   "superseded_at": null,
+   "snapshot": {
+    "setup_published_at": "2026-09-22T11:16:39.000Z",
+    "setup_timestamp_text": "9/22/2026 7:16:39",
+    "direction": "long",
+    "sheet_status_at_open": {
+     "text": "Watching",
+     "class": "WATCHING"
+    },
+    "levels": [
+     {
+      "id": "TRIGGER_1",
+      "kind": "trigger",
+      "label": "Trigger 1",
+      "zone": {
+       "low": 789,
+       "high": 795
+      },
+      "raw": "Completed 1H open-and-hold above $789–$795 and both exact Simple/Smooth MAs, followed by a clean retest. Entry Zone: Approximately $787–$793, only after confirmation."
+     },
+     {
+      "id": "TP1",
+      "kind": "tp",
+      "label": "TP1",
+      "zone": {
+       "low": 803,
+       "high": 808
+      },
+      "raw": "TP1: $803–$808 — immediate resistance. | TP2: $818–$825 — behavioral supply. | TP3: $842–$850 — higher-timeframe resistance. | Extended: $870–$885 — expansion zone."
+     },
+     {
+      "id": "TP2",
+      "kind": "tp",
+      "label": "TP2",
+      "zone": {
+       "low": 818,
+       "high": 825
+      },
+      "raw": "TP1: $803–$808 — immediate resistance. | TP2: $818–$825 — behavioral supply. | TP3: $842–$850 — higher-timeframe resistance. | Extended: $870–$885 — expansion zone."
+     },
+     {
+      "id": "TP3",
+      "kind": "tp",
+      "label": "TP3",
+      "zone": {
+       "low": 842,
+       "high": 850
+      },
+      "raw": "TP1: $803–$808 — immediate resistance. | TP2: $818–$825 — behavioral supply. | TP3: $842–$850 — higher-timeframe resistance. | Extended: $870–$885 — expansion zone."
+     },
+     {
+      "id": "EXTENDED",
+      "kind": "extended",
+      "label": "Extended",
+      "zone": {
+       "low": 870,
+       "high": 885
+      },
+      "raw": "TP1: $803–$808 — immediate resistance. | TP2: $818–$825 — behavioral supply. | TP3: $842–$850 — higher-timeframe resistance. | Extended: $870–$885 — expansion zone."
+     },
+     {
+      "id": "STOP",
+      "kind": "stop",
+      "label": "Stop",
+      "zone": {
+       "low": 777,
+       "high": 782
+      },
+      "raw": "Approximately $777–$782, beneath the 1H EMA/SMA50 area and structural defense. The exact stop may change when triggered."
+     }
+    ],
+    "published_text": {
+     "headline": "BNB — LONG WATCH",
+     "why": "BNB's 1H Stochastic is deeply reset while price remains supported by the slower 1H and 4H MA structure Current Price: Approximately $784.73 at 4:38 AM ET Setup/Pattern: Higher-timeframe uptrend pulling back beneath the $789–$795 fast-MA bundle. What I'm Watching: Buyers defended approximately $778–$782. They must reclaim $789–$795 and reverse the 1H MACD rollover. Risk/Reward: Approximately 1.2–1.6R to TP1 | 2.7–3.3R to TP2.",
+     "warning": "Invalidation: Completed 1H acceptance below $777, or failure of the defended 4H trend structure. MISSED IT?: Be patient for the next entry. DON'T CHASE. Require a retest/new confirmation, a new higher low, and moving averages or momentum to reset.",
+     "triggers": [
+      "Completed 1H open-and-hold above $789–$795 and both exact Simple/Smooth MAs, followed by a clean retest. Entry Zone: Approximately $787–$793, only after confirmation.",
+      "",
+      ""
+     ],
+     "targets": "TP1: $803–$808 — immediate resistance. | TP2: $818–$825 — behavioral supply. | TP3: $842–$850 — higher-timeframe resistance. | Extended: $870–$885 — expansion zone.",
+     "stop": "Approximately $777–$782, beneath the 1H EMA/SMA50 area and structural defense. The exact stop may change when triggered.",
+     "safety": ""
+    }
+   },
+   "lifecycle": {
+    "state": "STOP_BOUNDARY_REACHED",
+    "state_since": "2026-09-25T15:59:18.088Z",
+    "published_at": "2026-09-22T11:16:39.000Z",
+    "trigger": {
+     "level_id": "TRIGGER_1",
+     "zone": {
+      "low": 789,
+      "high": 795
+     },
+     "reached_at": "2026-09-22T12:00:00.000Z"
+    },
+    "targets": [
+     {
+      "level_id": "TP1",
+      "zone": {
+       "low": 803,
+       "high": 808
+      },
+      "reached_at": null
+     },
+     {
+      "level_id": "TP2",
+      "zone": {
+       "low": 818,
+       "high": 825
+      },
+      "reached_at": null
+     },
+     {
+      "level_id": "TP3",
+      "zone": {
+       "low": 842,
+       "high": 850
+      },
+      "reached_at": null
+     }
+    ],
+    "objectives": {
+     "defined": 3,
+     "reached": 0,
+     "all_reached": false,
+     "ladder_problems": [],
+     "completed_at": null
+    },
+    "extended": {
+     "level_id": "EXTENDED",
+     "zone": {
+      "low": 870,
+      "high": 885
+     },
+     "reached_at": null
+    },
+    "stop_boundary": {
+     "level_id": "STOP",
+     "kind": "stop",
+     "zone": {
+      "low": 777,
+      "high": 782
+     },
+     "reached_at": "2026-09-22T14:00:00.000Z",
+     "in_trade": true,
+     "relation_to_final_tp": null
+    },
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-09-25T12:57:00.000Z",
+     "close": 777.98,
+     "level_id": "STOP"
+    },
+    "terminal_at": "2026-09-22T14:00:00.000Z",
+    "later_evidence": null,
+    "public_display": {
+     "kind": "STOP_BOUNDARY",
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
+     "blockers": []
+    }
+   }
+  },
+  {
    "receipt_id": "rcpt_11951db9f2608518a6b2e70c4147",
    "asset": "AVAX",
    "setup_instance_key": "AVAX|1789730091000|14160425045f8a03dabffe987d27",
@@ -4319,6 +4519,172 @@
     "later_evidence": null,
     "public_display": {
      "kind": "TRADE_COMPLETE",
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
+     "blockers": []
+    }
+   }
+  },
+  {
+   "receipt_id": "rcpt_153e4131e3d13d0eb1a20dbff7e3",
+   "asset": "QNT",
+   "setup_instance_key": "QNT|1789730112000|0d46ae47f58b490f5054b199faa5",
+   "setup_fingerprint": "0d46ae47f58b490f5054b199faa5",
+   "outcome": "STOP_BOUNDARY_REACHED",
+   "opened_at": "2026-09-25T15:59:18.088Z",
+   "superseded": false,
+   "superseded_at": null,
+   "snapshot": {
+    "setup_published_at": "2026-09-18T11:15:12.000Z",
+    "setup_timestamp_text": "9/18/2026 7:15:12",
+    "direction": "short",
+    "sheet_status_at_open": {
+     "text": "No Trade",
+     "class": "NO_TRADE"
+    },
+    "levels": [
+     {
+      "id": "TRIGGER_1",
+      "kind": "trigger",
+      "label": "Trigger 1",
+      "zone": {
+       "low": 61.5,
+       "high": 62
+      },
+      "raw": "Completed 1H open-and-hold below $61.50-$62.00 and below both Simple and Smooth MAs. Entry zone $61.50-$62.25 after confirmation and a failed reclaim establishes a lower high."
+     },
+     {
+      "id": "ENTRY_ZONE",
+      "kind": "entry",
+      "label": "Entry zone",
+      "zone": {
+       "low": 61.5,
+       "high": 62.25
+      },
+      "raw": "Completed 1H open-and-hold below $61.50-$62.00 and below both Simple and Smooth MAs. Entry zone $61.50-$62.25 after confirmation and a failed reclaim establishes a lower high."
+     },
+     {
+      "id": "TP1",
+      "kind": "tp",
+      "label": "TP1",
+      "zone": {
+       "low": 58.5,
+       "high": 58.5
+      },
+      "raw": "58.5 / 55 / 51"
+     },
+     {
+      "id": "TP2",
+      "kind": "tp",
+      "label": "TP2",
+      "zone": {
+       "low": 55,
+       "high": 55
+      },
+      "raw": "58.5 / 55 / 51"
+     },
+     {
+      "id": "TP3",
+      "kind": "tp",
+      "label": "TP3",
+      "zone": {
+       "low": 51,
+       "high": 51
+      },
+      "raw": "58.5 / 55 / 51"
+     },
+     {
+      "id": "STOP",
+      "kind": "stop",
+      "label": "Stop",
+      "zone": {
+       "low": 64.5,
+       "high": 66
+      },
+      "raw": "$64.50-$66.00 - beyond structural resistance, the rejection wick, and MA safety nets"
+     }
+    ],
+    "published_text": {
+     "headline": "QNT — Short Relative-Weakness Watch",
+     "why": "QNT remains technically weak while most of the broader Top-100 board is advancing. Setup: relative-weakness continuation near behavioral support. Buyers are defending approximately $61.50-$62.00 but their response is weak relative to BTC; sellers must break that defense and reject any reclaim attempt. Risk/Reward ~1-1.3R to TP1, 2-2.5R to TP2. Extended target $46-$48.",
+     "warning": "Invalidation: completed 1H acceptance above $66 and above both custom MAs. If you missed it: be patient for the next entry, don't chase - wait for a retest, a new lower high, and MA/momentum reset.",
+     "triggers": [
+      "Completed 1H open-and-hold below $61.50-$62.00 and below both Simple and Smooth MAs. Entry zone $61.50-$62.25 after confirmation and a failed reclaim establishes a lower high.",
+      "",
+      ""
+     ],
+     "targets": "58.5 / 55 / 51",
+     "stop": "$64.50-$66.00 - beyond structural resistance, the rejection wick, and MA safety nets",
+     "safety": ""
+    }
+   },
+   "lifecycle": {
+    "state": "STOP_BOUNDARY_REACHED",
+    "state_since": "2026-09-25T15:59:18.088Z",
+    "published_at": "2026-09-18T11:15:12.000Z",
+    "trigger": {
+     "level_id": "TRIGGER_1",
+     "zone": {
+      "low": 61.5,
+      "high": 62
+     },
+     "reached_at": "2026-09-18T12:00:00.000Z"
+    },
+    "targets": [
+     {
+      "level_id": "TP1",
+      "zone": {
+       "low": 58.5,
+       "high": 58.5
+      },
+      "reached_at": null
+     },
+     {
+      "level_id": "TP2",
+      "zone": {
+       "low": 55,
+       "high": 55
+      },
+      "reached_at": null
+     },
+     {
+      "level_id": "TP3",
+      "zone": {
+       "low": 51,
+       "high": 51
+      },
+      "reached_at": null
+     }
+    ],
+    "objectives": {
+     "defined": 3,
+     "reached": 0,
+     "all_reached": false,
+     "ladder_problems": [],
+     "completed_at": null
+    },
+    "extended": null,
+    "stop_boundary": {
+     "level_id": "STOP",
+     "kind": "stop",
+     "zone": {
+      "low": 64.5,
+      "high": 66
+     },
+     "reached_at": "2026-09-18T13:00:00.000Z",
+     "in_trade": true,
+     "relation_to_final_tp": null
+    },
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-09-25T12:00:00.000Z",
+     "close": 94.61,
+     "level_id": "STOP"
+    },
+    "terminal_at": "2026-09-18T13:00:00.000Z",
+    "later_evidence": null,
+    "public_display": {
+     "kind": "STOP_BOUNDARY",
      "ready": true,
      "evidence_grade": "CLOSE_CONFIRMED",
      "blockers": []
