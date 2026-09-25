@@ -936,18 +936,48 @@ load();setInterval(load,60000);
         .then(function (j) { if (!j || j.kind !== 'levelup-public-feed' || !j.assets || !j.receipts) throw new Error('malformed feed'); return j; })
         .catch(function () { return null; });
     }
-    /* Prefer the asset's LIVE lifecycle; if it's no longer monitorable (e.g. Sheet status moved to Closed) fall
-       back to its most recent terminal receipt - but ONLY one whose setup_instance_key matches the asset's
-       CURRENT instance (feed.assets[asset].setup_instance_key, always present even when lifecycle is null). An
-       old, superseded instance's receipt must never speak for a new current setup (e.g. a fresh Chelsea re-call
-       on the same asset) - this is the same setup-instance identity the whole project already uses, not a new
-       identity system. */
-    function mechanicalFor(asset) {
+    /* Recomputes the SAME setup_instance.key formula core/levelup-core.js defines (asset|published_ms|fingerprint)
+       from fields the embedded LevelUpCore copy on THIS page already exposes (.fingerprint, .setup_row.utcMs/
+       .ts_text) - confirmed live on 2026-09-25 that this page's embedded LevelUpCore.buildAll() output has never
+       been synced with the newer canonical core/levelup-core.js and has no .setup_instance field at all yet. This
+       is NOT a second identity system - it is the existing one's own published formula, computed here only
+       because att-core/att-module/att-ui stay byte-for-byte untouched (project hard rule); if that embedded copy
+       is ever resynced to include .setup_instance directly, this function can be deleted and callers can read it
+       straight from window.__attention.state().setups[asset].setup_instance.key instead. */
+    function instanceKeyFromSetup(asset, s) {
+      if (!s || !s.fingerprint) return null;
+      var sr = s.setup_row || {};
+      var itsPart = (sr.utcMs !== null && sr.utcMs !== undefined) ? String(sr.utcMs) : 'raw:' + String(sr.ts_text || '').trim().replace(/\s+/g, ' ').toLowerCase();
+      return asset + '|' + itsPart + '|' + s.fingerprint;
+    }
+    /* Returns the current Sheet-parsed instance key for asset, via the att-module's own already-fetched setup
+       data. null if the attention data hasn't loaded yet or the asset has no current setup row. */
+    function currentInstanceKeyFor(asset) {
+      try {
+        var st = window.__attention && window.__attention.state();
+        var s = st && st.setups && st.setups[asset];
+        return instanceKeyFromSetup(asset, s);
+      } catch (e) { return null; }
+    }
+    /* INSTANCE-SAFETY FIX (2026-09-25 hotfix, staging): mechanicalFor() used to trust feed.assets[asset].lifecycle
+       purely by ticker, with no check that the FEED's own idea of "current instance" for that asset still matches
+       the SHEET's actual current instance right now. A feed generated before Chelsea republished a same-ticker
+       setup would silently show the OLD instance's TRIGGERED/TP/STOPPED/COMPLETE state on the brand-new setup's
+       card - live-observed on 2026-09-25 (SHIB/ETH/XRP/SOL STOPPED, AAVE TP2, all from 9/22 instances bleeding
+       onto 9/25 setups). currentInstanceKey is the CALLER's live-parsed Sheet instance key for this asset (from
+       core/levelup-core.js's own setup_instance.key - never a second identity system); it is the sole authority
+       for whether ANY mechanical fact may be attributed to this asset's card. If it's unavailable (not yet loaded),
+       this degrades to the prior behavior rather than blanking the board - the same fail-safe philosophy as
+       every other addon here. The receipt fallback is held to the stricter standard: it requires an affirmed
+       currentInstanceKey match every time, since receipts are specifically the higher-risk case (a terminal,
+       possibly old, closed-out record). */
+    function mechanicalFor(asset, currentInstanceKey) {
       if (!feed) return null;
       var a = feed.assets[asset]; if (!a) return null;
+      if (currentInstanceKey && a.setup_instance_key !== currentInstanceKey) return null;
       var lc = a.lifecycle;
       if (!lc) {
-        var r = (feed.receipts || []).filter(function (x) { return x.asset === asset && x.setup_instance_key === a.setup_instance_key; })[0];
+        var r = (feed.receipts || []).filter(function (x) { return x.asset === asset && x.setup_instance_key === currentInstanceKey; })[0];
         lc = r ? r.lifecycle : null;
       }
       if (!lc) return null;
@@ -979,7 +1009,7 @@ load();setInterval(load,60000);
       return null;
     }
     function resolveCurrentState(asset) {
-      var m = mechanicalFor(asset);
+      var m = mechanicalFor(asset, currentInstanceKeyFor(asset));
       if (!m || !m.triggered) return null;   // not mechanically confirmed yet - Sheet stays primary (SEI-shaped)
       if (m.stopped) return { text: 'STOPPED', kind: 'stopped' };
       if (m.complete) return { text: 'COMPLETE', kind: 'complete' };
@@ -997,13 +1027,13 @@ load();setInterval(load,60000);
        badges instead. Implemented as a wrapper around the existing att-module's own applicable() rather than any
        change to att-core/att-module/att-ui themselves (those files are byte-for-byte unchanged) - every one of
        att-ui's own derived views (grid, tape, past-trigger list) flows through this single function, so wrapping
-       it here suppresses consistently everywhere, for free. mechanicalFor() is already instance-safe (above), so
-       an OLD triggered instance can never suppress a NEW current Watching instance of the same asset. */
+       it here suppresses consistently everywhere, for free. mechanicalFor() is instance-safe (above), so an OLD
+       triggered instance can never suppress a NEW current Watching instance of the same asset. */
     if (window.LevelUpAttention && !window.LevelUpAttention.__mechWrapped) {
       var origApplicable = window.LevelUpAttention.applicable;
       window.LevelUpAttention.applicable = function (setup, opts2) {
         if (!origApplicable(setup, opts2)) return false;
-        var m = mechanicalFor(setup.asset);
+        var m = mechanicalFor(setup.asset, currentInstanceKeyFor(setup.asset));
         if (m && m.triggered) return false;
         return true;
       };
@@ -1054,7 +1084,7 @@ load();setInterval(load,60000);
               pill.classList.remove('mech-demoted');
             }
           }
-          var html = badgeHtml(mechanicalFor(asset)); if (!html) return;
+          var html = badgeHtml(mechanicalFor(asset, currentInstanceKeyFor(asset))); if (!html) return;
           var d = document.createElement('div'); d.innerHTML = html;
           if (pill && pill.parentNode) pill.parentNode.insertBefore(d.firstChild, pill.nextSibling);
         });
@@ -1082,7 +1112,7 @@ load();setInterval(load,60000);
     load();
     setInterval(load, 60000);
     obs.observe(grid.parentNode, { childList: true, subtree: true });
-    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, resolveCurrentState: resolveCurrentState, directionFor: directionFor, decorate: decorate, decorateActiveNow: decorateActiveNow };   // test hook (read-only)
+    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, currentInstanceKeyFor: currentInstanceKeyFor, resolveCurrentState: resolveCurrentState, directionFor: directionFor, decorate: decorate, decorateActiveNow: decorateActiveNow };   // test hook (read-only)
   } catch (e) { if (window.console) console.warn('mechanical feed addon disabled:', e); }
 })();
 </script>

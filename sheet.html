@@ -977,14 +977,23 @@ body.mech-hide-passed-chip #att-chip.passed{display:none}
         .then(function (j) { if (!j || j.kind !== 'levelup-public-feed' || !j.assets || !j.receipts) throw new Error('malformed feed'); return j; })
         .catch(function () { return null; });
     }
-    function mechanicalFor(asset) {
+    /* INSTANCE-SAFETY FIX (2026-09-25 hotfix, staging): mechanicalFor() used to trust feed.assets[asset].lifecycle
+       purely by ticker, with no check that the FEED's own idea of "current instance" for that asset still matches
+       the SHEET's actual current instance right now. A feed generated before Chelsea republished a same-ticker
+       setup would silently show the OLD instance's TRIGGERED/TP/STOPPED/COMPLETE state on the brand-new setup's
+       banner - live-observed on 2026-09-25. currentInstanceKey (below, from loadDirection()'s already-fetched
+       Sheet parse via the real core/levelup-core.js - never a second identity system) is the sole authority for
+       whether ANY mechanical fact may be attributed to this page's asset. Unavailable (not yet loaded) degrades
+       to the prior behavior rather than blanking the page; the receipt fallback is held to the stricter standard
+       of requiring an affirmed match every time, since receipts are the higher-risk case (a terminal, possibly
+       old, closed-out record). */
+    function mechanicalFor(asset, currentInstanceKey) {
       if (!feed) return null;
       var a = feed.assets[asset]; if (!a) return null;
+      if (currentInstanceKey && a.setup_instance_key !== currentInstanceKey) return null;
       var lc = a.lifecycle;
       if (!lc) {
-        /* instance-safe fallback: an OLD, superseded instance's receipt must never speak for a new current setup -
-           same fix as index.html's mechanicalFor(), which already required this match; sheet.html's copy had not. */
-        var r = (feed.receipts || []).filter(function (x) { return x.asset === asset && x.setup_instance_key === a.setup_instance_key; })[0];
+        var r = (feed.receipts || []).filter(function (x) { return x.asset === asset && x.setup_instance_key === currentInstanceKey; })[0];
         lc = r ? r.lifecycle : null;
       }
       if (!lc) return null;
@@ -995,11 +1004,25 @@ body.mech-hide-passed-chip #att-chip.passed{display:none}
         .map(function (t) { return !!t.reached_at; });
       return { triggered: true, tp: tp, stopped: lc.state === 'STOP_BOUNDARY_REACHED', complete: lc.state === 'OBJECTIVES_EXHAUSTED' };
     }
+    /* Recomputes the SAME setup_instance.key formula core/levelup-core.js defines (asset|published_ms|fingerprint)
+       from fields the embedded LevelUpCore copy on THIS page already exposes (.fingerprint, .setup_row.utcMs/
+       .ts_text) - confirmed live on 2026-09-25 that this page's embedded LevelUpCore.buildAll() output has never
+       been synced with the newer canonical core/levelup-core.js and has no .setup_instance field at all yet. This
+       is NOT a second identity system - it is the existing one's own published formula, computed here only
+       because att-core/att-module/att-ui stay byte-for-byte untouched (project hard rule); if that embedded copy
+       is ever resynced to include .setup_instance directly, this can read it straight from there instead. */
+    function instanceKeyFromSetup(asset, s) {
+      if (!s || !s.fingerprint) return null;
+      var sr = s.setup_row || {};
+      var itsPart = (sr.utcMs !== null && sr.utcMs !== undefined) ? String(sr.utcMs) : 'raw:' + String(sr.ts_text || '').trim().replace(/\s+/g, ' ').toLowerCase();
+      return asset + '|' + itsPart + '|' + s.fingerprint;
+    }
     /* CURRENT-STATE RECONCILIATION (staging) - see index.html's copy of this same script for the full rationale.
        This page has no shared parsed-setup cache to read direction from (att-ui here keeps its own private `setup`
        var), so it fetches+parses the Sheet CSV independently via the already-loaded LevelUpCore - the same
-       redundant-fetch pattern this page's other addons already use, never touching att-core/att-module/att-ui. */
-    var directionVal = null, directionAsset = null;
+       redundant-fetch pattern this page's other addons already use, never touching att-core/att-module/att-ui.
+       The same parse also supplies currentInstanceKey for the instance-safety guard above - one fetch, two uses. */
+    var directionVal = null, directionAsset = null, currentInstanceKey = null;
     function loadDirection() {
       var CSV = (typeof SHEET_CSV !== 'undefined' && SHEET_CSV) || '';
       var Core = window.LevelUpCore;
@@ -1010,7 +1033,8 @@ body.mech-hide-passed-chip #att-chip.passed{display:none}
           var v = s && s.direction && s.direction.value;
           directionVal = v === 'long' ? 'LONG' : v === 'short' ? 'SHORT' : null;
           directionAsset = ASSET_;
-        }).catch(function () { /* leave directionVal as-is - never break the page */ });
+          currentInstanceKey = instanceKeyFromSetup(ASSET_, s);
+        }).catch(function () { /* leave directionVal/currentInstanceKey as-is - never break the page */ });
     }
     function directionFor(asset) {
       if (directionAsset === asset && directionVal) return directionVal;
@@ -1021,7 +1045,7 @@ body.mech-hide-passed-chip #att-chip.passed{display:none}
       return null;
     }
     function resolveCurrentState(asset) {
-      var m = mechanicalFor(asset);
+      var m = mechanicalFor(asset, directionAsset === asset ? currentInstanceKey : null);
       if (!m || !m.triggered) return null;   // not mechanically confirmed yet - Sheet stays primary (SEI-shaped)
       if (m.stopped) return { text: 'STOPPED', kind: 'stopped' };
       if (m.complete) return { text: 'COMPLETE', kind: 'complete' };
@@ -1085,7 +1109,7 @@ body.mech-hide-passed-chip #att-chip.passed{display:none}
     function ensure() {
       var banner = app.querySelector('.banner'); if (!banner) return;
       var old = document.getElementById('mech-panel');
-      var html = panelHtml(mechanicalFor(ASSET_));
+      var html = panelHtml(mechanicalFor(ASSET_, directionAsset === ASSET_ ? currentInstanceKey : null));
       if (!html) { if (old) old.remove(); return; }
       var d = document.createElement('div'); d.innerHTML = html; var panel = d.firstChild;
       var chip = document.getElementById('att-chip');
@@ -1123,7 +1147,7 @@ body.mech-hide-passed-chip #att-chip.passed{display:none}
     setInterval(function () { loadDirection().then(applyAll); }, 60000);
     setInterval(applyAll, 15000);
     obs.observe(app, { childList: true });
-    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, resolveCurrentState: resolveCurrentState, directionFor: directionFor, ensure: ensure, ensureHeadline: ensureHeadline, suppressStaleChip: suppressStaleChip };   // test hook (read-only)
+    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, getCurrentInstanceKey: function () { return currentInstanceKey; }, resolveCurrentState: resolveCurrentState, directionFor: directionFor, ensure: ensure, ensureHeadline: ensureHeadline, suppressStaleChip: suppressStaleChip };   // test hook (read-only)
   } catch (e) { if (window.console) console.warn('mechanical feed addon disabled:', e); }
 })();
 </script>
