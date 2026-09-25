@@ -245,23 +245,6 @@ function diffLevels(a,b){if(!b)return[];const out=[];
   [["TARGETS",tpRaw],["STOP",r=>get(r,"stop")],["SAFETY",r=>get(r,"safety")],["TRIGGER 1",r=>get(r,"trigger 1")],["TRIGGER 2",r=>get(r,"trigger 2")],["TRIGGER 3",r=>get(r,"trigger 3")]]
    .forEach(([k,f])=>{if(f(a)!==f(b))out.push(k.toLowerCase());});return out;}
 
-function skoolPost(m){
-  const {cur,S,carried,lastPC}=m;const s=get(cur,"status");const statusLine=STATUS(s)[1].replace(/^[▲▼✕■👀] /,"");
-  const T=[1,2,3].map(i=>get(S,"trigger "+i)).filter(Boolean);
-  const levelBlock=[T.length?`📍 THE LEVELS\n`+T.join("\n"):"",``,
-    `🎯 TARGETS\nTP1 ${get(S,"tp1")} · TP2 ${get(S,"tp2")} · TP3 ${get(S,"tp3")}`,``,
-    `🛑 STOP ${get(S,"stop")}${get(S,"safety")?" · safety net "+get(S,"safety"):""}`,``,
-    get(S,"why")?`WHY\n${get(S,"why")}`:"",``,get(S,"warning")?`⚠️ ${get(S,"warning")}`:""];
-  const foot=[`📲 Live sheet: ${location.href.split("#")[0]}`,``,`Levels are structure, not instructions. Your entry, your risk.\nNot financial advice. For educational purposes only. Trading involves risk. Protect your capital. DYOR.\n\nLEVEL UP ⚡`];
-  const noTradeLike=/no trade|closed|invalid/i.test(s);
-  if(noTradeLike){
-    return [`CURRENT STATUS:\n${statusLine} — ${ASSET}`,``,
-      `PUBLISHED SETUP (Historical — NOT a current trade call):\nChelsea's most recent published setup for ${ASSET} was on ${stamp(get(S,"timestamp"))}. It is shown for reference only. Wait for a new update before treating any level as active.`,``,
-      ...levelBlock,``,
-      `LAST PRICE CHECK:\n${lastPC?stamp(get(lastPC,"timestamp"))+" — "+cleanPC(lastPC):"none recorded in the sheet"}`,``,...foot].join("\n").replace(/\n{3,}/g,"\n\n");}
-  return [`${statusLine} — ${ASSET}`,``,`🔔 Tap the bell on this post. We'll comment when price reaches each level.`,carried?`\nℹ️ Status update — not a new call from Chelsea. Levels below are from Chelsea's published setup of ${stamp(get(S,"timestamp"))}.`:"",``,...levelBlock,``,...foot].join("\n").replace(/\n{3,}/g,"\n\n");
-}
-
 async function load(){
   let text="";
   if(SHEET_CSV){try{const r=await fetch(SHEET_CSV+(SHEET_CSV.includes("?")?"&":"?")+"t="+Date.now());text=await r.text();}catch(e){}}
@@ -301,7 +284,7 @@ async function load(){
 
   const media=()=>{let x="";
     if(img)x+=`<div class="chart"><img src="${img}" alt="Chelsea's chart"></div>`;
-    x+=`<div class="btnrow">${get(S,"chart link")?`<a class="btn" href="${esc(get(S,"chart link"))}" target="_blank">Open interactive chart${carried?" (setup of "+esc(stamp(get(S,"timestamp")))+")":""}</a>`:""}<button class="btn primary" id="copy">Copy Skool post</button></div>`;
+    if(get(S,"chart link"))x+=`<div class="btnrow"><a class="btn" href="${esc(get(S,"chart link"))}" target="_blank">Open interactive chart${carried?" (setup of "+esc(stamp(get(S,"timestamp")))+")":""}</a></div>`;
     if(vm)x+=`<div class="card soft"><h3>Chelsea's read — voice</h3><iframe class="audio" src="https://drive.google.com/file/d/${vm}/preview" allow="autoplay"></iframe></div>`;
     return x;};
   const setupHTML=()=>{let x="";
@@ -340,7 +323,6 @@ async function load(){
       h+=`<div class="hist${st==="PRICE CHECK"?" pcrow":""}"><div class="hh"><span class="hv">${srcBadge(st)} ${esc(get(r,"headline")||ASSET)}</span><span class="hd">${stamp(get(r,"timestamp"))}</span><span class="pill ${c}">${esc(t||"no status")}</span></div>${lv?`<div class="lv">${lv}</div>`:""}${(carried&&r===S)?`<div class="lv"><b>↑ shown above as the most recent published setup</b></div>`:""}${(get(r,"outcome")||get(r,"lesson"))?`<div class="out"><b>What happened:</b> ${esc(get(r,"outcome"))}${get(r,"lesson")?`<br><b>Lesson:</b> ${esc(get(r,"lesson"))}`:""}</div>`:""}</div>`;});}
   h+=`<div class="foot"><div class="f1">LEVEL UP ⚡ · NOT FINANCIAL ADVICE · DYOR</div><div class="f2">Not financial advice. For educational purposes only. Trading involves risk. Protect your capital. Always use a stop loss. Leverage is a personal choice based on your own risk tolerance. Don't compare trades or position sizes.</div></div>`;
   $("#app").innerHTML=h;
-  if($("#copy"))$("#copy").onclick=()=>{navigator.clipboard.writeText(skoolPost({cur,S,carried,lastPC}));$("#copy").textContent="Copied ✓";setTimeout(()=>$("#copy").textContent="Copy Skool post",1500);};
   livePrice(L);
 }
 
@@ -948,9 +930,11 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
 .mech-headline.mech-stopped{background:rgba(239,68,68,.10);color:#B91C1C}
 .mech-headline.mech-complete{background:rgba(250,3,152,.06);color:#FA0398}
 .mech-headline-sub{font-family:Inter,sans-serif;font-weight:600;font-size:12px;letter-spacing:.02em;text-transform:none;opacity:.85}
-/* Hides the stale "price past trigger zone" chip once the current instance is mechanically resolved - scoped via a
-   body-level class (see suppressStaleChip()'s comment for why this must never touch #att-chip's own attributes). */
-body.mech-hide-passed-chip #att-chip.passed{display:none}
+/* Hides the stale "% TO TRIGGER" chip - any variant except the already-correct ACTIVE_LONG/SHORT one - once the
+   current instance is mechanically resolved. Scoped via a body-level class (see suppressStaleChip()'s comment for
+   why this must never touch #att-chip's own attributes). Broadened 2026-09-25 from ":not(.act)" being just
+   ".passed" - the same staleness applies to the "<0.1% TO TRIGGER" tier chip (the real ETH case). */
+body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
 </style>
 <script id="mech-feed">
 /* MECHANICAL FEED (staging addon). Reads the published monitor feed - durable trigger/TP/stop facts computed from
@@ -1022,7 +1006,7 @@ body.mech-hide-passed-chip #att-chip.passed{display:none}
        var), so it fetches+parses the Sheet CSV independently via the already-loaded LevelUpCore - the same
        redundant-fetch pattern this page's other addons already use, never touching att-core/att-module/att-ui.
        The same parse also supplies currentInstanceKey for the instance-safety guard above - one fetch, two uses. */
-    var directionVal = null, directionAsset = null, currentInstanceKey = null;
+    var directionVal = null, directionAsset = null, currentInstanceKey = null, currentSetup = null;
     function loadDirection() {
       var CSV = (typeof SHEET_CSV !== 'undefined' && SHEET_CSV) || '';
       var Core = window.LevelUpCore;
@@ -1034,7 +1018,8 @@ body.mech-hide-passed-chip #att-chip.passed{display:none}
           directionVal = v === 'long' ? 'LONG' : v === 'short' ? 'SHORT' : null;
           directionAsset = ASSET_;
           currentInstanceKey = instanceKeyFromSetup(ASSET_, s);
-        }).catch(function () { /* leave directionVal/currentInstanceKey as-is - never break the page */ });
+          currentSetup = s || null;   // needed by attnTarget() below to read the CURRENT instance's own TP1/TP2/TP3 zones
+        }).catch(function () { /* leave directionVal/currentInstanceKey/currentSetup as-is - never break the page */ });
     }
     function directionFor(asset) {
       if (directionAsset === asset && directionVal) return directionVal;
@@ -1058,6 +1043,92 @@ body.mech-hide-passed-chip #att-chip.passed{display:none}
       return { text: 'ACTIVE ' + dir + ' — ' + suffix, kind: 'active', dir: dir, tpHit: hit + 1 };
     }
     function escH(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+    /* LIFECYCLE-AWARE ATTENTION TARGET (2026-09-25 fix, staging).
+       Root cause: att-ui's own "% to trigger" chip (att-ui:907, chipHtml()) calls A.triggerProximity(setup, price)
+       directly - a PURE function of the setup's ORIGINAL published trigger zone and the live tick, with no
+       knowledge of the CURRENT lifecycle state at all. Once a setup has mechanically TRIGGERED (and possibly hit
+       TP1/TP2 since), "distance to the original trigger zone" is not merely uninteresting, it is affirmatively
+       misleading - a live price that happens to sit back near/inside that old zone (e.g. a pullback after TP1)
+       reads as "<0.1% TO TRIGGER" next to a banner that already says TRIGGERED / TP1 HIT. Exactly the real ETH
+       case: TRIGGERED + TP1 HIT, price back below the original $2,688-$2,695 zone.
+       This does not change triggerProximity()/att-module/att-ui (byte-for-byte untouched, per project rule) - it
+       adds a SEPARATE, lifecycle-aware target resolver that supersedes the stale chip once mechanically triggered.
+       Selection rule (matches the mechanical lifecycle, never the raw published trigger, once triggered):
+         WAITING_FOR_TRIGGER (mechanicalFor() null for the CURRENT instance) -> no target here; the existing
+           att-ui "% to trigger" chip is correct and untouched, and suppressStaleChip() below leaves it visible.
+         TRIGGERED, no TP hit yet                    -> target TP1
+         TP(k) hit, TP(k+1) not yet                  -> target TP(k+1)
+         every defined TP hit / STOPPED / COMPLETE   -> no target (nothing left to be "attentive" toward)
+       Extended is never a candidate: mechanicalFor()'s own `tp` array is built only from /^TP[0-9]+$/ level ids
+       (see mechanicalFor() above), so an Extended level can never be selected here even if it is later reached.
+       Instance safety: attnTarget() reuses mechanicalFor(asset, currentInstanceKey) - the SAME instance-matched
+       source resolveCurrentState() already uses - so an older instance's receipts can never supply this target. */
+    function attnTarget(asset) {
+      var m = mechanicalFor(asset, directionAsset === asset ? currentInstanceKey : null);
+      if (!m || !m.triggered || m.stopped || m.complete) return null;
+      var hitIdx = -1; m.tp.forEach(function (v, i) { if (v) hitIdx = i; });
+      var nextIdx = hitIdx + 1;
+      if (nextIdx >= m.tp.length) return null;   // every defined TP already hit - should already be `complete`, but never invent a phantom next level
+      var dir = directionFor(asset); if (!dir) return null;
+      var s = directionAsset === asset ? currentSetup : null; if (!s || !s.levels) return null;
+      var targetId = 'TP' + (nextIdx + 1);
+      var level = s.levels.filter(function (l) { return l.id === targetId && l.zone; })[0];
+      if (!level) return null;
+      return { level_id: targetId, level: level, dir: dir.toLowerCase() };
+    }
+    /* Same near/far-edge + distance-band math triggerProximity() uses internally (att-module:800-812), just applied
+       to ONE arbitrary level (a TP) instead of "nearest not-yet-passed trigger among several". Uses the SAME
+       exported primitives (C.edges, A.sidePre, A.distTo, A.bandOrd, A.BAND_NAMES) - never reimplements them. */
+    function proximityToLevel(level, dir, price) {
+      var A = window.LevelUpAttention, C = window.LevelUpCore;
+      if (!A || !C || !level || !level.zone) return { state: 'NA' };
+      if (price == null || !isFinite(price) || price <= 0) return { state: 'NOPRICE' };
+      var ed = C.edges(level, dir); var side = A.sidePre(price, ed);
+      if (side === 'beyond') return { state: 'INSIDE', distance_pct: 0, near_edge: ed.near, far_edge: ed.far };   // live tick already through the level - the feed confirms the touch on its own schedule; never contradict that by showing a distance
+      var d = side === 'inside' ? 0 : A.distTo(price, ed.near);
+      return { state: side === 'inside' ? 'INSIDE' : 'APPROACHING', distance_pct: d, band_ord: A.bandOrd(d), band: A.BAND_NAMES[A.bandOrd(d)], near_edge: ed.near, far_edge: ed.far };
+    }
+    /* Independent live-price fetch (mech-feed keeps its own closure-private state, separate from att-ui's own `ps` -
+       same "redundant fetch, several addons" pattern already used by loadDirection() above). Only fetches at all
+       when there is actually a target to show, so a WAITING_FOR_TRIGGER / STOPPED / COMPLETE asset never spends
+       the extra request. */
+    var livePrice = null, livePriceAt = 0, livePriceSrc = null, PRICE_STALE_MS = 150000;
+    function loadLivePrice() {
+      var A = window.LevelUpAttention;
+      if (!A || !attnTarget(ASSET_)) return Promise.resolve();
+      if (livePriceAt && (Date.now() - livePriceAt) < PRICE_STALE_MS) return Promise.resolve();   // already fresh - applyAll() calls this on every cycle, so throttle the actual fetch
+      return A.fetchPrices([ASSET_]).then(function (r) {
+        if (r.prices && r.prices[ASSET_]) { livePrice = r.prices[ASSET_]; livePriceAt = Date.now(); livePriceSrc = (r.sources && r.sources[ASSET_]) || null; }
+        ensureAttnChip();
+      }).catch(function () { ensureAttnChip(); });
+    }
+    function attnChipHtml() {
+      var A = window.LevelUpAttention;
+      var t = attnTarget(ASSET_); if (!t || !A) return '';
+      var fresh = livePriceAt && (Date.now() - livePriceAt) < PRICE_STALE_MS;
+      var price = fresh ? livePrice : null;
+      var p = proximityToLevel(t.level, t.dir, price);
+      var lvl = ' · target ' + t.level_id + ' $' + A.zoneText(t.level.zone);
+      var live = price ? ' · live $' + A.fmtPrice(price) + (livePriceSrc ? ' (' + livePriceSrc.charAt(0).toUpperCase() + livePriceSrc.slice(1) + ')' : '') : '';
+      if (p.state === 'APPROACHING' || p.state === 'INSIDE') {
+        var tier = A.tier(p), lab = p.state === 'INSIDE' ? (t.level_id + ' ZONE') : (p.band_ord >= 1 ? 'ATTENTION LEVEL: ' + p.band : '');
+        return '<div class="att-chip tier-' + tier + '" id="mech-attn-chip" data-tier="' + tier + '"><b>' + A.fmtPct(p.distance_pct) + '%</b><span>to ' + t.level_id + '</span><small>' + escH(lab) + live + lvl + '</small></div>';
+      }
+      return '<div class="att-chip" id="mech-attn-chip"><span>live price unavailable</span><small>distance to ' + t.level_id + ' hidden' + lvl + '</small></div>';
+    }
+    /* Same insert-a-sibling-and-diff pattern as ensure()/ensureHeadline() above - never edits att-ui's own #att-chip
+       node (suppressStaleChip() below hides that one via a body class), just places this new one in its slot. */
+    function ensureAttnChip() {
+      var banner = app.querySelector('.banner'); if (!banner) return;
+      var old = document.getElementById('mech-attn-chip');
+      var html = attnChipHtml();
+      if (!html) { if (old) old.remove(); return; }
+      var d = document.createElement('div'); d.innerHTML = html; var chip = d.firstChild;
+      if (old) { if (old.outerHTML === chip.outerHTML) return; old.replaceWith(chip); return; }
+      var headline = document.getElementById('mech-headline'); var afterEl = headline || banner;
+      afterEl.parentNode.insertBefore(chip, afterEl.nextSibling);
+    }
     /* Patches just the banner's visibility + inserts one reconciled headline node - never edits the base render()'s
        own banner markup/text, so a feed outage or resolveCurrentState() returning null leaves the Sheet-driven
        banner exactly as it renders today. Chelsea's Sheet status/timestamp is preserved as a secondary sub-line,
@@ -1116,15 +1187,22 @@ body.mech-hide-passed-chip #att-chip.passed{display:none}
       var afterEl = chip || banner;
       if (old) old.replaceWith(panel); else afterEl.parentNode.insertBefore(panel, afterEl.nextSibling);
     }
-    /* The client-side "PRICE PAST TRIGGER ZONE" chip (att-ui's own #att-chip, unconfirmed live-tick proximity)
-       predates this reconciliation layer and isn't aware of it. Root cause: att-ui's chipHtml() calls
-       A.triggerProximity(setup, price) directly (att-ui:907) - a different code path than the applicable()
-       suppression wrapper on index.html, because triggerProximity()'s internal "is this even watchable" gate
-       (att-module:795, `if (!applicable(setup, opts)) ...`) calls the module's own CLOSURE-LOCAL applicable
-       function, not window.LevelUpAttention.applicable - reassigning that exported property (as index.html's
-       wrapper does) never reaches this internal call, so no existing wrapper touches it, on either page.
-       Once the CURRENT instance has a mechanically confirmed trigger, this specific "still waiting, price just
-       passed the zone" chip is stale and would contradict the reconciled headline above it.
+    /* The client-side "% TO TRIGGER" chip (att-ui's own #att-chip, unconfirmed live-tick proximity to the ORIGINAL
+       published trigger zone) predates this reconciliation layer and isn't aware of it. Root cause: att-ui's
+       chipHtml() calls A.triggerProximity(setup, price) directly (att-ui:907) - a different code path than the
+       applicable() suppression wrapper on index.html, because triggerProximity()'s internal "is this even
+       watchable" gate (att-module:795, `if (!applicable(setup, opts)) ...`) calls the module's own CLOSURE-LOCAL
+       applicable function, not window.LevelUpAttention.applicable - reassigning that exported property (as
+       index.html's wrapper does) never reaches this internal call, so no existing wrapper touches it, on either
+       page. Once the CURRENT instance has a mechanically confirmed trigger, EVERY variant of this chip (the
+       "APPROACHING/INSIDE - <0.1% TO TRIGGER" tier chip, the "PASSED - price past trigger zone" chip, and the
+       "live price unavailable" fallback) is stale and would contradict the reconciled headline above it - not
+       just the "passed" variant this function originally covered (2026-09-25 fix: broadened from "chip has class
+       .passed" to "chip is not the already-correct ACTIVE_LONG/SHORT variant", since a price sitting back near or
+       inside the ORIGINAL zone after later progress - the real ETH case - produces a tier-N chip, not a passed
+       one). The one exception is chipHtml()'s ACTIVE_LONG/ACTIVE_SHORT branch (class "att-chip act ..."): that
+       one already says TRIGGERED via the Sheet's own admin status and is never misleading, so it is left alone.
+       attnChipHtml() above (ensureAttnChip()) supplies the replacement "TO TPn" chip once this one is hidden.
        IMPORTANT: this must NEVER mutate the #att-chip node's own attributes (class/style). att-ui's own ensure()
        (att-ui:917-923) decides whether to replace that node by comparing old.outerHTML against a freshly-built
        chip's outerHTML - an attribute we add would make that comparison mismatch forever, so att-ui would keep
@@ -1135,10 +1213,15 @@ body.mech-hide-passed-chip #att-chip.passed{display:none}
        without ever touching the node att-ui diffs, so att-ui always sees "no change" and never re-triggers. */
     function suppressStaleChip() {
       var chip = document.getElementById('att-chip');
-      var shouldHide = !!(chip && chip.classList && chip.classList.contains('passed') && resolveCurrentState(ASSET_));
-      document.body.classList.toggle('mech-hide-passed-chip', shouldHide);
+      var shouldHide = !!(chip && chip.classList && !chip.classList.contains('act') && resolveCurrentState(ASSET_));
+      document.body.classList.toggle('mech-hide-stale-attn-chip', shouldHide);
     }
-    function applyAll() { ensure(); ensureHeadline(); suppressStaleChip(); }
+    /* loadLivePrice() is called from applyAll() (not on its own top-level timer) because attnTarget() needs BOTH
+       `feed` (from load()) and `currentSetup`/direction (from loadDirection()) - calling it once, eagerly, before
+       either of those async fetches has resolved would permanently no-op (attnTarget() null -> early return) and
+       never get a second chance. applyAll() already reliably fires again once each of those resolves, and
+       loadLivePrice()'s own freshness check above keeps this from re-fetching on every one of those cycles. */
+    function applyAll() { ensure(); ensureHeadline(); suppressStaleChip(); ensureAttnChip(); loadLivePrice(); }
     var obs = new MutationObserver(function () { obs.disconnect(); applyAll(); obs.observe(app, { childList: true }); });
     function load() { return fetchFeed().then(function (f) { feed = f; applyAll(); }); }
     load();
@@ -1147,7 +1230,7 @@ body.mech-hide-passed-chip #att-chip.passed{display:none}
     setInterval(function () { loadDirection().then(applyAll); }, 60000);
     setInterval(applyAll, 15000);
     obs.observe(app, { childList: true });
-    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, getCurrentInstanceKey: function () { return currentInstanceKey; }, resolveCurrentState: resolveCurrentState, directionFor: directionFor, ensure: ensure, ensureHeadline: ensureHeadline, suppressStaleChip: suppressStaleChip };   // test hook (read-only)
+    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, getCurrentInstanceKey: function () { return currentInstanceKey; }, resolveCurrentState: resolveCurrentState, directionFor: directionFor, ensure: ensure, ensureHeadline: ensureHeadline, suppressStaleChip: suppressStaleChip, attnTarget: attnTarget, attnChipHtml: attnChipHtml, ensureAttnChip: ensureAttnChip, loadLivePrice: loadLivePrice };   // test hook (read-only)
   } catch (e) { if (window.console) console.warn('mechanical feed addon disabled:', e); }
 })();
 </script>
