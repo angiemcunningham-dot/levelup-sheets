@@ -1,10 +1,10 @@
 {
  "schema_version": 1,
  "kind": "levelup-public-feed",
- "generated_at": "2026-09-25T15:59:18.088Z",
+ "generated_at": "2026-09-26T12:31:58.075Z",
  "notice": "Mechanical observations of Chelsea's published levels. Not a Sheet status, not a signal, and not a record of anyone's entry or exit.",
  "monitor": {
-  "last_successful_check_at": "2026-09-25T15:59:18.088Z"
+  "last_successful_check_at": "2026-09-26T12:31:58.075Z"
  },
  "assets": {
   "AAVE": {
@@ -42,7 +42,7 @@
        "low": 154,
        "high": 157
       },
-      "reached_at": null
+      "reached_at": "2026-09-25T16:28:00.000Z"
      },
      {
       "level_id": "TP3",
@@ -55,7 +55,7 @@
     ],
     "objectives": {
      "defined": 3,
-     "reached": 1,
+     "reached": 2,
      "all_reached": false,
      "ladder_problems": [],
      "completed_at": null
@@ -212,15 +212,15 @@
        "low": 0.91,
        "high": 0.91
       },
-      "reached_at": null
+      "reached_at": "2026-09-26T06:48:00.000Z"
      }
     ],
     "objectives": {
      "defined": 3,
-     "reached": 2,
-     "all_reached": false,
+     "reached": 3,
+     "all_reached": true,
      "ladder_problems": [],
-     "completed_at": null
+     "completed_at": "2026-09-26T06:48:00.000Z"
     },
     "extended": null,
     "stop_boundary": {
@@ -232,7 +232,7 @@
      },
      "reached_at": "2026-09-14T21:00:00.000Z",
      "in_trade": true,
-     "relation_to_final_tp": null
+     "relation_to_final_tp": "BEFORE"
     },
     "evidence_grade": "CLOSE_CONFIRMED",
     "confirm": {
@@ -245,16 +245,20 @@
      "historical_only": true,
      "targets_after_stop": [
       "TP1",
-      "TP2"
+      "TP2",
+      "TP3"
      ],
      "targets_same_candle_as_stop": [],
      "note": "Later published TP levels were mechanically touched after the stop boundary."
     },
     "public_display": {
      "kind": "STOP_BOUNDARY",
-     "ready": true,
+     "ready": false,
      "evidence_grade": "CLOSE_CONFIRMED",
-     "blockers": []
+     "blockers": [
+      "STOP_BOUNDARY_TOUCHED_BEFORE_FINAL_TP",
+      "CONFLICTING_EVIDENCE"
+     ]
     }
    }
   },
@@ -267,8 +271,8 @@
     "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "TARGETS_IN_PROGRESS",
-    "state_since": "2026-09-24T16:54:41.325Z",
+    "state": "OBJECTIVES_EXHAUSTED",
+    "state_since": "2026-09-26T12:31:58.075Z",
     "published_at": "2026-09-23T11:18:16.000Z",
     "trigger": {
      "level_id": "TRIGGER_1",
@@ -301,15 +305,15 @@
        "low": 0.119,
        "high": 0.1205
       },
-      "reached_at": null
+      "reached_at": "2026-09-26T02:48:00.000Z"
      }
     ],
     "objectives": {
      "defined": 3,
-     "reached": 2,
-     "all_reached": false,
+     "reached": 3,
+     "all_reached": true,
      "ladder_problems": [],
-     "completed_at": null
+     "completed_at": "2026-09-26T02:48:00.000Z"
     },
     "extended": {
      "level_id": "EXTENDED",
@@ -328,17 +332,19 @@
      },
      "reached_at": "2026-09-23T11:00:00.000Z",
      "in_trade": false,
-     "relation_to_final_tp": null
+     "relation_to_final_tp": "BEFORE"
     },
-    "evidence_grade": null,
+    "evidence_grade": "WICK_ONLY",
     "confirm": null,
-    "terminal_at": null,
+    "terminal_at": "2026-09-26T02:48:00.000Z",
     "later_evidence": null,
     "public_display": {
-     "kind": null,
+     "kind": "TRADE_COMPLETE",
      "ready": false,
-     "evidence_grade": null,
-     "blockers": []
+     "evidence_grade": "WICK_ONLY",
+     "blockers": [
+      "AWAITING_CLOSE_CONFIRMATION"
+     ]
     }
    }
   },
@@ -952,7 +958,7 @@
        "low": 0.0995,
        "high": 0.1005
       },
-      "reached_at": null
+      "reached_at": "2026-09-25T22:50:00.000Z"
      },
      {
       "level_id": "TP3",
@@ -965,7 +971,7 @@
     ],
     "objectives": {
      "defined": 3,
-     "reached": 1,
+     "reached": 2,
      "all_reached": false,
      "ladder_problems": [],
      "completed_at": null
@@ -1274,7 +1280,7 @@
        "low": 1.07,
        "high": 1.1
       },
-      "reached_at": null
+      "reached_at": "2026-09-26T06:37:00.000Z"
      },
      {
       "level_id": "TP3",
@@ -1287,7 +1293,7 @@
     ],
     "objectives": {
      "defined": 3,
-     "reached": 1,
+     "reached": 2,
      "all_reached": false,
      "ladder_problems": [],
      "completed_at": null
@@ -1866,7 +1872,7 @@
       "low": 0.071,
       "high": 0.073
      },
-     "reached_at": null
+     "reached_at": "2026-09-25T18:20:00.000Z"
     },
     "stop_boundary": {
      "level_id": "STOP",
@@ -2055,10 +2061,17 @@
     "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "WAITING_FOR_TRIGGER",
-    "state_since": "2026-09-24T15:46:40.841Z",
+    "state": "TARGETS_IN_PROGRESS",
+    "state_since": "2026-09-26T12:31:58.075Z",
     "published_at": "2026-09-23T11:27:24.000Z",
-    "trigger": null,
+    "trigger": {
+     "level_id": "TRIGGER_1",
+     "zone": {
+      "low": 315,
+      "high": 318
+     },
+     "reached_at": "2026-09-25T20:00:00.000Z"
+    },
     "targets": [
      {
       "level_id": "TP1",
@@ -2066,7 +2079,7 @@
        "low": 324,
        "high": 327
       },
-      "reached_at": null
+      "reached_at": "2026-09-26T11:00:00.000Z"
      },
      {
       "level_id": "TP2",
@@ -2074,7 +2087,7 @@
        "low": 336,
        "high": 340
       },
-      "reached_at": null
+      "reached_at": "2026-09-26T12:00:00.000Z"
      },
      {
       "level_id": "TP3",
@@ -2087,7 +2100,7 @@
     ],
     "objectives": {
      "defined": 3,
-     "reached": 0,
+     "reached": 2,
      "all_reached": false,
      "ladder_problems": [],
      "completed_at": null
@@ -4858,200 +4871,6 @@
     "later_evidence": null,
     "public_display": {
      "kind": "TRADE_COMPLETE",
-     "ready": true,
-     "evidence_grade": "CLOSE_CONFIRMED",
-     "blockers": []
-    }
-   }
-  },
-  {
-   "receipt_id": "rcpt_17e33bcc17c2991c79ccebbcaff8",
-   "asset": "AERO",
-   "setup_instance_key": "AERO|1789413755000|002c7c73eac2791aedd7681b29ac",
-   "setup_fingerprint": "002c7c73eac2791aedd7681b29ac",
-   "outcome": "STOP_BOUNDARY_REACHED",
-   "opened_at": "2026-09-24T15:46:40.841Z",
-   "superseded": false,
-   "superseded_at": null,
-   "snapshot": {
-    "setup_published_at": "2026-09-14T19:22:35.000Z",
-    "setup_timestamp_text": "9/14/2026 15:22:35",
-    "direction": "long",
-    "sheet_status_at_open": {
-     "text": "PRICE RECONCILED — HUMAN REVIEW REQUIRED",
-     "class": "UNKNOWN"
-    },
-    "levels": [
-     {
-      "id": "TRIGGER_1",
-      "kind": "trigger",
-      "label": "Trigger 1",
-      "zone": {
-       "low": 0.5781,
-       "high": 0.5781
-      },
-      "raw": "0.5781 BREAK-RETEST- HOLD - BREAK OUT OF INVERTED H&S"
-     },
-     {
-      "id": "TRIGGER_2",
-      "kind": "trigger",
-      "label": "Trigger 2",
-      "zone": {
-       "low": 0.6124,
-       "high": 0.6124
-      },
-      "raw": "0.6124 BREAK -RETEST-HOLD -BREAK OUT OF DOUBLE BOTTOM INVERTED"
-     },
-     {
-      "id": "TRIGGER_3",
-      "kind": "trigger",
-      "label": "Trigger 3",
-      "zone": {
-       "low": 0.6868,
-       "high": 0.6868
-      },
-      "raw": "0.6868 BREAK-RETEST-HOLD- BREAK OUT CUP N HANDLE"
-     },
-     {
-      "id": "TP1",
-      "kind": "tp",
-      "label": "TP1",
-      "zone": {
-       "low": 0.6058,
-       "high": 0.6058
-      },
-      "raw": "0.6058-0.6751-0.91"
-     },
-     {
-      "id": "TP2",
-      "kind": "tp",
-      "label": "TP2",
-      "zone": {
-       "low": 0.6751,
-       "high": 0.6751
-      },
-      "raw": "0.6058-0.6751-0.91"
-     },
-     {
-      "id": "TP3",
-      "kind": "tp",
-      "label": "TP3",
-      "zone": {
-       "low": 0.91,
-       "high": 0.91
-      },
-      "raw": "0.6058-0.6751-0.91"
-     },
-     {
-      "id": "STOP",
-      "kind": "stop",
-      "label": "Stop",
-      "zone": {
-       "low": 0.5656,
-       "high": 0.5656
-      },
-      "raw": "0.5656"
-     },
-     {
-      "id": "SAFETY",
-      "kind": "safety",
-      "label": "Safety net / soft invalidation",
-      "zone": {
-       "low": 0.5731,
-       "high": 0.5731
-      },
-      "raw": "BELOW KEY SUPPORT AT 0.5731 AND THE MOVING AVERAGES ON THE 1 HR"
-     }
-    ],
-    "published_text": {
-     "headline": "LONG SETUP-MULTILEVEL",
-     "why": "VERY STRUCTURED CHART -SECONDARY AND THIRD PATTERNS, MA ARE BUNDLING, STOCHS AND RSI ARE HOLDING ON THE HIGHER TIME FRAMES AND CURVING ON THE LOWER",
-     "warning": "IF THE 1HR OPENS A 1 HR CANDLE BELOW ALL MOVING AVERAGES WATCH FOR A DOWNTURN",
-     "triggers": [
-      "0.5781 BREAK-RETEST- HOLD - BREAK OUT OF INVERTED H&S",
-      "0.6124 BREAK -RETEST-HOLD -BREAK OUT OF DOUBLE BOTTOM INVERTED",
-      "0.6868 BREAK-RETEST-HOLD- BREAK OUT CUP N HANDLE"
-     ],
-     "targets": "0.6058-0.6751-0.91",
-     "stop": "0.5656",
-     "safety": "BELOW KEY SUPPORT AT 0.5731 AND THE MOVING AVERAGES ON THE 1 HR"
-    }
-   },
-   "lifecycle": {
-    "state": "STOP_BOUNDARY_REACHED",
-    "state_since": "2026-09-24T15:46:40.841Z",
-    "published_at": "2026-09-14T19:22:35.000Z",
-    "trigger": {
-     "level_id": "TRIGGER_1",
-     "zone": {
-      "low": 0.5781,
-      "high": 0.5781
-     },
-     "reached_at": "2026-09-14T20:00:00.000Z"
-    },
-    "targets": [
-     {
-      "level_id": "TP1",
-      "zone": {
-       "low": 0.6058,
-       "high": 0.6058
-      },
-      "reached_at": "2026-09-18T03:00:00.000Z"
-     },
-     {
-      "level_id": "TP2",
-      "zone": {
-       "low": 0.6751,
-       "high": 0.6751
-      },
-      "reached_at": "2026-09-18T19:00:00.000Z"
-     },
-     {
-      "level_id": "TP3",
-      "zone": {
-       "low": 0.91,
-       "high": 0.91
-      },
-      "reached_at": null
-     }
-    ],
-    "objectives": {
-     "defined": 3,
-     "reached": 2,
-     "all_reached": false,
-     "ladder_problems": [],
-     "completed_at": null
-    },
-    "extended": null,
-    "stop_boundary": {
-     "level_id": "SAFETY",
-     "kind": "safety",
-     "zone": {
-      "low": 0.5731,
-      "high": 0.5731
-     },
-     "reached_at": "2026-09-14T21:00:00.000Z",
-     "in_trade": true,
-     "relation_to_final_tp": null
-    },
-    "evidence_grade": "CLOSE_CONFIRMED",
-    "confirm": {
-     "at": "2026-09-14T23:00:00.000Z",
-     "close": 0.5696,
-     "level_id": "SAFETY"
-    },
-    "terminal_at": "2026-09-14T21:00:00.000Z",
-    "later_evidence": {
-     "historical_only": true,
-     "targets_after_stop": [
-      "TP1",
-      "TP2"
-     ],
-     "targets_same_candle_as_stop": [],
-     "note": "Later published TP levels were mechanically touched after the stop boundary."
-    },
-    "public_display": {
-     "kind": "STOP_BOUNDARY",
      "ready": true,
      "evidence_grade": "CLOSE_CONFIRMED",
      "blockers": []
