@@ -1,10 +1,10 @@
 {
  "schema_version": 1,
  "kind": "levelup-public-feed",
- "generated_at": "2026-09-26T12:31:58.075Z",
+ "generated_at": "2026-09-26T14:52:03.538Z",
  "notice": "Mechanical observations of Chelsea's published levels. Not a Sheet status, not a signal, and not a record of anyone's entry or exit.",
  "monitor": {
-  "last_successful_check_at": "2026-09-26T12:31:58.075Z"
+  "last_successful_check_at": "2026-09-26T14:52:03.538Z"
  },
  "assets": {
   "AAVE": {
@@ -334,17 +334,19 @@
      "in_trade": false,
      "relation_to_final_tp": "BEFORE"
     },
-    "evidence_grade": "WICK_ONLY",
-    "confirm": null,
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-09-26T14:50:00.000Z",
+     "close": 0.119,
+     "level_id": "TP3"
+    },
     "terminal_at": "2026-09-26T02:48:00.000Z",
     "later_evidence": null,
     "public_display": {
      "kind": "TRADE_COMPLETE",
-     "ready": false,
-     "evidence_grade": "WICK_ONLY",
-     "blockers": [
-      "AWAITING_CLOSE_CONFIRMATION"
-     ]
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
+     "blockers": []
     }
    }
   },
@@ -2491,6 +2493,179 @@
   }
  },
  "receipts": [
+  {
+   "receipt_id": "rcpt_023c4cc7a0e9ea095d336e31490f",
+   "asset": "ALGO",
+   "setup_instance_key": "ALGO|1790162296000|069f0d4bf0b2e3035495cb3ccf5f",
+   "setup_fingerprint": "069f0d4bf0b2e3035495cb3ccf5f",
+   "outcome": "OBJECTIVES_EXHAUSTED",
+   "opened_at": "2026-09-26T12:31:58.075Z",
+   "superseded": false,
+   "superseded_at": null,
+   "snapshot": {
+    "setup_published_at": "2026-09-23T11:18:16.000Z",
+    "setup_timestamp_text": "9/23/2026 7:18:16",
+    "direction": "long",
+    "sheet_status_at_open": {
+     "text": "Watching",
+     "class": "WATCHING"
+    },
+    "levels": [
+     {
+      "id": "TRIGGER_1",
+      "kind": "trigger",
+      "label": "Trigger 1",
+      "zone": {
+       "low": 0.1122,
+       "high": 0.1125
+      },
+      "raw": "Completed 1H open-and-hold above approximately $0.1122–$0.1125 and above both Simple and Smooth MAs, followed by a defended retest or new higher low."
+     },
+     {
+      "id": "TP1",
+      "kind": "tp",
+      "label": "TP1",
+      "zone": {
+       "low": 0.1138,
+       "high": 0.1143
+      },
+      "raw": "TP1: $0.1138–$0.1143 — nearest execution resistance | TP2: $0.1160–$0.1168 — behavioral supply | TP3: $0.1190–$0.1205 — higher structural resistance | Extended: $0.1240–$0.1260 — expansion zone"
+     },
+     {
+      "id": "TP2",
+      "kind": "tp",
+      "label": "TP2",
+      "zone": {
+       "low": 0.116,
+       "high": 0.1168
+      },
+      "raw": "TP1: $0.1138–$0.1143 — nearest execution resistance | TP2: $0.1160–$0.1168 — behavioral supply | TP3: $0.1190–$0.1205 — higher structural resistance | Extended: $0.1240–$0.1260 — expansion zone"
+     },
+     {
+      "id": "TP3",
+      "kind": "tp",
+      "label": "TP3",
+      "zone": {
+       "low": 0.119,
+       "high": 0.1205
+      },
+      "raw": "TP1: $0.1138–$0.1143 — nearest execution resistance | TP2: $0.1160–$0.1168 — behavioral supply | TP3: $0.1190–$0.1205 — higher structural resistance | Extended: $0.1240–$0.1260 — expansion zone"
+     },
+     {
+      "id": "EXTENDED",
+      "kind": "extended",
+      "label": "Extended",
+      "zone": {
+       "low": 0.124,
+       "high": 0.126
+      },
+      "raw": "TP1: $0.1138–$0.1143 — nearest execution resistance | TP2: $0.1160–$0.1168 — behavioral supply | TP3: $0.1190–$0.1205 — higher structural resistance | Extended: $0.1240–$0.1260 — expansion zone"
+     },
+     {
+      "id": "STOP",
+      "kind": "stop",
+      "label": "Stop",
+      "zone": {
+       "low": 0.1095,
+       "high": 0.1102
+      },
+      "raw": "Approximately $0.1095–$0.1102, beyond hourly structural support and as many relevant MAs as possible. The exact stop may change when triggered."
+     }
+    ],
+    "published_text": {
+     "headline": "ALGO — LONG WATCH",
+     "why": "Price is directly beside its 1H bundle while lower-timeframe momentum attempts to turn upward; this is a reload location rather than an extended breakout.",
+     "warning": "",
+     "triggers": [
+      "Completed 1H open-and-hold above approximately $0.1122–$0.1125 and above both Simple and Smooth MAs, followed by a defended retest or new higher low.",
+      "",
+      ""
+     ],
+     "targets": "TP1: $0.1138–$0.1143 — nearest execution resistance | TP2: $0.1160–$0.1168 — behavioral supply | TP3: $0.1190–$0.1205 — higher structural resistance | Extended: $0.1240–$0.1260 — expansion zone",
+     "stop": "Approximately $0.1095–$0.1102, beyond hourly structural support and as many relevant MAs as possible. The exact stop may change when triggered.",
+     "safety": ""
+    }
+   },
+   "lifecycle": {
+    "state": "OBJECTIVES_EXHAUSTED",
+    "state_since": "2026-09-26T12:31:58.075Z",
+    "published_at": "2026-09-23T11:18:16.000Z",
+    "trigger": {
+     "level_id": "TRIGGER_1",
+     "zone": {
+      "low": 0.1122,
+      "high": 0.1125
+     },
+     "reached_at": "2026-09-24T15:00:00.000Z"
+    },
+    "targets": [
+     {
+      "level_id": "TP1",
+      "zone": {
+       "low": 0.1138,
+       "high": 0.1143
+      },
+      "reached_at": "2026-09-24T16:00:00.000Z"
+     },
+     {
+      "level_id": "TP2",
+      "zone": {
+       "low": 0.116,
+       "high": 0.1168
+      },
+      "reached_at": "2026-09-25T08:17:00.000Z"
+     },
+     {
+      "level_id": "TP3",
+      "zone": {
+       "low": 0.119,
+       "high": 0.1205
+      },
+      "reached_at": "2026-09-26T02:48:00.000Z"
+     }
+    ],
+    "objectives": {
+     "defined": 3,
+     "reached": 3,
+     "all_reached": true,
+     "ladder_problems": [],
+     "completed_at": "2026-09-26T02:48:00.000Z"
+    },
+    "extended": {
+     "level_id": "EXTENDED",
+     "zone": {
+      "low": 0.124,
+      "high": 0.126
+     },
+     "reached_at": null
+    },
+    "stop_boundary": {
+     "level_id": "STOP",
+     "kind": "stop",
+     "zone": {
+      "low": 0.1095,
+      "high": 0.1102
+     },
+     "reached_at": "2026-09-23T11:00:00.000Z",
+     "in_trade": false,
+     "relation_to_final_tp": "BEFORE"
+    },
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-09-26T14:50:00.000Z",
+     "close": 0.119,
+     "level_id": "TP3"
+    },
+    "terminal_at": "2026-09-26T02:48:00.000Z",
+    "later_evidence": null,
+    "public_display": {
+     "kind": "TRADE_COMPLETE",
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
+     "blockers": []
+    }
+   }
+  },
   {
    "receipt_id": "rcpt_094721d4a7739001be9d2943d3b8",
    "asset": "ENA",
