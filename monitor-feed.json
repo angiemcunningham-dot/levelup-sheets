@@ -1,10 +1,10 @@
 {
  "schema_version": 1,
  "kind": "levelup-public-feed",
- "generated_at": "2026-09-26T14:52:03.538Z",
+ "generated_at": "2026-09-28T13:18:16.115Z",
  "notice": "Mechanical observations of Chelsea's published levels. Not a Sheet status, not a signal, and not a record of anyone's entry or exit.",
  "monitor": {
-  "last_successful_check_at": "2026-09-26T14:52:03.538Z"
+  "last_successful_check_at": "2026-09-28T13:18:16.115Z"
  },
  "assets": {
   "AAVE": {
@@ -86,8 +86,8 @@
    "setup_fingerprint": "03008cc3a51c501d5fd0b308378d",
    "instance_published_at": "2026-09-22T11:12:02.000Z",
    "sheet_status": {
-    "text": "Watching",
-    "class": "WATCHING"
+    "text": "No Trade",
+    "class": "NO_TRADE"
    },
    "lifecycle": {
     "state": "STOP_BOUNDARY_REACHED",
@@ -267,8 +267,8 @@
    "setup_fingerprint": "069f0d4bf0b2e3035495cb3ccf5f",
    "instance_published_at": "2026-09-23T11:18:16.000Z",
    "sheet_status": {
-    "text": "Watching",
-    "class": "WATCHING"
+    "text": "Closed",
+    "class": "CLOSED"
    },
    "lifecycle": {
     "state": "OBJECTIVES_EXHAUSTED",
@@ -355,8 +355,8 @@
    "setup_fingerprint": "0f1b3e5e54dedd1044a350648927",
    "instance_published_at": "2026-09-21T09:13:00.000Z",
    "sheet_status": {
-    "text": "Watching",
-    "class": "WATCHING"
+    "text": "No Trade",
+    "class": "NO_TRADE"
    },
    "lifecycle": {
     "state": "STOP_BOUNDARY_REACHED",
@@ -441,8 +441,8 @@
    "setup_fingerprint": "0e4c816022fc0706a967b8ac7b52",
    "instance_published_at": "2026-09-21T09:13:00.000Z",
    "sheet_status": {
-    "text": "Watching",
-    "class": "WATCHING"
+    "text": "Closed",
+    "class": "CLOSED"
    },
    "lifecycle": {
     "state": "OBJECTIVES_EXHAUSTED",
@@ -531,8 +531,8 @@
     "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "TRIGGERED",
-    "state_since": "2026-09-25T15:59:18.088Z",
+    "state": "TARGETS_IN_PROGRESS",
+    "state_since": "2026-09-28T13:18:16.115Z",
     "published_at": "2026-09-23T11:23:09.000Z",
     "trigger": {
      "level_id": "TRIGGER_1",
@@ -549,7 +549,7 @@
        "low": 1.855,
        "high": 1.87
       },
-      "reached_at": null
+      "reached_at": "2026-09-26T15:00:00.000Z"
      },
      {
       "level_id": "TP2",
@@ -557,7 +557,7 @@
        "low": 1.895,
        "high": 1.91
       },
-      "reached_at": null
+      "reached_at": "2026-09-27T07:00:00.000Z"
      },
      {
       "level_id": "TP3",
@@ -570,7 +570,7 @@
     ],
     "objectives": {
      "defined": 3,
-     "reached": 0,
+     "reached": 2,
      "all_reached": false,
      "ladder_problems": [],
      "completed_at": null
@@ -682,8 +682,8 @@
    "setup_fingerprint": "18a61c6c74fd301480919dfbb097",
    "instance_published_at": "2026-09-22T11:16:39.000Z",
    "sheet_status": {
-    "text": "Watching",
-    "class": "WATCHING"
+    "text": "No Trade",
+    "class": "NO_TRADE"
    },
    "lifecycle": {
     "state": "STOP_BOUNDARY_REACHED",
@@ -770,8 +770,8 @@
    "setup_fingerprint": "0b1201fe9ad0e50448b459956694",
    "instance_published_at": "2026-09-21T09:13:00.000Z",
    "sheet_status": {
-    "text": "Watching",
-    "class": "WATCHING"
+    "text": "No Trade",
+    "class": "NO_TRADE"
    },
    "lifecycle": {
     "state": "STOP_BOUNDARY_REACHED",
@@ -837,17 +837,19 @@
      "in_trade": true,
      "relation_to_final_tp": null
     },
-    "evidence_grade": "WICK_ONLY",
-    "confirm": null,
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-09-28T05:00:00.000Z",
+     "close": 83184.01,
+     "level_id": "STOP"
+    },
     "terminal_at": "2026-09-24T09:00:00.000Z",
     "later_evidence": null,
     "public_display": {
      "kind": "STOP_BOUNDARY",
-     "ready": false,
-     "evidence_grade": "WICK_ONLY",
-     "blockers": [
-      "AWAITING_CLOSE_CONFIRMATION"
-     ]
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
+     "blockers": []
     }
    }
   },
@@ -925,6 +927,73 @@
     }
    }
   },
+  "DASH": {
+   "setup_instance_key": "DASH|1790596488000|09657b1438dc07165a137af60a67",
+   "setup_fingerprint": "09657b1438dc07165a137af60a67",
+   "instance_published_at": "2026-09-28T11:54:48.000Z",
+   "sheet_status": {
+    "text": "Watching",
+    "class": "WATCHING"
+   },
+   "lifecycle": {
+    "state": "TARGETS_IN_PROGRESS",
+    "state_since": "2026-09-28T13:18:16.115Z",
+    "published_at": "2026-09-28T11:54:48.000Z",
+    "trigger": null,
+    "targets": [
+     {
+      "level_id": "TP1",
+      "zone": {
+       "low": 65.62,
+       "high": 65.62
+      },
+      "reached_at": "2026-09-28T11:00:00.000Z"
+     },
+     {
+      "level_id": "TP2",
+      "zone": {
+       "low": 64.45,
+       "high": 64.45
+      },
+      "reached_at": "2026-09-28T11:00:00.000Z"
+     },
+     {
+      "level_id": "TP3",
+      "zone": {
+       "low": 59.3,
+       "high": 59.3
+      },
+      "reached_at": null
+     }
+    ],
+    "objectives": {
+     "defined": 3,
+     "reached": 2,
+     "all_reached": false,
+     "ladder_problems": [],
+     "completed_at": null
+    },
+    "extended": {
+     "level_id": "EXTENDED",
+     "zone": {
+      "low": 54,
+      "high": 57
+     },
+     "reached_at": null
+    },
+    "stop_boundary": null,
+    "evidence_grade": null,
+    "confirm": null,
+    "terminal_at": null,
+    "later_evidence": null,
+    "public_display": {
+     "kind": null,
+     "ready": false,
+     "evidence_grade": null,
+     "blockers": []
+    }
+   }
+  },
   "DOGE": {
    "setup_instance_key": "DOGE|1790336186000|18f93dd9b4dc721f42f9b54aeb99",
    "setup_fingerprint": "18f93dd9b4dc721f42f9b54aeb99",
@@ -934,8 +1003,8 @@
     "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "TARGETS_IN_PROGRESS",
-    "state_since": "2026-09-25T12:57:27.693Z",
+    "state": "STOP_BOUNDARY_REACHED",
+    "state_since": "2026-09-28T13:18:16.115Z",
     "published_at": "2026-09-25T11:36:26.000Z",
     "trigger": {
      "level_id": "TRIGGER_1",
@@ -986,15 +1055,29 @@
      },
      "reached_at": null
     },
-    "stop_boundary": null,
-    "evidence_grade": null,
-    "confirm": null,
-    "terminal_at": null,
+    "stop_boundary": {
+     "level_id": "STOP",
+     "kind": "stop",
+     "zone": {
+      "low": 0.0945,
+      "high": 0.095
+     },
+     "reached_at": "2026-09-28T02:00:00.000Z",
+     "in_trade": true,
+     "relation_to_final_tp": null
+    },
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-09-28T03:00:00.000Z",
+     "close": 0.09406,
+     "level_id": "STOP"
+    },
+    "terminal_at": "2026-09-28T02:00:00.000Z",
     "later_evidence": null,
     "public_display": {
-     "kind": null,
-     "ready": false,
-     "evidence_grade": null,
+     "kind": "STOP_BOUNDARY",
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
      "blockers": []
     }
    }
@@ -1004,8 +1087,8 @@
    "setup_fingerprint": "096316d2ead33c1df1e01b2299b7",
    "instance_published_at": "2026-09-23T11:22:09.000Z",
    "sheet_status": {
-    "text": "Watching",
-    "class": "WATCHING"
+    "text": "Closed",
+    "class": "CLOSED"
    },
    "lifecycle": {
     "state": "OBJECTIVES_EXHAUSTED",
@@ -1092,8 +1175,8 @@
    "setup_fingerprint": "159637e1f152be135e288cb2cd8e",
    "instance_published_at": "2026-09-24T12:52:02.000Z",
    "sheet_status": {
-    "text": "Watching",
-    "class": "WATCHING"
+    "text": "No Trade",
+    "class": "NO_TRADE"
    },
    "lifecycle": {
     "state": "STOP_BOUNDARY_REACHED",
@@ -1159,17 +1242,19 @@
      "in_trade": true,
      "relation_to_final_tp": null
     },
-    "evidence_grade": "WICK_ONLY",
-    "confirm": null,
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-09-28T06:00:00.000Z",
+     "close": 9.15,
+     "level_id": "STOP"
+    },
     "terminal_at": "2026-09-24T21:06:00.000Z",
     "later_evidence": null,
     "public_display": {
      "kind": "STOP_BOUNDARY",
-     "ready": false,
-     "evidence_grade": "WICK_ONLY",
-     "blockers": [
-      "AWAITING_CLOSE_CONFIRMATION"
-     ]
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
+     "blockers": []
     }
    }
   },
@@ -1178,12 +1263,12 @@
    "setup_fingerprint": "17ece21d84cd00123cc6a2532af7",
    "instance_published_at": "2026-09-25T11:35:42.000Z",
    "sheet_status": {
-    "text": "Watching",
-    "class": "WATCHING"
+    "text": "No Trade",
+    "class": "NO_TRADE"
    },
    "lifecycle": {
-    "state": "TARGETS_IN_PROGRESS",
-    "state_since": "2026-09-25T12:57:27.693Z",
+    "state": "STOP_BOUNDARY_REACHED",
+    "state_since": "2026-09-28T13:18:16.115Z",
     "published_at": "2026-09-25T11:35:42.000Z",
     "trigger": {
      "level_id": "TRIGGER_1",
@@ -1234,15 +1319,29 @@
      },
      "reached_at": null
     },
-    "stop_boundary": null,
-    "evidence_grade": null,
-    "confirm": null,
-    "terminal_at": null,
+    "stop_boundary": {
+     "level_id": "STOP",
+     "kind": "stop",
+     "zone": {
+      "low": 2655,
+      "high": 2668
+     },
+     "reached_at": "2026-09-26T20:00:00.000Z",
+     "in_trade": true,
+     "relation_to_final_tp": null
+    },
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-09-28T01:00:00.000Z",
+     "close": 2657.38,
+     "level_id": "STOP"
+    },
+    "terminal_at": "2026-09-26T20:00:00.000Z",
     "later_evidence": null,
     "public_display": {
-     "kind": null,
-     "ready": false,
-     "evidence_grade": null,
+     "kind": "STOP_BOUNDARY",
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
      "blockers": []
     }
    }
@@ -1252,8 +1351,8 @@
    "setup_fingerprint": "0c74ff97948c83119235b9330d24",
    "instance_published_at": "2026-09-24T12:52:48.000Z",
    "sheet_status": {
-    "text": "Watching",
-    "class": "WATCHING"
+    "text": "Closed",
+    "class": "CLOSED"
    },
    "lifecycle": {
     "state": "TARGETS_IN_PROGRESS",
@@ -1332,68 +1431,79 @@
    }
   },
   "HBAR": {
-   "setup_instance_key": "HBAR|1789730052000|1a26064cc5f62307de90c0fd3630",
-   "setup_fingerprint": "1a26064cc5f62307de90c0fd3630",
-   "instance_published_at": "2026-09-18T11:14:12.000Z",
+   "setup_instance_key": "HBAR|1790595632000|08d8ce50ba35140e35abfe87d265",
+   "setup_fingerprint": "08d8ce50ba35140e35abfe87d265",
+   "instance_published_at": "2026-09-28T11:40:32.000Z",
    "sheet_status": {
-    "text": "No Trade",
-    "class": "NO_TRADE"
+    "text": "Watching",
+    "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "TARGETS_IN_PROGRESS",
-    "state_since": "2026-09-24T15:46:40.841Z",
-    "published_at": "2026-09-18T11:14:12.000Z",
+    "state": "OBJECTIVES_EXHAUSTED",
+    "state_since": "2026-09-28T13:18:16.115Z",
+    "published_at": "2026-09-28T11:40:32.000Z",
     "trigger": {
      "level_id": "TRIGGER_1",
      "zone": {
-      "low": 0.077,
-      "high": 0.078
+      "low": 0.0958,
+      "high": 0.0958
      },
-     "reached_at": "2026-09-18T11:00:00.000Z"
+     "reached_at": "2026-09-28T11:00:00.000Z"
     },
     "targets": [
      {
       "level_id": "TP1",
       "zone": {
-       "low": 0.0825,
-       "high": 0.0825
+       "low": 0.0974,
+       "high": 0.0974
       },
-      "reached_at": "2026-09-20T01:00:00.000Z"
+      "reached_at": "2026-09-28T11:00:00.000Z"
      },
      {
       "level_id": "TP2",
       "zone": {
-       "low": 0.091,
-       "high": 0.091
+       "low": 0.0984,
+       "high": 0.0984
       },
-      "reached_at": "2026-09-21T11:00:00.000Z"
+      "reached_at": "2026-09-28T11:00:00.000Z"
      },
      {
       "level_id": "TP3",
       "zone": {
-       "low": 0.1045,
-       "high": 0.1045
+       "low": 0.0996,
+       "high": 0.0996
       },
-      "reached_at": null
+      "reached_at": "2026-09-28T11:00:00.000Z"
      }
     ],
     "objectives": {
      "defined": 3,
-     "reached": 2,
-     "all_reached": false,
+     "reached": 3,
+     "all_reached": true,
      "ladder_problems": [],
-     "completed_at": null
+     "completed_at": "2026-09-28T11:00:00.000Z"
     },
-    "extended": null,
+    "extended": {
+     "level_id": "EXTENDED",
+     "zone": {
+      "low": 0.1012,
+      "high": 0.1013
+     },
+     "reached_at": "2026-09-28T11:00:00.000Z"
+    },
     "stop_boundary": null,
-    "evidence_grade": null,
-    "confirm": null,
-    "terminal_at": null,
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-09-28T12:00:00.000Z",
+     "close": 0.11937,
+     "level_id": "TP3"
+    },
+    "terminal_at": "2026-09-28T11:00:00.000Z",
     "later_evidence": null,
     "public_display": {
-     "kind": null,
-     "ready": false,
-     "evidence_grade": null,
+     "kind": "TRADE_COMPLETE",
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
      "blockers": []
     }
    }
@@ -1477,54 +1587,47 @@
    }
   },
   "LINK": {
-   "setup_instance_key": "LINK|1790075752000|18b1bbd217aec21a250824c9d59e",
-   "setup_fingerprint": "18b1bbd217aec21a250824c9d59e",
-   "instance_published_at": "2026-09-22T11:15:52.000Z",
+   "setup_instance_key": "LINK|1790596299000|1ba0c1dd40487a0e08c2720176df",
+   "setup_fingerprint": "1ba0c1dd40487a0e08c2720176df",
+   "instance_published_at": "2026-09-28T11:51:39.000Z",
    "sheet_status": {
     "text": "Watching",
     "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "STOP_BOUNDARY_REACHED",
-    "state_since": "2026-09-24T15:46:40.841Z",
-    "published_at": "2026-09-22T11:15:52.000Z",
-    "trigger": {
-     "level_id": "TRIGGER_1",
-     "zone": {
-      "low": 12.95,
-      "high": 13.02
-     },
-     "reached_at": "2026-09-22T11:00:00.000Z"
-    },
+    "state": "TARGETS_IN_PROGRESS",
+    "state_since": "2026-09-28T13:18:16.115Z",
+    "published_at": "2026-09-28T11:51:39.000Z",
+    "trigger": null,
     "targets": [
      {
       "level_id": "TP1",
       "zone": {
-       "low": 13.35,
-       "high": 13.45
+       "low": 14.28,
+       "high": 14.28
       },
-      "reached_at": "2026-09-24T18:47:00.000Z"
+      "reached_at": "2026-09-28T12:00:00.000Z"
      },
      {
       "level_id": "TP2",
       "zone": {
-       "low": 13.9,
-       "high": 14.1
+       "low": 15.38,
+       "high": 15.38
       },
-      "reached_at": "2026-09-25T08:55:00.000Z"
+      "reached_at": null
      },
      {
       "level_id": "TP3",
       "zone": {
-       "low": 14.7,
-       "high": 14.9
+       "low": 17.25,
+       "high": 17.25
       },
       "reached_at": null
      }
     ],
     "objectives": {
      "defined": 3,
-     "reached": 2,
+     "reached": 1,
      "all_reached": false,
      "ladder_problems": [],
      "completed_at": null
@@ -1532,42 +1635,20 @@
     "extended": {
      "level_id": "EXTENDED",
      "zone": {
-      "low": 15.7,
-      "high": 16
+      "low": 17.25,
+      "high": 17.25
      },
      "reached_at": null
     },
-    "stop_boundary": {
-     "level_id": "STOP",
-     "kind": "stop",
-     "zone": {
-      "low": 12.55,
-      "high": 12.68
-     },
-     "reached_at": "2026-09-23T12:00:00.000Z",
-     "in_trade": true,
-     "relation_to_final_tp": null
-    },
-    "evidence_grade": "CLOSE_CONFIRMED",
-    "confirm": {
-     "at": "2026-09-23T14:00:00.000Z",
-     "close": 12.331,
-     "level_id": "STOP"
-    },
-    "terminal_at": "2026-09-23T12:00:00.000Z",
-    "later_evidence": {
-     "historical_only": true,
-     "targets_after_stop": [
-      "TP1",
-      "TP2"
-     ],
-     "targets_same_candle_as_stop": [],
-     "note": "Later published TP levels were mechanically touched after the stop boundary."
-    },
+    "stop_boundary": null,
+    "evidence_grade": null,
+    "confirm": null,
+    "terminal_at": null,
+    "later_evidence": null,
     "public_display": {
-     "kind": "STOP_BOUNDARY",
-     "ready": true,
-     "evidence_grade": "CLOSE_CONFIRMED",
+     "kind": null,
+     "ready": false,
+     "evidence_grade": null,
      "blockers": []
     }
    }
@@ -1581,8 +1662,8 @@
     "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "TARGETS_IN_PROGRESS",
-    "state_since": "2026-09-24T15:46:40.841Z",
+    "state": "STOP_BOUNDARY_REACHED",
+    "state_since": "2026-09-28T13:18:16.115Z",
     "published_at": "2026-09-24T12:49:08.000Z",
     "trigger": {
      "level_id": "TRIGGER_1",
@@ -1633,6 +1714,87 @@
      },
      "reached_at": null
     },
+    "stop_boundary": {
+     "level_id": "STOP",
+     "kind": "stop",
+     "zone": {
+      "low": 2.6,
+      "high": 2.64
+     },
+     "reached_at": "2026-09-28T02:00:00.000Z",
+     "in_trade": true,
+     "relation_to_final_tp": null
+    },
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-09-28T03:00:00.000Z",
+     "close": 2.622,
+     "level_id": "STOP"
+    },
+    "terminal_at": "2026-09-28T02:00:00.000Z",
+    "later_evidence": null,
+    "public_display": {
+     "kind": "STOP_BOUNDARY",
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
+     "blockers": []
+    }
+   }
+  },
+  "NEAR": {
+   "setup_instance_key": "NEAR|1790596188000|0b2c0a12afdea40539eb40eff08a",
+   "setup_fingerprint": "0b2c0a12afdea40539eb40eff08a",
+   "instance_published_at": "2026-09-28T11:49:48.000Z",
+   "sheet_status": {
+    "text": "Watching",
+    "class": "WATCHING"
+   },
+   "lifecycle": {
+    "state": "WAITING_FOR_TRIGGER",
+    "state_since": "2026-09-28T13:18:16.115Z",
+    "published_at": "2026-09-28T11:49:48.000Z",
+    "trigger": null,
+    "targets": [
+     {
+      "level_id": "TP1",
+      "zone": {
+       "low": 4.6,
+       "high": 4.6
+      },
+      "reached_at": null
+     },
+     {
+      "level_id": "TP2",
+      "zone": {
+       "low": 4.15,
+       "high": 4.15
+      },
+      "reached_at": null
+     },
+     {
+      "level_id": "TP3",
+      "zone": {
+       "low": 4.02,
+       "high": 4.02
+      },
+      "reached_at": null
+     }
+    ],
+    "objectives": {
+     "defined": 3,
+     "reached": 0,
+     "all_reached": false,
+     "ladder_problems": [],
+     "completed_at": null
+    },
+    "extended": {
+     "level_id": "EXTENDED",
+     "zone": {
+      "low": 3.55,
+      "high": 3.7
+     },
+     "reached_at": null
+    },
     "stop_boundary": null,
     "evidence_grade": null,
     "confirm": null,
@@ -1646,93 +1808,82 @@
     }
    }
   },
-  "NEAR": {
-   "setup_instance_key": "NEAR|1789558914000|13d31f613a80750567e1ea07bc16",
-   "setup_fingerprint": "13d31f613a80750567e1ea07bc16",
-   "instance_published_at": "2026-09-16T11:41:54.000Z",
+  "ONDO": {
+   "setup_instance_key": "ONDO|1790596091000|088bd832abd37f1cac6fa0812930",
+   "setup_fingerprint": "088bd832abd37f1cac6fa0812930",
+   "instance_published_at": "2026-09-28T11:48:11.000Z",
    "sheet_status": {
-    "text": "No Trade",
-    "class": "NO_TRADE"
+    "text": "Watching",
+    "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "OBJECTIVES_EXHAUSTED",
-    "state_since": "2026-09-24T15:46:40.841Z",
-    "published_at": "2026-09-16T11:41:54.000Z",
-    "trigger": {
-     "level_id": "TRIGGER_1",
-     "zone": {
-      "low": 2.36,
-      "high": 2.4
-     },
-     "reached_at": "2026-09-16T11:00:00.000Z"
-    },
+    "state": "WAITING_FOR_TRIGGER",
+    "state_since": "2026-09-28T13:18:16.115Z",
+    "published_at": "2026-09-28T11:48:11.000Z",
+    "trigger": null,
     "targets": [
      {
       "level_id": "TP1",
       "zone": {
-       "low": 2.48,
-       "high": 2.52
+       "low": 0.587,
+       "high": 0.587
       },
-      "reached_at": "2026-09-16T11:00:00.000Z"
+      "reached_at": null
      },
      {
       "level_id": "TP2",
       "zone": {
-       "low": 2.62,
-       "high": 2.68
+       "low": 0.635,
+       "high": 0.635
       },
-      "reached_at": "2026-09-16T23:00:00.000Z"
+      "reached_at": null
      },
      {
       "level_id": "TP3",
       "zone": {
-       "low": 2.78,
-       "high": 2.85
+       "low": 0.642,
+       "high": 0.642
       },
-      "reached_at": "2026-09-17T09:00:00.000Z"
+      "reached_at": null
      }
     ],
     "objectives": {
      "defined": 3,
-     "reached": 3,
-     "all_reached": true,
+     "reached": 0,
+     "all_reached": false,
      "ladder_problems": [],
-     "completed_at": "2026-09-17T09:00:00.000Z"
+     "completed_at": null
     },
     "extended": {
      "level_id": "EXTENDED",
      "zone": {
-      "low": 2.9,
-      "high": 3
+      "low": 0.656,
+      "high": 0.656
      },
-     "reached_at": "2026-09-17T12:00:00.000Z"
+     "reached_at": null
     },
-    "stop_boundary": null,
-    "evidence_grade": "CLOSE_CONFIRMED",
-    "confirm": {
-     "at": "2026-09-17T10:00:00.000Z",
-     "close": 2.806,
-     "level_id": "TP3"
+    "stop_boundary": {
+     "level_id": "STOP",
+     "kind": "stop",
+     "zone": {
+      "low": 0.535,
+      "high": 0.544
+     },
+     "reached_at": "2026-09-28T11:00:00.000Z",
+     "in_trade": false,
+     "relation_to_final_tp": null
     },
-    "terminal_at": "2026-09-17T09:00:00.000Z",
+    "evidence_grade": null,
+    "confirm": null,
+    "terminal_at": null,
     "later_evidence": null,
     "public_display": {
-     "kind": "TRADE_COMPLETE",
-     "ready": true,
-     "evidence_grade": "CLOSE_CONFIRMED",
+     "kind": null,
+     "ready": false,
+     "evidence_grade": null,
      "blockers": []
     }
    }
-  },
-  "ONDO": {
-   "setup_instance_key": "ONDO|1790254411000|15ac1214487af413e6dc336ae8b9",
-   "setup_fingerprint": "15ac1214487af413e6dc336ae8b9",
-   "instance_published_at": "2026-09-24T12:53:31.000Z",
-   "sheet_status": {
-    "text": "Closed",
-    "class": "CLOSED"
-   },
-   "lifecycle": null
   },
   "QNT": {
    "setup_instance_key": "QNT|1789730112000|0d46ae47f58b490f5054b199faa5",
@@ -1820,8 +1971,8 @@
    "setup_fingerprint": "115554eeb8670f09542ae5dfb049",
    "instance_published_at": "2026-09-23T11:24:21.000Z",
    "sheet_status": {
-    "text": "Watching",
-    "class": "WATCHING"
+    "text": "No Trade",
+    "class": "NO_TRADE"
    },
    "lifecycle": {
     "state": "OBJECTIVES_EXHAUSTED",
@@ -1907,54 +2058,47 @@
    }
   },
   "SHIB": {
-   "setup_instance_key": "SHIB|1790335985000|15a42bf91bad5c1554150b91e56a",
-   "setup_fingerprint": "15a42bf91bad5c1554150b91e56a",
-   "instance_published_at": "2026-09-25T11:33:05.000Z",
+   "setup_instance_key": "SHIB|1790595497000|1572f4b473dd3a14759241afc84d",
+   "setup_fingerprint": "1572f4b473dd3a14759241afc84d",
+   "instance_published_at": "2026-09-28T11:38:17.000Z",
    "sheet_status": {
     "text": "Watching",
     "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "TARGETS_IN_PROGRESS",
-    "state_since": "2026-09-25T12:57:27.693Z",
-    "published_at": "2026-09-25T11:33:05.000Z",
-    "trigger": {
-     "level_id": "TRIGGER_1",
-     "zone": {
-      "low": 0.00000582,
-      "high": 0.00000586
-     },
-     "reached_at": "2026-09-25T11:00:00.000Z"
-    },
+    "state": "WAITING_FOR_TRIGGER",
+    "state_since": "2026-09-28T13:18:16.115Z",
+    "published_at": "2026-09-28T11:38:17.000Z",
+    "trigger": null,
     "targets": [
      {
       "level_id": "TP1",
       "zone": {
-       "low": 0.00000592,
-       "high": 0.00000598
+       "low": 0.0000056,
+       "high": 0.0000056
       },
-      "reached_at": "2026-09-25T11:00:00.000Z"
+      "reached_at": null
      },
      {
       "level_id": "TP2",
       "zone": {
-       "low": 0.00000605,
-       "high": 0.00000615
+       "low": 0.0000054,
+       "high": 0.0000054
       },
       "reached_at": null
      },
      {
       "level_id": "TP3",
       "zone": {
-       "low": 0.0000063,
-       "high": 0.00000645
+       "low": 0.0000053,
+       "high": 0.0000053
       },
       "reached_at": null
      }
     ],
     "objectives": {
      "defined": 3,
-     "reached": 1,
+     "reached": 0,
      "all_reached": false,
      "ladder_problems": [],
      "completed_at": null
@@ -1962,8 +2106,8 @@
     "extended": {
      "level_id": "EXTENDED",
      "zone": {
-      "low": 0.0000067,
-      "high": 0.0000069
+      "low": 0.0000049,
+      "high": 0.0000052
      },
      "reached_at": null
     },
@@ -1981,54 +2125,47 @@
    }
   },
   "SOL": {
-   "setup_instance_key": "SOL|1790336269000|178cfdeb9b49691602b7f7044bcc",
-   "setup_fingerprint": "178cfdeb9b49691602b7f7044bcc",
-   "instance_published_at": "2026-09-25T11:37:49.000Z",
+   "setup_instance_key": "SOL|1790595767000|1ca112ae12db6b0ecf3447eae97e",
+   "setup_fingerprint": "1ca112ae12db6b0ecf3447eae97e",
+   "instance_published_at": "2026-09-28T11:42:47.000Z",
    "sheet_status": {
     "text": "Watching",
     "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "TARGETS_IN_PROGRESS",
-    "state_since": "2026-09-25T12:57:27.693Z",
-    "published_at": "2026-09-25T11:37:49.000Z",
-    "trigger": {
-     "level_id": "TRIGGER_1",
-     "zone": {
-      "low": 117.2,
-      "high": 117.8
-     },
-     "reached_at": "2026-09-25T11:00:00.000Z"
-    },
+    "state": "WAITING_FOR_TRIGGER",
+    "state_since": "2026-09-28T13:18:16.115Z",
+    "published_at": "2026-09-28T11:42:47.000Z",
+    "trigger": null,
     "targets": [
      {
       "level_id": "TP1",
       "zone": {
-       "low": 119.5,
-       "high": 121
+       "low": 127,
+       "high": 127
       },
-      "reached_at": "2026-09-25T11:00:00.000Z"
+      "reached_at": null
      },
      {
       "level_id": "TP2",
       "zone": {
-       "low": 123.5,
-       "high": 126
+       "low": 132,
+       "high": 132
       },
       "reached_at": null
      },
      {
       "level_id": "TP3",
       "zone": {
-       "low": 129,
-       "high": 133
+       "low": 137.65,
+       "high": 137.65
       },
       "reached_at": null
      }
     ],
     "objectives": {
      "defined": 3,
-     "reached": 1,
+     "reached": 0,
      "all_reached": false,
      "ladder_problems": [],
      "completed_at": null
@@ -2036,12 +2173,99 @@
     "extended": {
      "level_id": "EXTENDED",
      "zone": {
-      "low": 138,
-      "high": 142
+      "low": 144.76,
+      "high": 144.76
      },
      "reached_at": null
     },
-    "stop_boundary": null,
+    "stop_boundary": {
+     "level_id": "STOP",
+     "kind": "stop",
+     "zone": {
+      "low": 117.5,
+      "high": 119
+     },
+     "reached_at": "2026-09-28T11:00:00.000Z",
+     "in_trade": false,
+     "relation_to_final_tp": null
+    },
+    "evidence_grade": null,
+    "confirm": null,
+    "terminal_at": null,
+    "later_evidence": null,
+    "public_display": {
+     "kind": null,
+     "ready": false,
+     "evidence_grade": null,
+     "blockers": []
+    }
+   }
+  },
+  "SUI": {
+   "setup_instance_key": "SUI|1790595921000|0008fb01f1d0d5197053cc021310",
+   "setup_fingerprint": "0008fb01f1d0d5197053cc021310",
+   "instance_published_at": "2026-09-28T11:45:21.000Z",
+   "sheet_status": {
+    "text": "Watching",
+    "class": "WATCHING"
+   },
+   "lifecycle": {
+    "state": "WAITING_FOR_TRIGGER",
+    "state_since": "2026-09-28T13:18:16.115Z",
+    "published_at": "2026-09-28T11:45:21.000Z",
+    "trigger": null,
+    "targets": [
+     {
+      "level_id": "TP1",
+      "zone": {
+       "low": 1.06,
+       "high": 1.06
+      },
+      "reached_at": null
+     },
+     {
+      "level_id": "TP2",
+      "zone": {
+       "low": 1.02,
+       "high": 1.02
+      },
+      "reached_at": null
+     },
+     {
+      "level_id": "TP3",
+      "zone": {
+       "low": 0.96,
+       "high": 0.96
+      },
+      "reached_at": null
+     }
+    ],
+    "objectives": {
+     "defined": 3,
+     "reached": 0,
+     "all_reached": false,
+     "ladder_problems": [],
+     "completed_at": null
+    },
+    "extended": {
+     "level_id": "EXTENDED",
+     "zone": {
+      "low": 0.89,
+      "high": 0.89
+     },
+     "reached_at": null
+    },
+    "stop_boundary": {
+     "level_id": "STOP",
+     "kind": "stop",
+     "zone": {
+      "low": 1.18,
+      "high": 1.21
+     },
+     "reached_at": "2026-09-28T11:00:00.000Z",
+     "in_trade": false,
+     "relation_to_final_tp": null
+    },
     "evidence_grade": null,
     "confirm": null,
     "terminal_at": null,
@@ -2192,7 +2416,17 @@
      },
      "reached_at": null
     },
-    "stop_boundary": null,
+    "stop_boundary": {
+     "level_id": "STOP",
+     "kind": "stop",
+     "zone": {
+      "low": 0.328,
+      "high": 0.335
+     },
+     "reached_at": "2026-09-26T20:00:00.000Z",
+     "in_trade": false,
+     "relation_to_final_tp": null
+    },
     "evidence_grade": null,
     "confirm": null,
     "terminal_at": null,
@@ -2277,8 +2511,8 @@
    "setup_fingerprint": "13249f0986d26610c185912c99dc",
    "instance_published_at": "2026-09-21T09:13:00.000Z",
    "sheet_status": {
-    "text": "Watching",
-    "class": "WATCHING"
+    "text": "Closed",
+    "class": "CLOSED"
    },
    "lifecycle": {
     "state": "OBJECTIVES_EXHAUSTED",
@@ -2422,12 +2656,12 @@
    "setup_fingerprint": "0c8f466d5b1e68124bbc3b54ae18",
    "instance_published_at": "2026-09-25T11:37:10.000Z",
    "sheet_status": {
-    "text": "Watching",
-    "class": "WATCHING"
+    "text": "No Trade",
+    "class": "NO_TRADE"
    },
    "lifecycle": {
-    "state": "TARGETS_IN_PROGRESS",
-    "state_since": "2026-09-25T12:57:27.693Z",
+    "state": "STOP_BOUNDARY_REACHED",
+    "state_since": "2026-09-28T13:18:16.115Z",
     "published_at": "2026-09-25T11:37:10.000Z",
     "trigger": {
      "level_id": "TRIGGER_1",
@@ -2478,21 +2712,890 @@
      },
      "reached_at": null
     },
-    "stop_boundary": null,
-    "evidence_grade": null,
-    "confirm": null,
-    "terminal_at": null,
+    "stop_boundary": {
+     "level_id": "STOP",
+     "kind": "stop",
+     "zone": {
+      "low": 1.505,
+      "high": 1.518
+     },
+     "reached_at": "2026-09-26T20:00:00.000Z",
+     "in_trade": true,
+     "relation_to_final_tp": null
+    },
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-09-27T00:00:00.000Z",
+     "close": 1.5175,
+     "level_id": "STOP"
+    },
+    "terminal_at": "2026-09-26T20:00:00.000Z",
     "later_evidence": null,
     "public_display": {
-     "kind": null,
-     "ready": false,
-     "evidence_grade": null,
+     "kind": "STOP_BOUNDARY",
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
      "blockers": []
     }
    }
   }
  },
  "receipts": [
+  {
+   "receipt_id": "rcpt_0754f8de0ce53b12d5ef3437639c",
+   "asset": "HBAR",
+   "setup_instance_key": "HBAR|1790595632000|08d8ce50ba35140e35abfe87d265",
+   "setup_fingerprint": "08d8ce50ba35140e35abfe87d265",
+   "outcome": "OBJECTIVES_EXHAUSTED",
+   "opened_at": "2026-09-28T13:18:16.115Z",
+   "superseded": false,
+   "superseded_at": null,
+   "snapshot": {
+    "setup_published_at": "2026-09-28T11:40:32.000Z",
+    "setup_timestamp_text": "9/28/2026 7:40:32",
+    "direction": "long",
+    "sheet_status_at_open": {
+     "text": "Watching",
+     "class": "WATCHING"
+    },
+    "levels": [
+     {
+      "id": "TRIGGER_1",
+      "kind": "trigger",
+      "label": "Trigger 1",
+      "zone": {
+       "low": 0.0958,
+       "high": 0.0958
+      },
+      "raw": "1H open-and-hold above approximately $0.0958, followed by a defended retest. Entry Zone: $0.0945–$0.0958"
+     },
+     {
+      "id": "TP1",
+      "kind": "tp",
+      "label": "TP1",
+      "zone": {
+       "low": 0.0974,
+       "high": 0.0974
+      },
+      "raw": "TP1: $0.0974 | TP2: $0.0984 | TP3: $0.0996 | Extended: $0.1012–$0.1013"
+     },
+     {
+      "id": "TP2",
+      "kind": "tp",
+      "label": "TP2",
+      "zone": {
+       "low": 0.0984,
+       "high": 0.0984
+      },
+      "raw": "TP1: $0.0974 | TP2: $0.0984 | TP3: $0.0996 | Extended: $0.1012–$0.1013"
+     },
+     {
+      "id": "TP3",
+      "kind": "tp",
+      "label": "TP3",
+      "zone": {
+       "low": 0.0996,
+       "high": 0.0996
+      },
+      "raw": "TP1: $0.0974 | TP2: $0.0984 | TP3: $0.0996 | Extended: $0.1012–$0.1013"
+     },
+     {
+      "id": "EXTENDED",
+      "kind": "extended",
+      "label": "Extended",
+      "zone": {
+       "low": 0.1012,
+       "high": 0.1013
+      },
+      "raw": "TP1: $0.0974 | TP2: $0.0984 | TP3: $0.0996 | Extended: $0.1012–$0.1013"
+     },
+     {
+      "id": "STOP",
+      "kind": "stop",
+      "label": "Stop",
+      "zone": {
+       "low": 0.0922,
+       "high": 0.0932
+      },
+      "raw": "$0.0922–$0.0932"
+     }
+    ],
+    "published_text": {
+     "headline": "HBAR — LONG TRADE SETUP",
+     "why": "Current Price: Approximately $0.0953\nSetup/Pattern: Higher-low continuation / compression underneath resistance.\nWhat I'm Watching: Buyers need to defend approximately $0.0939–$0.0945 and then reclaim the $0.0954–$0.0958 area.\nWhy I like it: HBAR has one of the cleaner multi-timeframe structures in the scan. Daily price is above its 50/200 EMA with strong ADX, while the hourly remains above its 50/100 EMA and has produced a sequence of higher lows around $0.0933 → $0.0945 → $0.0943. The tension is that the hourly SuperTrend has recently flipped bearish, making the reclaim important.\nRisk/Reward: Good, especially if we get the lower retest.",
+     "warning": "Invalidation: Loss of approximately $0.0924 with inability to reclaim.\nMISSED IT?: Above $0.0984 without giving us a retest = don't chase it.",
+     "triggers": [
+      "1H open-and-hold above approximately $0.0958, followed by a defended retest. Entry Zone: $0.0945–$0.0958",
+      "",
+      ""
+     ],
+     "targets": "TP1: $0.0974 | TP2: $0.0984 | TP3: $0.0996 | Extended: $0.1012–$0.1013",
+     "stop": "$0.0922–$0.0932",
+     "safety": ""
+    }
+   },
+   "lifecycle": {
+    "state": "OBJECTIVES_EXHAUSTED",
+    "state_since": "2026-09-28T13:18:16.115Z",
+    "published_at": "2026-09-28T11:40:32.000Z",
+    "trigger": {
+     "level_id": "TRIGGER_1",
+     "zone": {
+      "low": 0.0958,
+      "high": 0.0958
+     },
+     "reached_at": "2026-09-28T11:00:00.000Z"
+    },
+    "targets": [
+     {
+      "level_id": "TP1",
+      "zone": {
+       "low": 0.0974,
+       "high": 0.0974
+      },
+      "reached_at": "2026-09-28T11:00:00.000Z"
+     },
+     {
+      "level_id": "TP2",
+      "zone": {
+       "low": 0.0984,
+       "high": 0.0984
+      },
+      "reached_at": "2026-09-28T11:00:00.000Z"
+     },
+     {
+      "level_id": "TP3",
+      "zone": {
+       "low": 0.0996,
+       "high": 0.0996
+      },
+      "reached_at": "2026-09-28T11:00:00.000Z"
+     }
+    ],
+    "objectives": {
+     "defined": 3,
+     "reached": 3,
+     "all_reached": true,
+     "ladder_problems": [],
+     "completed_at": "2026-09-28T11:00:00.000Z"
+    },
+    "extended": {
+     "level_id": "EXTENDED",
+     "zone": {
+      "low": 0.1012,
+      "high": 0.1013
+     },
+     "reached_at": "2026-09-28T11:00:00.000Z"
+    },
+    "stop_boundary": null,
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-09-28T12:00:00.000Z",
+     "close": 0.11937,
+     "level_id": "TP3"
+    },
+    "terminal_at": "2026-09-28T11:00:00.000Z",
+    "later_evidence": null,
+    "public_display": {
+     "kind": "TRADE_COMPLETE",
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
+     "blockers": []
+    }
+   }
+  },
+  {
+   "receipt_id": "rcpt_08e65724bdae7d1856130145a4eb",
+   "asset": "DOGE",
+   "setup_instance_key": "DOGE|1790336186000|18f93dd9b4dc721f42f9b54aeb99",
+   "setup_fingerprint": "18f93dd9b4dc721f42f9b54aeb99",
+   "outcome": "STOP_BOUNDARY_REACHED",
+   "opened_at": "2026-09-28T13:18:16.115Z",
+   "superseded": false,
+   "superseded_at": null,
+   "snapshot": {
+    "setup_published_at": "2026-09-25T11:36:26.000Z",
+    "setup_timestamp_text": "9/25/2026 7:36:26",
+    "direction": "long",
+    "sheet_status_at_open": {
+     "text": "Watching",
+     "class": "WATCHING"
+    },
+    "levels": [
+     {
+      "id": "TRIGGER_1",
+      "kind": "trigger",
+      "label": "Trigger 1",
+      "zone": {
+       "low": 0.096,
+       "high": 0.0963
+      },
+      "raw": "Completed 1H open-and-hold above approximately $0.0960–$0.0963 and above both Simple and Smooth MAs, followed by a defended retest. Entry Zone: Approximately $0.0956–$0.0962, only after confirmation."
+     },
+     {
+      "id": "TP1",
+      "kind": "tp",
+      "label": "TP1",
+      "zone": {
+       "low": 0.0974,
+       "high": 0.0981
+      },
+      "raw": "TP1: $0.0974–$0.0981 — nearest execution resistance. | TP2: $0.0995–$0.1005 — psychological and behavioral supply. | TP3: $0.1030–$0.1050 — higher structural resistance. | Extended: $0.1090–$0.1120 — expansion zone."
+     },
+     {
+      "id": "TP2",
+      "kind": "tp",
+      "label": "TP2",
+      "zone": {
+       "low": 0.0995,
+       "high": 0.1005
+      },
+      "raw": "TP1: $0.0974–$0.0981 — nearest execution resistance. | TP2: $0.0995–$0.1005 — psychological and behavioral supply. | TP3: $0.1030–$0.1050 — higher structural resistance. | Extended: $0.1090–$0.1120 — expansion zone."
+     },
+     {
+      "id": "TP3",
+      "kind": "tp",
+      "label": "TP3",
+      "zone": {
+       "low": 0.103,
+       "high": 0.105
+      },
+      "raw": "TP1: $0.0974–$0.0981 — nearest execution resistance. | TP2: $0.0995–$0.1005 — psychological and behavioral supply. | TP3: $0.1030–$0.1050 — higher structural resistance. | Extended: $0.1090–$0.1120 — expansion zone."
+     },
+     {
+      "id": "EXTENDED",
+      "kind": "extended",
+      "label": "Extended",
+      "zone": {
+       "low": 0.109,
+       "high": 0.112
+      },
+      "raw": "TP1: $0.0974–$0.0981 — nearest execution resistance. | TP2: $0.0995–$0.1005 — psychological and behavioral supply. | TP3: $0.1030–$0.1050 — higher structural resistance. | Extended: $0.1090–$0.1120 — expansion zone."
+     },
+     {
+      "id": "STOP",
+      "kind": "stop",
+      "label": "Stop",
+      "zone": {
+       "low": 0.0945,
+       "high": 0.095
+      },
+      "raw": "Approximately $0.0945–$0.0950, beneath hourly support, structural invalidation and as many relevant MAs as possible. The exact stop may change when triggered."
+     }
+    ],
+    "published_text": {
+     "headline": "DOGE — TRADE SETUP-LONG",
+     "why": "DOGE is resting just above its 1H bundle with RSI near 56, midrange Stochastic and positive public MACD momentum. Current Price: Approximately $0.09606 at 4:52 AM ET Setup/Pattern: POTENTIAL OPTIMAL — CUSTOM CONFIRMATION PENDING. Controlled hourly reload above approximately $0.0953–$0.0956. What I’m Watching: Buyers defended the MA cluster. They must hold above $0.0960 and prevent the elevated 15m Stoch RSI from producing a failed breakout. Risk/Reward: Approximately 1.3–1.7R to TP1 | 3.1–3.8R to TP2.",
+     "warning": "Invalidation: Completed 1H acceptance below approximately $0.0945, or sustained loss of the complete hourly bundle after triggering. MISSED IT?: Be patient for the next entry. DON’T CHASE. Require a retest/new confirmation, a new higher low, and moving averages or momentum to reset.",
+     "triggers": [
+      "Completed 1H open-and-hold above approximately $0.0960–$0.0963 and above both Simple and Smooth MAs, followed by a defended retest. Entry Zone: Approximately $0.0956–$0.0962, only after confirmation.",
+      "",
+      ""
+     ],
+     "targets": "TP1: $0.0974–$0.0981 — nearest execution resistance. | TP2: $0.0995–$0.1005 — psychological and behavioral supply. | TP3: $0.1030–$0.1050 — higher structural resistance. | Extended: $0.1090–$0.1120 — expansion zone.",
+     "stop": "Approximately $0.0945–$0.0950, beneath hourly support, structural invalidation and as many relevant MAs as possible. The exact stop may change when triggered.",
+     "safety": ""
+    }
+   },
+   "lifecycle": {
+    "state": "STOP_BOUNDARY_REACHED",
+    "state_since": "2026-09-28T13:18:16.115Z",
+    "published_at": "2026-09-25T11:36:26.000Z",
+    "trigger": {
+     "level_id": "TRIGGER_1",
+     "zone": {
+      "low": 0.096,
+      "high": 0.0963
+     },
+     "reached_at": "2026-09-25T11:00:00.000Z"
+    },
+    "targets": [
+     {
+      "level_id": "TP1",
+      "zone": {
+       "low": 0.0974,
+       "high": 0.0981
+      },
+      "reached_at": "2026-09-25T11:00:00.000Z"
+     },
+     {
+      "level_id": "TP2",
+      "zone": {
+       "low": 0.0995,
+       "high": 0.1005
+      },
+      "reached_at": "2026-09-25T22:50:00.000Z"
+     },
+     {
+      "level_id": "TP3",
+      "zone": {
+       "low": 0.103,
+       "high": 0.105
+      },
+      "reached_at": null
+     }
+    ],
+    "objectives": {
+     "defined": 3,
+     "reached": 2,
+     "all_reached": false,
+     "ladder_problems": [],
+     "completed_at": null
+    },
+    "extended": {
+     "level_id": "EXTENDED",
+     "zone": {
+      "low": 0.109,
+      "high": 0.112
+     },
+     "reached_at": null
+    },
+    "stop_boundary": {
+     "level_id": "STOP",
+     "kind": "stop",
+     "zone": {
+      "low": 0.0945,
+      "high": 0.095
+     },
+     "reached_at": "2026-09-28T02:00:00.000Z",
+     "in_trade": true,
+     "relation_to_final_tp": null
+    },
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-09-28T03:00:00.000Z",
+     "close": 0.09406,
+     "level_id": "STOP"
+    },
+    "terminal_at": "2026-09-28T02:00:00.000Z",
+    "later_evidence": null,
+    "public_display": {
+     "kind": "STOP_BOUNDARY",
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
+     "blockers": []
+    }
+   }
+  },
+  {
+   "receipt_id": "rcpt_1e47e0b6967a78040be27d39a4fa",
+   "asset": "MORPHO",
+   "setup_instance_key": "MORPHO|1790254148000|128f5953ff7eea06ad53c0cbe56a",
+   "setup_fingerprint": "128f5953ff7eea06ad53c0cbe56a",
+   "outcome": "STOP_BOUNDARY_REACHED",
+   "opened_at": "2026-09-28T13:18:16.115Z",
+   "superseded": false,
+   "superseded_at": null,
+   "snapshot": {
+    "setup_published_at": "2026-09-24T12:49:08.000Z",
+    "setup_timestamp_text": "9/24/2026 8:49:08",
+    "direction": "long",
+    "sheet_status_at_open": {
+     "text": "Watching",
+     "class": "WATCHING"
+    },
+    "levels": [
+     {
+      "id": "TRIGGER_1",
+      "kind": "trigger",
+      "label": "Trigger 1",
+      "zone": {
+       "low": 2.705,
+       "high": 2.725
+      },
+      "raw": "Completed 1H open-and-hold above $2.705–$2.725 and above both Simple and Smooth MAs."
+     },
+     {
+      "id": "TP1",
+      "kind": "tp",
+      "label": "TP1",
+      "zone": {
+       "low": 2.78,
+       "high": 2.82
+      },
+      "raw": "TP1: $2.780–$2.820 | TP2: $2.900–$2.980 | TP3: $3.100–$3.200 | Extended: $3.350–$3.500"
+     },
+     {
+      "id": "TP2",
+      "kind": "tp",
+      "label": "TP2",
+      "zone": {
+       "low": 2.9,
+       "high": 2.98
+      },
+      "raw": "TP1: $2.780–$2.820 | TP2: $2.900–$2.980 | TP3: $3.100–$3.200 | Extended: $3.350–$3.500"
+     },
+     {
+      "id": "TP3",
+      "kind": "tp",
+      "label": "TP3",
+      "zone": {
+       "low": 3.1,
+       "high": 3.2
+      },
+      "raw": "TP1: $2.780–$2.820 | TP2: $2.900–$2.980 | TP3: $3.100–$3.200 | Extended: $3.350–$3.500"
+     },
+     {
+      "id": "EXTENDED",
+      "kind": "extended",
+      "label": "Extended",
+      "zone": {
+       "low": 3.35,
+       "high": 3.5
+      },
+      "raw": "TP1: $2.780–$2.820 | TP2: $2.900–$2.980 | TP3: $3.100–$3.200 | Extended: $3.350–$3.500"
+     },
+     {
+      "id": "STOP",
+      "kind": "stop",
+      "label": "Stop",
+      "zone": {
+       "low": 2.6,
+       "high": 2.64
+      },
+      "raw": "$2.600–$2.640, beyond structural support and the slower MA bundle. The exact stop may change when triggered."
+     }
+    ],
+    "published_text": {
+     "headline": "MORPHO — TRADE SETUP-LONG",
+     "why": "MORPHO is retesting its fast 1H averages while remaining above its slower bundle and maintaining constructive 4H structure.",
+     "warning": "",
+     "triggers": [
+      "Completed 1H open-and-hold above $2.705–$2.725 and above both Simple and Smooth MAs.",
+      "",
+      ""
+     ],
+     "targets": "TP1: $2.780–$2.820 | TP2: $2.900–$2.980 | TP3: $3.100–$3.200 | Extended: $3.350–$3.500",
+     "stop": "$2.600–$2.640, beyond structural support and the slower MA bundle. The exact stop may change when triggered.",
+     "safety": ""
+    }
+   },
+   "lifecycle": {
+    "state": "STOP_BOUNDARY_REACHED",
+    "state_since": "2026-09-28T13:18:16.115Z",
+    "published_at": "2026-09-24T12:49:08.000Z",
+    "trigger": {
+     "level_id": "TRIGGER_1",
+     "zone": {
+      "low": 2.705,
+      "high": 2.725
+     },
+     "reached_at": "2026-09-24T12:00:00.000Z"
+    },
+    "targets": [
+     {
+      "level_id": "TP1",
+      "zone": {
+       "low": 2.78,
+       "high": 2.82
+      },
+      "reached_at": "2026-09-24T13:00:00.000Z"
+     },
+     {
+      "level_id": "TP2",
+      "zone": {
+       "low": 2.9,
+       "high": 2.98
+      },
+      "reached_at": "2026-09-24T13:00:00.000Z"
+     },
+     {
+      "level_id": "TP3",
+      "zone": {
+       "low": 3.1,
+       "high": 3.2
+      },
+      "reached_at": null
+     }
+    ],
+    "objectives": {
+     "defined": 3,
+     "reached": 2,
+     "all_reached": false,
+     "ladder_problems": [],
+     "completed_at": null
+    },
+    "extended": {
+     "level_id": "EXTENDED",
+     "zone": {
+      "low": 3.35,
+      "high": 3.5
+     },
+     "reached_at": null
+    },
+    "stop_boundary": {
+     "level_id": "STOP",
+     "kind": "stop",
+     "zone": {
+      "low": 2.6,
+      "high": 2.64
+     },
+     "reached_at": "2026-09-28T02:00:00.000Z",
+     "in_trade": true,
+     "relation_to_final_tp": null
+    },
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-09-28T03:00:00.000Z",
+     "close": 2.622,
+     "level_id": "STOP"
+    },
+    "terminal_at": "2026-09-28T02:00:00.000Z",
+    "later_evidence": null,
+    "public_display": {
+     "kind": "STOP_BOUNDARY",
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
+     "blockers": []
+    }
+   }
+  },
+  {
+   "receipt_id": "rcpt_15c0e7b8d0f22504a4acfd794d9c",
+   "asset": "ETH",
+   "setup_instance_key": "ETH|1790336142000|17ece21d84cd00123cc6a2532af7",
+   "setup_fingerprint": "17ece21d84cd00123cc6a2532af7",
+   "outcome": "STOP_BOUNDARY_REACHED",
+   "opened_at": "2026-09-28T13:18:16.115Z",
+   "superseded": false,
+   "superseded_at": null,
+   "snapshot": {
+    "setup_published_at": "2026-09-25T11:35:42.000Z",
+    "setup_timestamp_text": "9/25/2026 7:35:42",
+    "direction": "long",
+    "sheet_status_at_open": {
+     "text": "No Trade",
+     "class": "NO_TRADE"
+    },
+    "levels": [
+     {
+      "id": "TRIGGER_1",
+      "kind": "trigger",
+      "label": "Trigger 1",
+      "zone": {
+       "low": 2688,
+       "high": 2695
+      },
+      "raw": "Completed 1H open-and-hold above approximately $2,688–$2,695 and above both Simple and Smooth MAs, followed by a defended retest. Entry Zone: Approximately $2,680–$2,692, only after confirmation."
+     },
+     {
+      "id": "TP1",
+      "kind": "tp",
+      "label": "TP1",
+      "zone": {
+       "low": 2725,
+       "high": 2745
+      },
+      "raw": "TP1: $2,725–$2,745 — execution resistance. | TP2: $2,760–$2,790 — behavioral supply. | TP3: $2,825–$2,870 — higher structural resistance. | Extended: $2,940–$3,030 — larger expansion zone."
+     },
+     {
+      "id": "TP2",
+      "kind": "tp",
+      "label": "TP2",
+      "zone": {
+       "low": 2760,
+       "high": 2790
+      },
+      "raw": "TP1: $2,725–$2,745 — execution resistance. | TP2: $2,760–$2,790 — behavioral supply. | TP3: $2,825–$2,870 — higher structural resistance. | Extended: $2,940–$3,030 — larger expansion zone."
+     },
+     {
+      "id": "TP3",
+      "kind": "tp",
+      "label": "TP3",
+      "zone": {
+       "low": 2825,
+       "high": 2870
+      },
+      "raw": "TP1: $2,725–$2,745 — execution resistance. | TP2: $2,760–$2,790 — behavioral supply. | TP3: $2,825–$2,870 — higher structural resistance. | Extended: $2,940–$3,030 — larger expansion zone."
+     },
+     {
+      "id": "EXTENDED",
+      "kind": "extended",
+      "label": "Extended",
+      "zone": {
+       "low": 2940,
+       "high": 3030
+      },
+      "raw": "TP1: $2,725–$2,745 — execution resistance. | TP2: $2,760–$2,790 — behavioral supply. | TP3: $2,825–$2,870 — higher structural resistance. | Extended: $2,940–$3,030 — larger expansion zone."
+     },
+     {
+      "id": "STOP",
+      "kind": "stop",
+      "label": "Stop",
+      "zone": {
+       "low": 2655,
+       "high": 2668
+      },
+      "raw": "Approximately $2,655–$2,668, beneath nearby structure, the defended reload area and as many relevant MAs as possible. The exact stop may change when triggered."
+     }
+    ],
+    "published_text": {
+     "headline": "ETH — TRADE SETUP-LONG",
+     "why": "ETH is only marginally above its compressed 1H fast averages while lower-timeframe momentum is pulling upward and daily momentum remains supportive. Current Price: Approximately $2,689 at 4:52 AM ET Setup/Pattern: POTENTIAL OPTIMAL — CUSTOM CONFIRMATION PENDING. Tight reload above the approximately $2,680–$2,682 hourly bundle. What I’m Watching: Buyers defended the fast bundle, but must clear the nearby 4H resistance cluster and establish support above approximately $2,690. Risk/Reward: Approximately 1.4–2.0R to TP1 | 2.8–3.8R to TP2.",
+     "warning": "Invalidation: Completed 1H acceptance below approximately $2,655, or a failed trigger followed by sustained loss of the entire hourly bundle. MISSED IT?: Be patient for the next entry. DON’T CHASE. Require a retest/new confirmation, a new higher low, and moving averages or momentum to reset.",
+     "triggers": [
+      "Completed 1H open-and-hold above approximately $2,688–$2,695 and above both Simple and Smooth MAs, followed by a defended retest. Entry Zone: Approximately $2,680–$2,692, only after confirmation.",
+      "",
+      ""
+     ],
+     "targets": "TP1: $2,725–$2,745 — execution resistance. | TP2: $2,760–$2,790 — behavioral supply. | TP3: $2,825–$2,870 — higher structural resistance. | Extended: $2,940–$3,030 — larger expansion zone.",
+     "stop": "Approximately $2,655–$2,668, beneath nearby structure, the defended reload area and as many relevant MAs as possible. The exact stop may change when triggered.",
+     "safety": ""
+    }
+   },
+   "lifecycle": {
+    "state": "STOP_BOUNDARY_REACHED",
+    "state_since": "2026-09-28T13:18:16.115Z",
+    "published_at": "2026-09-25T11:35:42.000Z",
+    "trigger": {
+     "level_id": "TRIGGER_1",
+     "zone": {
+      "low": 2688,
+      "high": 2695
+     },
+     "reached_at": "2026-09-25T11:00:00.000Z"
+    },
+    "targets": [
+     {
+      "level_id": "TP1",
+      "zone": {
+       "low": 2725,
+       "high": 2745
+      },
+      "reached_at": "2026-09-25T11:00:00.000Z"
+     },
+     {
+      "level_id": "TP2",
+      "zone": {
+       "low": 2760,
+       "high": 2790
+      },
+      "reached_at": null
+     },
+     {
+      "level_id": "TP3",
+      "zone": {
+       "low": 2825,
+       "high": 2870
+      },
+      "reached_at": null
+     }
+    ],
+    "objectives": {
+     "defined": 3,
+     "reached": 1,
+     "all_reached": false,
+     "ladder_problems": [],
+     "completed_at": null
+    },
+    "extended": {
+     "level_id": "EXTENDED",
+     "zone": {
+      "low": 2940,
+      "high": 3030
+     },
+     "reached_at": null
+    },
+    "stop_boundary": {
+     "level_id": "STOP",
+     "kind": "stop",
+     "zone": {
+      "low": 2655,
+      "high": 2668
+     },
+     "reached_at": "2026-09-26T20:00:00.000Z",
+     "in_trade": true,
+     "relation_to_final_tp": null
+    },
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-09-28T01:00:00.000Z",
+     "close": 2657.38,
+     "level_id": "STOP"
+    },
+    "terminal_at": "2026-09-26T20:00:00.000Z",
+    "later_evidence": null,
+    "public_display": {
+     "kind": "STOP_BOUNDARY",
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
+     "blockers": []
+    }
+   }
+  },
+  {
+   "receipt_id": "rcpt_1ce34f6ab0525410d31e7411e240",
+   "asset": "XRP",
+   "setup_instance_key": "XRP|1790336230000|0c8f466d5b1e68124bbc3b54ae18",
+   "setup_fingerprint": "0c8f466d5b1e68124bbc3b54ae18",
+   "outcome": "STOP_BOUNDARY_REACHED",
+   "opened_at": "2026-09-28T13:18:16.115Z",
+   "superseded": false,
+   "superseded_at": null,
+   "snapshot": {
+    "setup_published_at": "2026-09-25T11:37:10.000Z",
+    "setup_timestamp_text": "9/25/2026 7:37:10",
+    "direction": "long",
+    "sheet_status_at_open": {
+     "text": "No Trade",
+     "class": "NO_TRADE"
+    },
+    "levels": [
+     {
+      "id": "TRIGGER_1",
+      "kind": "trigger",
+      "label": "Trigger 1",
+      "zone": {
+       "low": 1.54,
+       "high": 1.545
+      },
+      "raw": "Completed 1H open-and-hold above approximately $1.540–$1.545 and above both Simple and Smooth MAs, followed by a defended retest. Entry Zone: Approximately $1.532–$1.543, only after confirmation."
+     },
+     {
+      "id": "TP1",
+      "kind": "tp",
+      "label": "TP1",
+      "zone": {
+       "low": 1.565,
+       "high": 1.58
+      },
+      "raw": "TP1: $1.565–$1.580 — nearest execution resistance. | TP2: $1.610–$1.640 — behavioral supply. | TP3: $1.680–$1.720 — higher structural resistance. | Extended: $1.780–$1.820 — expansion zone."
+     },
+     {
+      "id": "TP2",
+      "kind": "tp",
+      "label": "TP2",
+      "zone": {
+       "low": 1.61,
+       "high": 1.64
+      },
+      "raw": "TP1: $1.565–$1.580 — nearest execution resistance. | TP2: $1.610–$1.640 — behavioral supply. | TP3: $1.680–$1.720 — higher structural resistance. | Extended: $1.780–$1.820 — expansion zone."
+     },
+     {
+      "id": "TP3",
+      "kind": "tp",
+      "label": "TP3",
+      "zone": {
+       "low": 1.68,
+       "high": 1.72
+      },
+      "raw": "TP1: $1.565–$1.580 — nearest execution resistance. | TP2: $1.610–$1.640 — behavioral supply. | TP3: $1.680–$1.720 — higher structural resistance. | Extended: $1.780–$1.820 — expansion zone."
+     },
+     {
+      "id": "EXTENDED",
+      "kind": "extended",
+      "label": "Extended",
+      "zone": {
+       "low": 1.78,
+       "high": 1.82
+      },
+      "raw": "TP1: $1.565–$1.580 — nearest execution resistance. | TP2: $1.610–$1.640 — behavioral supply. | TP3: $1.680–$1.720 — higher structural resistance. | Extended: $1.780–$1.820 — expansion zone."
+     },
+     {
+      "id": "STOP",
+      "kind": "stop",
+      "label": "Stop",
+      "zone": {
+       "low": 1.505,
+       "high": 1.518
+      },
+      "raw": "Approximately $1.505–$1.518, beneath hourly structure and as many relevant bundled MAs as possible. The exact stop may change when triggered."
+     }
+    ],
+    "published_text": {
+     "headline": "XRP — TRADE SETUP-LONG",
+     "why": "XRP is holding immediately above its 1H averages while 5m/15m/1H MACD proxies and the daily structure remain bullish. Current Price: Approximately $1.538 at 4:52 AM ET Setup/Pattern: POTENTIAL OPTIMAL — CUSTOM CONFIRMATION PENDING. Higher-low reload above the approximately $1.528–$1.534 hourly bundle. What I’m Watching: Buyers defended the hourly averages. They must defeat approximately $1.540–$1.545 while the 4H MACD proxy attempts to reset. Risk/Reward: Approximately 1.1–1.6R to TP1 | 3.0–4.0R to TP2.",
+     "warning": "Invalidation: Completed 1H acceptance below approximately $1.505, or failed breakout followed by sustained loss of the complete hourly bundle. MISSED IT?: Be patient for the next entry. DON’T CHASE. Require a retest/new confirmation, a new higher low, and moving averages or momentum to reset.",
+     "triggers": [
+      "Completed 1H open-and-hold above approximately $1.540–$1.545 and above both Simple and Smooth MAs, followed by a defended retest. Entry Zone: Approximately $1.532–$1.543, only after confirmation.",
+      "",
+      ""
+     ],
+     "targets": "TP1: $1.565–$1.580 — nearest execution resistance. | TP2: $1.610–$1.640 — behavioral supply. | TP3: $1.680–$1.720 — higher structural resistance. | Extended: $1.780–$1.820 — expansion zone.",
+     "stop": "Approximately $1.505–$1.518, beneath hourly structure and as many relevant bundled MAs as possible. The exact stop may change when triggered.",
+     "safety": ""
+    }
+   },
+   "lifecycle": {
+    "state": "STOP_BOUNDARY_REACHED",
+    "state_since": "2026-09-28T13:18:16.115Z",
+    "published_at": "2026-09-25T11:37:10.000Z",
+    "trigger": {
+     "level_id": "TRIGGER_1",
+     "zone": {
+      "low": 1.54,
+      "high": 1.545
+     },
+     "reached_at": "2026-09-25T11:00:00.000Z"
+    },
+    "targets": [
+     {
+      "level_id": "TP1",
+      "zone": {
+       "low": 1.565,
+       "high": 1.58
+      },
+      "reached_at": "2026-09-25T11:00:00.000Z"
+     },
+     {
+      "level_id": "TP2",
+      "zone": {
+       "low": 1.61,
+       "high": 1.64
+      },
+      "reached_at": "2026-09-25T12:00:00.000Z"
+     },
+     {
+      "level_id": "TP3",
+      "zone": {
+       "low": 1.68,
+       "high": 1.72
+      },
+      "reached_at": null
+     }
+    ],
+    "objectives": {
+     "defined": 3,
+     "reached": 2,
+     "all_reached": false,
+     "ladder_problems": [],
+     "completed_at": null
+    },
+    "extended": {
+     "level_id": "EXTENDED",
+     "zone": {
+      "low": 1.78,
+      "high": 1.82
+     },
+     "reached_at": null
+    },
+    "stop_boundary": {
+     "level_id": "STOP",
+     "kind": "stop",
+     "zone": {
+      "low": 1.505,
+      "high": 1.518
+     },
+     "reached_at": "2026-09-26T20:00:00.000Z",
+     "in_trade": true,
+     "relation_to_final_tp": null
+    },
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-09-27T00:00:00.000Z",
+     "close": 1.5175,
+     "level_id": "STOP"
+    },
+    "terminal_at": "2026-09-26T20:00:00.000Z",
+    "later_evidence": null,
+    "public_display": {
+     "kind": "STOP_BOUNDARY",
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
+     "blockers": []
+    }
+   }
+  },
   {
    "receipt_id": "rcpt_023c4cc7a0e9ea095d336e31490f",
    "asset": "ALGO",
@@ -2840,6 +3943,179 @@
    }
   },
   {
+   "receipt_id": "rcpt_00ed2b1b04aff7146c8c3d812735",
+   "asset": "ETC",
+   "setup_instance_key": "ETC|1790254322000|159637e1f152be135e288cb2cd8e",
+   "setup_fingerprint": "159637e1f152be135e288cb2cd8e",
+   "outcome": "STOP_BOUNDARY_REACHED",
+   "opened_at": "2026-09-25T12:57:27.693Z",
+   "superseded": false,
+   "superseded_at": null,
+   "snapshot": {
+    "setup_published_at": "2026-09-24T12:52:02.000Z",
+    "setup_timestamp_text": "9/24/2026 8:52:02",
+    "direction": "long",
+    "sheet_status_at_open": {
+     "text": "Watching",
+     "class": "WATCHING"
+    },
+    "levels": [
+     {
+      "id": "TRIGGER_1",
+      "kind": "trigger",
+      "label": "Trigger 1",
+      "zone": {
+       "low": 9.43,
+       "high": 9.5
+      },
+      "raw": "Completed 1H open-and-hold above $9.43–$9.50 and above both Simple and Smooth MAs, followed by a defended retest."
+     },
+     {
+      "id": "TP1",
+      "kind": "tp",
+      "label": "TP1",
+      "zone": {
+       "low": 9.65,
+       "high": 9.8
+      },
+      "raw": "TP1: $9.65–$9.80 | TP2: $10.05–$10.25 | TP3: $10.60–$10.90 | Extended: $11.50–$12.00"
+     },
+     {
+      "id": "TP2",
+      "kind": "tp",
+      "label": "TP2",
+      "zone": {
+       "low": 10.05,
+       "high": 10.25
+      },
+      "raw": "TP1: $9.65–$9.80 | TP2: $10.05–$10.25 | TP3: $10.60–$10.90 | Extended: $11.50–$12.00"
+     },
+     {
+      "id": "TP3",
+      "kind": "tp",
+      "label": "TP3",
+      "zone": {
+       "low": 10.6,
+       "high": 10.9
+      },
+      "raw": "TP1: $9.65–$9.80 | TP2: $10.05–$10.25 | TP3: $10.60–$10.90 | Extended: $11.50–$12.00"
+     },
+     {
+      "id": "EXTENDED",
+      "kind": "extended",
+      "label": "Extended",
+      "zone": {
+       "low": 11.5,
+       "high": 12
+      },
+      "raw": "TP1: $9.65–$9.80 | TP2: $10.05–$10.25 | TP3: $10.60–$10.90 | Extended: $11.50–$12.00"
+     },
+     {
+      "id": "STOP",
+      "kind": "stop",
+      "label": "Stop",
+      "zone": {
+       "low": 9.05,
+       "high": 9.18
+      },
+      "raw": "$9.05–$9.18, beyond structural support and the slower hourly averages. The exact stop may change when triggered."
+     }
+    ],
+    "published_text": {
+     "headline": "ETC — TRADE SETUP-LONG",
+     "why": "ETC remains directly beside its 1H bundle while its 4H and daily public structure remains stronger than the broader market.",
+     "warning": "",
+     "triggers": [
+      "Completed 1H open-and-hold above $9.43–$9.50 and above both Simple and Smooth MAs, followed by a defended retest.",
+      "",
+      ""
+     ],
+     "targets": "TP1: $9.65–$9.80 | TP2: $10.05–$10.25 | TP3: $10.60–$10.90 | Extended: $11.50–$12.00",
+     "stop": "$9.05–$9.18, beyond structural support and the slower hourly averages. The exact stop may change when triggered.",
+     "safety": ""
+    }
+   },
+   "lifecycle": {
+    "state": "STOP_BOUNDARY_REACHED",
+    "state_since": "2026-09-25T12:57:27.693Z",
+    "published_at": "2026-09-24T12:52:02.000Z",
+    "trigger": {
+     "level_id": "TRIGGER_1",
+     "zone": {
+      "low": 9.43,
+      "high": 9.5
+     },
+     "reached_at": "2026-09-24T12:00:00.000Z"
+    },
+    "targets": [
+     {
+      "level_id": "TP1",
+      "zone": {
+       "low": 9.65,
+       "high": 9.8
+      },
+      "reached_at": "2026-09-24T13:00:00.000Z"
+     },
+     {
+      "level_id": "TP2",
+      "zone": {
+       "low": 10.05,
+       "high": 10.25
+      },
+      "reached_at": "2026-09-24T14:00:00.000Z"
+     },
+     {
+      "level_id": "TP3",
+      "zone": {
+       "low": 10.6,
+       "high": 10.9
+      },
+      "reached_at": null
+     }
+    ],
+    "objectives": {
+     "defined": 3,
+     "reached": 2,
+     "all_reached": false,
+     "ladder_problems": [],
+     "completed_at": null
+    },
+    "extended": {
+     "level_id": "EXTENDED",
+     "zone": {
+      "low": 11.5,
+      "high": 12
+     },
+     "reached_at": null
+    },
+    "stop_boundary": {
+     "level_id": "STOP",
+     "kind": "stop",
+     "zone": {
+      "low": 9.05,
+      "high": 9.18
+     },
+     "reached_at": "2026-09-24T21:06:00.000Z",
+     "in_trade": true,
+     "relation_to_final_tp": null
+    },
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-09-28T06:00:00.000Z",
+     "close": 9.15,
+     "level_id": "STOP"
+    },
+    "terminal_at": "2026-09-24T21:06:00.000Z",
+    "later_evidence": null,
+    "public_display": {
+     "kind": "STOP_BOUNDARY",
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
+     "blockers": []
+    }
+   }
+  },
+  {
    "receipt_id": "rcpt_1a2e18a229fb0d0f36129a937fb6",
    "asset": "ONDO",
    "setup_instance_key": "ONDO|1790254411000|15ac1214487af413e6dc336ae8b9",
@@ -2996,6 +4272,179 @@
     "later_evidence": null,
     "public_display": {
      "kind": "TRADE_COMPLETE",
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
+     "blockers": []
+    }
+   }
+  },
+  {
+   "receipt_id": "rcpt_115bd1b4501d78125dbe9d19b06d",
+   "asset": "BTC",
+   "setup_instance_key": "BTC|1789981980000|0b1201fe9ad0e50448b459956694",
+   "setup_fingerprint": "0b1201fe9ad0e50448b459956694",
+   "outcome": "STOP_BOUNDARY_REACHED",
+   "opened_at": "2026-09-24T15:46:40.841Z",
+   "superseded": false,
+   "superseded_at": null,
+   "snapshot": {
+    "setup_published_at": "2026-09-21T09:13:00.000Z",
+    "setup_timestamp_text": "9/21/2026 5:13:00",
+    "direction": "long",
+    "sheet_status_at_open": {
+     "text": "Watching",
+     "class": "WATCHING"
+    },
+    "levels": [
+     {
+      "id": "TRIGGER_1",
+      "kind": "trigger",
+      "label": "Trigger 1",
+      "zone": {
+       "low": 83800,
+       "high": 84100
+      },
+      "raw": "Completed 1H open-and-hold above the $83,800–$84,100 zone and above both Simple and Smooth MAs, followed by a defended retest or higher low. Entry Zone: Approximately $83,450–$83,900, only after confirmation and a successful retest."
+     },
+     {
+      "id": "TP1",
+      "kind": "tp",
+      "label": "TP1",
+      "zone": {
+       "low": 84700,
+       "high": 85100
+      },
+      "raw": "TP1: $84,700–$85,100 — nearby psychological and structural resistance. | TP2: $85,800–$86,300 — next behavioral supply zone. | TP3: $87,500–$88,200 — higher-timeframe resistance. | Extended: $89,500–$91,000 — expansion zone if momentum persists."
+     },
+     {
+      "id": "TP2",
+      "kind": "tp",
+      "label": "TP2",
+      "zone": {
+       "low": 85800,
+       "high": 86300
+      },
+      "raw": "TP1: $84,700–$85,100 — nearby psychological and structural resistance. | TP2: $85,800–$86,300 — next behavioral supply zone. | TP3: $87,500–$88,200 — higher-timeframe resistance. | Extended: $89,500–$91,000 — expansion zone if momentum persists."
+     },
+     {
+      "id": "TP3",
+      "kind": "tp",
+      "label": "TP3",
+      "zone": {
+       "low": 87500,
+       "high": 88200
+      },
+      "raw": "TP1: $84,700–$85,100 — nearby psychological and structural resistance. | TP2: $85,800–$86,300 — next behavioral supply zone. | TP3: $87,500–$88,200 — higher-timeframe resistance. | Extended: $89,500–$91,000 — expansion zone if momentum persists."
+     },
+     {
+      "id": "EXTENDED",
+      "kind": "extended",
+      "label": "Extended",
+      "zone": {
+       "low": 89500,
+       "high": 91000
+      },
+      "raw": "TP1: $84,700–$85,100 — nearby psychological and structural resistance. | TP2: $85,800–$86,300 — next behavioral supply zone. | TP3: $87,500–$88,200 — higher-timeframe resistance. | Extended: $89,500–$91,000 — expansion zone if momentum persists."
+     },
+     {
+      "id": "STOP",
+      "kind": "stop",
+      "label": "Stop",
+      "zone": {
+       "low": 82850,
+       "high": 83200
+      },
+      "raw": "Approximately $82,850–$83,200, beneath the breakout shelf, retest wick and relevant bundled MAs. The exact stop may change when triggered."
+     }
+    ],
+    "published_text": {
+     "headline": "BTC — LONG RETEST WATCH",
+     "why": "Buyers broke above the multi-hour $81,500–$82,000 ceiling with expanding volume; the safer opportunity is a defended retest. Current Price: Approximately $84,000 at 5:13 AM ET Setup/Pattern: High-volume range breakout; confirmation candle remains incomplete. What I’m Watching: Buyers attacked decisively from $81,500. They must defend approximately $83,500–$83,800 and convert the breakout into support. Risk/Reward: Approximately 1.4–2.0R to TP1 | 3.0–4.0R to TP2, dependent on the retest entry.",
+     "warning": "Invalidation: Completed 1H acceptance below $82,850, breakout-volume failure, or loss of both MAs without an immediate reclaim. MISSED IT?: Be patient for the next entry. DON’T CHASE. Require a retest/new confirmation, a new higher low, and moving averages or momentum to reset.",
+     "triggers": [
+      "Completed 1H open-and-hold above the $83,800–$84,100 zone and above both Simple and Smooth MAs, followed by a defended retest or higher low. Entry Zone: Approximately $83,450–$83,900, only after confirmation and a successful retest.",
+      "",
+      ""
+     ],
+     "targets": "TP1: $84,700–$85,100 — nearby psychological and structural resistance. | TP2: $85,800–$86,300 — next behavioral supply zone. | TP3: $87,500–$88,200 — higher-timeframe resistance. | Extended: $89,500–$91,000 — expansion zone if momentum persists.",
+     "stop": "Approximately $82,850–$83,200, beneath the breakout shelf, retest wick and relevant bundled MAs. The exact stop may change when triggered.",
+     "safety": ""
+    }
+   },
+   "lifecycle": {
+    "state": "STOP_BOUNDARY_REACHED",
+    "state_since": "2026-09-24T15:46:40.841Z",
+    "published_at": "2026-09-21T09:13:00.000Z",
+    "trigger": {
+     "level_id": "TRIGGER_1",
+     "zone": {
+      "low": 83800,
+      "high": 84100
+     },
+     "reached_at": "2026-09-21T09:00:00.000Z"
+    },
+    "targets": [
+     {
+      "level_id": "TP1",
+      "zone": {
+       "low": 84700,
+       "high": 85100
+      },
+      "reached_at": "2026-09-21T09:00:00.000Z"
+     },
+     {
+      "level_id": "TP2",
+      "zone": {
+       "low": 85800,
+       "high": 86300
+      },
+      "reached_at": "2026-09-21T13:00:00.000Z"
+     },
+     {
+      "level_id": "TP3",
+      "zone": {
+       "low": 87500,
+       "high": 88200
+      },
+      "reached_at": null
+     }
+    ],
+    "objectives": {
+     "defined": 3,
+     "reached": 2,
+     "all_reached": false,
+     "ladder_problems": [],
+     "completed_at": null
+    },
+    "extended": {
+     "level_id": "EXTENDED",
+     "zone": {
+      "low": 89500,
+      "high": 91000
+     },
+     "reached_at": null
+    },
+    "stop_boundary": {
+     "level_id": "STOP",
+     "kind": "stop",
+     "zone": {
+      "low": 82850,
+      "high": 83200
+     },
+     "reached_at": "2026-09-24T09:00:00.000Z",
+     "in_trade": true,
+     "relation_to_final_tp": null
+    },
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-09-28T05:00:00.000Z",
+     "close": 83184.01,
+     "level_id": "STOP"
+    },
+    "terminal_at": "2026-09-24T09:00:00.000Z",
+    "later_evidence": null,
+    "public_display": {
+     "kind": "STOP_BOUNDARY",
      "ready": true,
      "evidence_grade": "CLOSE_CONFIRMED",
      "blockers": []
@@ -3874,8 +5323,8 @@
    "setup_fingerprint": "18b1bbd217aec21a250824c9d59e",
    "outcome": "STOP_BOUNDARY_REACHED",
    "opened_at": "2026-09-24T15:46:40.841Z",
-   "superseded": false,
-   "superseded_at": null,
+   "superseded": true,
+   "superseded_at": "2026-09-28T13:18:16.115Z",
    "snapshot": {
     "setup_published_at": "2026-09-22T11:15:52.000Z",
     "setup_timestamp_text": "9/22/2026 7:15:52",
@@ -4886,8 +6335,8 @@
    "setup_fingerprint": "13d31f613a80750567e1ea07bc16",
    "outcome": "OBJECTIVES_EXHAUSTED",
    "opened_at": "2026-09-24T15:46:40.841Z",
-   "superseded": false,
-   "superseded_at": null,
+   "superseded": true,
+   "superseded_at": "2026-09-28T13:18:16.115Z",
    "snapshot": {
     "setup_published_at": "2026-09-16T11:41:54.000Z",
     "setup_timestamp_text": "9/16/2026 7:41:54",
