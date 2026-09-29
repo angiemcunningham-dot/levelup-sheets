@@ -1,10 +1,10 @@
 {
  "schema_version": 1,
  "kind": "levelup-public-feed",
- "generated_at": "2026-09-29T16:12:18.501Z",
+ "generated_at": "2026-09-29T22:00:04.422Z",
  "notice": "Mechanical observations of Chelsea's published levels. Not a Sheet status, not a signal, and not a record of anyone's entry or exit.",
  "monitor": {
-  "last_successful_check_at": "2026-09-29T16:12:18.501Z"
+  "last_successful_check_at": "2026-09-29T22:00:04.422Z"
  },
  "assets": {
   "AAVE": {
@@ -1419,8 +1419,8 @@
     "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "TRIGGERED",
-    "state_since": "2026-09-29T12:50:31.392Z",
+    "state": "STOP_BOUNDARY_REACHED",
+    "state_since": "2026-09-29T22:00:04.422Z",
     "published_at": "2026-09-29T10:55:40.000Z",
     "trigger": {
      "level_id": "TRIGGER_1",
@@ -1471,17 +1471,32 @@
      },
      "reached_at": null
     },
-    "stop_boundary": null,
-    "evidence_grade": null,
-    "confirm": null,
-    "terminal_at": null,
+    "stop_boundary": {
+     "level_id": "STOP",
+     "kind": "stop",
+     "zone": {
+      "low": 0.216,
+      "high": 0.22
+     },
+     "reached_at": "2026-09-29T16:45:00.000Z",
+     "in_trade": true,
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
+    },
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-09-29T17:16:00.000Z",
+     "close": 0.2195,
+     "level_id": "STOP"
+    },
+    "terminal_at": "2026-09-29T16:45:00.000Z",
     "later_evidence": null,
     "public_display": {
-     "kind": null,
-     "ready": false,
-     "evidence_grade": null,
+     "kind": "STOP_BOUNDARY",
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
      "blockers": [],
-     "outcome": null,
+     "outcome": "STOPPED",
      "tps_reached_before_stop": []
     }
    }
@@ -2917,6 +2932,182 @@
   }
  },
  "receipts": [
+  {
+   "receipt_id": "rcpt_0411cb462b0eb50cb58c58667fe6",
+   "asset": "FET",
+   "setup_instance_key": "FET|1790679340000|107fc2c8c756b50b68f60a894c63",
+   "setup_fingerprint": "107fc2c8c756b50b68f60a894c63",
+   "outcome": "STOP_BOUNDARY_REACHED",
+   "opened_at": "2026-09-29T22:00:04.422Z",
+   "superseded": false,
+   "superseded_at": null,
+   "snapshot": {
+    "setup_published_at": "2026-09-29T10:55:40.000Z",
+    "setup_timestamp_text": "9/29/2026 6:55:40",
+    "direction": "long",
+    "sheet_status_at_open": {
+     "text": "Watching",
+     "class": "WATCHING"
+    },
+    "levels": [
+     {
+      "id": "TRIGGER_1",
+      "kind": "trigger",
+      "label": "Trigger 1",
+      "zone": {
+       "low": 0.233,
+       "high": 0.235
+      },
+      "raw": "1H open-and-hold above $0.233–$0.235. Entry Zone: $0.226–$0.234 after confirmation"
+     },
+     {
+      "id": "TP1",
+      "kind": "tp",
+      "label": "TP1",
+      "zone": {
+       "low": 0.242,
+       "high": 0.242
+      },
+      "raw": "TP1: $0.242 | TP2: $0.252 | TP3: $0.265 | Extended: $0.280+"
+     },
+     {
+      "id": "TP2",
+      "kind": "tp",
+      "label": "TP2",
+      "zone": {
+       "low": 0.252,
+       "high": 0.252
+      },
+      "raw": "TP1: $0.242 | TP2: $0.252 | TP3: $0.265 | Extended: $0.280+"
+     },
+     {
+      "id": "TP3",
+      "kind": "tp",
+      "label": "TP3",
+      "zone": {
+       "low": 0.265,
+       "high": 0.265
+      },
+      "raw": "TP1: $0.242 | TP2: $0.252 | TP3: $0.265 | Extended: $0.280+"
+     },
+     {
+      "id": "EXTENDED",
+      "kind": "extended",
+      "label": "Extended",
+      "zone": {
+       "low": 0.28,
+       "high": 0.28
+      },
+      "raw": "TP1: $0.242 | TP2: $0.252 | TP3: $0.265 | Extended: $0.280+"
+     },
+     {
+      "id": "STOP",
+      "kind": "stop",
+      "label": "Stop",
+      "zone": {
+       "low": 0.216,
+       "high": 0.22
+      },
+      "raw": "$0.216–$0.220"
+     }
+    ],
+    "published_text": {
+     "headline": "FET — LONG TRADE SETUP",
+     "why": "Current Price: ~$0.2287\nSetup/Pattern: Bullish reload / compression\nWhat I'm Watching: Buyers defend $0.222–$0.226 and keep the higher-low sequence intact.\nWhy I like it: FET is consolidating after a strong weekly move rather than trading at the extreme of the expansion. TradingView has FET around $0.2287, roughly flat today and +10% over the week.\nRisk/Reward: Very good if the reload remains near $0.228.",
+     "warning": "Invalidation: Loss of $0.220 and failed reclaim.\nMISSED IT?: Above $0.242 without a retest — wait. DON'T CHASE.",
+     "triggers": [
+      "1H open-and-hold above $0.233–$0.235. Entry Zone: $0.226–$0.234 after confirmation",
+      "",
+      ""
+     ],
+     "targets": "TP1: $0.242 | TP2: $0.252 | TP3: $0.265 | Extended: $0.280+",
+     "stop": "$0.216–$0.220",
+     "safety": ""
+    }
+   },
+   "lifecycle": {
+    "state": "STOP_BOUNDARY_REACHED",
+    "state_since": "2026-09-29T22:00:04.422Z",
+    "published_at": "2026-09-29T10:55:40.000Z",
+    "trigger": {
+     "level_id": "TRIGGER_1",
+     "zone": {
+      "low": 0.233,
+      "high": 0.235
+     },
+     "reached_at": "2026-09-29T11:00:00.000Z"
+    },
+    "targets": [
+     {
+      "level_id": "TP1",
+      "zone": {
+       "low": 0.242,
+       "high": 0.242
+      },
+      "reached_at": null
+     },
+     {
+      "level_id": "TP2",
+      "zone": {
+       "low": 0.252,
+       "high": 0.252
+      },
+      "reached_at": null
+     },
+     {
+      "level_id": "TP3",
+      "zone": {
+       "low": 0.265,
+       "high": 0.265
+      },
+      "reached_at": null
+     }
+    ],
+    "objectives": {
+     "defined": 3,
+     "reached": 0,
+     "all_reached": false,
+     "ladder_problems": [],
+     "completed_at": null
+    },
+    "extended": {
+     "level_id": "EXTENDED",
+     "zone": {
+      "low": 0.28,
+      "high": 0.28
+     },
+     "reached_at": null
+    },
+    "stop_boundary": {
+     "level_id": "STOP",
+     "kind": "stop",
+     "zone": {
+      "low": 0.216,
+      "high": 0.22
+     },
+     "reached_at": "2026-09-29T16:45:00.000Z",
+     "in_trade": true,
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
+    },
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-09-29T17:16:00.000Z",
+     "close": 0.2195,
+     "level_id": "STOP"
+    },
+    "terminal_at": "2026-09-29T16:45:00.000Z",
+    "later_evidence": null,
+    "public_display": {
+     "kind": "STOP_BOUNDARY",
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
+     "blockers": [],
+     "outcome": "STOPPED",
+     "tps_reached_before_stop": []
+    }
+   }
+  },
   {
    "receipt_id": "rcpt_10abad1f609549134695e4e25ae3",
    "asset": "AVAX",
