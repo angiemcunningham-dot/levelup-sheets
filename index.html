@@ -1153,11 +1153,12 @@ load();setInterval(load,60000);
       return '<div class="mech-row" title="Observation of Chelsea’s published levels - not a signal, not the Sheet status">' + parts.join('') + '</div>';
     }
     /* COMPLETION COIN eligibility (2026-09-29) - see sheet.html's copy of this same function for the full
-       rationale (every DEFINED TP reached, not hardcoded to exactly 3). Reuses mechanicalFor() as-is - never a
-       second identity/lookup system - so an OLD completed instance can never decorate a NEW current setup. */
+       rationale. Approved member-facing rule (explicit, final): TP1 + TP2 + TP3 all reached, exactly. Reuses
+       mechanicalFor() as-is - never a second identity/lookup system - so an OLD completed instance can never
+       decorate a NEW current setup. */
     function coinEligible(asset) {
       var m = mechanicalFor(asset, currentInstanceKeyFor(asset));
-      return !!(m && m.complete && m.tp.length > 0 && m.tp.every(Boolean));
+      return !!(m && m.complete && m.tp.length >= 3 && m.tp[0] && m.tp[1] && m.tp[2]);
     }
     function coinBadgeHtml() {
       return '<span class="mech-coin" title="Level Up completion coin" role="img" aria-label="Level Up completion coin — all published targets reached"><img src="levelup_icon_coin_1024.png" alt=""></span>';

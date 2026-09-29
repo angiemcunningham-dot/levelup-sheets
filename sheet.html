@@ -1096,15 +1096,12 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
       return { triggered: true, tp: tp, stopped: lc.state === 'STOP_BOUNDARY_REACHED', complete: lc.state === 'OBJECTIVES_EXHAUSTED', outcome: (lc.public_display && lc.public_display.outcome) || null, tpsBeforeStop: (lc.stop_boundary && lc.stop_boundary.tps_reached_before_stop) || [], triggerAt: lc.trigger.reached_at, triggerZone: lc.trigger.zone };
     }
     /* COMPLETION COIN eligibility (2026-09-29) - reuses mechanicalFor() as-is, so it inherits the same
-       instance-safety for free and never names a ticker. Coin appears ONLY on a genuine full completion: every
-       DEFINED TP reached, not hardcoded to exactly 3 - m.tp already only contains TP1..TPn for the setup's own
-       published ladder (per mechanicalFor()'s own filter/sort), so a setup published with e.g. only TP1/TP2 that
-       legitimately reaches OBJECTIVES_EXHAUSTED still earns the coin. The m.tp.length>0 guard excludes the
-       (should-be-impossible-under-OBJECTIVES_EXHAUSTED, since NO_TP_DEFINED blocks all_reached) degenerate case
-       where .every() on an empty array would otherwise vacuously be true. */
+       instance-safety for free and never names a ticker. Approved member-facing rule (explicit, final - 2026-09-29
+       correction): TP1 + TP2 + TP3 all reached, exactly. Not "however many TPs are defined" - a setup that only
+       reaches TP1+TP2 (with or without a later stop) never earns the coin, even if it is otherwise terminal. */
     function coinEligible(asset) {
       var m = mechanicalFor(asset, directionAsset === asset ? currentInstanceKey : null);
-      return !!(m && m.complete && m.tp.length > 0 && m.tp.every(Boolean));
+      return !!(m && m.complete && m.tp.length >= 3 && m.tp[0] && m.tp[1] && m.tp[2]);
     }
     function coinBadgeHtml() {
       return '<span class="mech-coin" title="3/3 targets complete" role="img" aria-label="Level Up completion coin — 3 of 3 targets complete"><img src="levelup_icon_coin_1024.png" alt=""></span>';
