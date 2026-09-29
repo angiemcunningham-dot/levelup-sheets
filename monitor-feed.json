@@ -1,10 +1,10 @@
 {
  "schema_version": 1,
  "kind": "levelup-public-feed",
- "generated_at": "2026-09-29T11:07:52.568Z",
+ "generated_at": "2026-09-29T12:50:31.392Z",
  "notice": "Mechanical observations of Chelsea's published levels. Not a Sheet status, not a signal, and not a record of anyone's entry or exit.",
  "monitor": {
-  "last_successful_check_at": "2026-09-29T11:07:52.568Z"
+  "last_successful_check_at": "2026-09-29T12:50:31.392Z"
  },
  "assets": {
   "AAVE": {
@@ -66,7 +66,7 @@
       "low": 174,
       "high": 180
      },
-     "reached_at": null
+     "reached_at": "2026-09-29T12:16:00.000Z"
     },
     "stop_boundary": null,
     "evidence_grade": "CLOSE_CONFIRMED",
@@ -81,7 +81,9 @@
      "kind": "TRADE_COMPLETE",
      "ready": true,
      "evidence_grade": "CLOSE_CONFIRMED",
-     "blockers": []
+     "blockers": [],
+     "outcome": "COMPLETED",
+     "tps_reached_before_stop": []
     }
    }
   },
@@ -155,7 +157,10 @@
      },
      "reached_at": "2026-09-23T14:00:00.000Z",
      "in_trade": true,
-     "relation_to_final_tp": null
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": [
+      "TP1"
+     ]
     },
     "evidence_grade": "CLOSE_CONFIRMED",
     "confirm": {
@@ -169,7 +174,11 @@
      "kind": "STOP_BOUNDARY",
      "ready": true,
      "evidence_grade": "CLOSE_CONFIRMED",
-     "blockers": []
+     "blockers": [],
+     "outcome": "CLOSED_WITH_PROGRESS",
+     "tps_reached_before_stop": [
+      "TP1"
+     ]
     }
    }
   },
@@ -236,7 +245,8 @@
      },
      "reached_at": "2026-09-14T21:00:00.000Z",
      "in_trade": true,
-     "relation_to_final_tp": "BEFORE"
+     "relation_to_final_tp": "BEFORE",
+     "tps_reached_before_stop": []
     },
     "evidence_grade": "CLOSE_CONFIRMED",
     "confirm": {
@@ -262,7 +272,9 @@
      "blockers": [
       "STOP_BOUNDARY_TOUCHED_BEFORE_FINAL_TP",
       "CONFLICTING_EVIDENCE"
-     ]
+     ],
+     "outcome": "STOPPED",
+     "tps_reached_before_stop": []
     }
    }
   },
@@ -329,7 +341,9 @@
      "kind": null,
      "ready": false,
      "evidence_grade": null,
-     "blockers": []
+     "blockers": [],
+     "outcome": null,
+     "tps_reached_before_stop": []
     }
    }
   },
@@ -403,7 +417,11 @@
      },
      "reached_at": "2026-09-23T14:00:00.000Z",
      "in_trade": true,
-     "relation_to_final_tp": null
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": [
+      "TP1",
+      "TP2"
+     ]
     },
     "evidence_grade": "WICK_ONLY",
     "confirm": null,
@@ -415,6 +433,11 @@
      "evidence_grade": "WICK_ONLY",
      "blockers": [
       "AWAITING_CLOSE_CONFIRMATION"
+     ],
+     "outcome": "CLOSED_WITH_PROGRESS",
+     "tps_reached_before_stop": [
+      "TP1",
+      "TP2"
      ]
     }
    }
@@ -489,7 +512,8 @@
      },
      "reached_at": "2026-09-24T09:00:00.000Z",
      "in_trade": true,
-     "relation_to_final_tp": "AFTER"
+     "relation_to_final_tp": "AFTER",
+     "tps_reached_before_stop": []
     },
     "evidence_grade": "WICK_ONLY",
     "confirm": null,
@@ -568,7 +592,9 @@
      "kind": null,
      "ready": false,
      "evidence_grade": null,
-     "blockers": []
+     "blockers": [],
+     "outcome": null,
+     "tps_reached_before_stop": []
     }
    }
   },
@@ -631,20 +657,24 @@
       "low": 11.8,
       "high": 12
      },
-     "reached_at": null
+     "reached_at": "2026-09-29T11:56:00.000Z"
     },
     "stop_boundary": null,
-    "evidence_grade": "WICK_ONLY",
-    "confirm": null,
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-09-29T11:00:00.000Z",
+     "close": 11.545,
+     "level_id": "TP3"
+    },
     "terminal_at": "2026-09-29T10:00:00.000Z",
     "later_evidence": null,
     "public_display": {
      "kind": "TRADE_COMPLETE",
-     "ready": false,
-     "evidence_grade": "WICK_ONLY",
-     "blockers": [
-      "AWAITING_CLOSE_CONFIRMATION"
-     ]
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
+     "blockers": [],
+     "outcome": "COMPLETED",
+     "tps_reached_before_stop": []
     }
    }
   },
@@ -718,7 +748,8 @@
      },
      "reached_at": "2026-09-22T14:00:00.000Z",
      "in_trade": true,
-     "relation_to_final_tp": null
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
     },
     "evidence_grade": "CLOSE_CONFIRMED",
     "confirm": {
@@ -732,7 +763,9 @@
      "kind": "STOP_BOUNDARY",
      "ready": true,
      "evidence_grade": "CLOSE_CONFIRMED",
-     "blockers": []
+     "blockers": [],
+     "outcome": "STOPPED",
+     "tps_reached_before_stop": []
     }
    }
   },
@@ -806,7 +839,11 @@
      },
      "reached_at": "2026-09-24T09:00:00.000Z",
      "in_trade": true,
-     "relation_to_final_tp": null
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": [
+      "TP1",
+      "TP2"
+     ]
     },
     "evidence_grade": "CLOSE_CONFIRMED",
     "confirm": {
@@ -820,7 +857,12 @@
      "kind": "STOP_BOUNDARY",
      "ready": true,
      "evidence_grade": "CLOSE_CONFIRMED",
-     "blockers": []
+     "blockers": [],
+     "outcome": "CLOSED_WITH_PROGRESS",
+     "tps_reached_before_stop": [
+      "TP1",
+      "TP2"
+     ]
     }
    }
   },
@@ -894,7 +936,11 @@
      },
      "reached_at": "2026-09-28T14:44:00.000Z",
      "in_trade": true,
-     "relation_to_final_tp": null
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": [
+      "TP1",
+      "TP2"
+     ]
     },
     "evidence_grade": "CLOSE_CONFIRMED",
     "confirm": {
@@ -908,7 +954,12 @@
      "kind": "STOP_BOUNDARY",
      "ready": true,
      "evidence_grade": "CLOSE_CONFIRMED",
-     "blockers": []
+     "blockers": [],
+     "outcome": "CLOSED_WITH_PROGRESS",
+     "tps_reached_before_stop": [
+      "TP1",
+      "TP2"
+     ]
     }
    }
   },
@@ -975,7 +1026,9 @@
      "kind": null,
      "ready": false,
      "evidence_grade": null,
-     "blockers": []
+     "blockers": [],
+     "outcome": null,
+     "tps_reached_before_stop": []
     }
    }
   },
@@ -1049,7 +1102,11 @@
      },
      "reached_at": "2026-09-28T02:00:00.000Z",
      "in_trade": true,
-     "relation_to_final_tp": null
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": [
+      "TP1",
+      "TP2"
+     ]
     },
     "evidence_grade": "CLOSE_CONFIRMED",
     "confirm": {
@@ -1063,7 +1120,12 @@
      "kind": "STOP_BOUNDARY",
      "ready": true,
      "evidence_grade": "CLOSE_CONFIRMED",
-     "blockers": []
+     "blockers": [],
+     "outcome": "CLOSED_WITH_PROGRESS",
+     "tps_reached_before_stop": [
+      "TP1",
+      "TP2"
+     ]
     }
    }
   },
@@ -1137,7 +1199,8 @@
      },
      "reached_at": "2026-09-23T11:00:00.000Z",
      "in_trade": false,
-     "relation_to_final_tp": "BEFORE"
+     "relation_to_final_tp": "BEFORE",
+     "tps_reached_before_stop": []
     },
     "evidence_grade": "CLOSE_CONFIRMED",
     "confirm": {
@@ -1225,7 +1288,11 @@
      },
      "reached_at": "2026-09-24T21:06:00.000Z",
      "in_trade": true,
-     "relation_to_final_tp": null
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": [
+      "TP1",
+      "TP2"
+     ]
     },
     "evidence_grade": "CLOSE_CONFIRMED",
     "confirm": {
@@ -1239,7 +1306,12 @@
      "kind": "STOP_BOUNDARY",
      "ready": true,
      "evidence_grade": "CLOSE_CONFIRMED",
-     "blockers": []
+     "blockers": [],
+     "outcome": "CLOSED_WITH_PROGRESS",
+     "tps_reached_before_stop": [
+      "TP1",
+      "TP2"
+     ]
     }
    }
   },
@@ -1313,7 +1385,10 @@
      },
      "reached_at": "2026-09-26T20:00:00.000Z",
      "in_trade": true,
-     "relation_to_final_tp": null
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": [
+      "TP1"
+     ]
     },
     "evidence_grade": "CLOSE_CONFIRMED",
     "confirm": {
@@ -1327,7 +1402,11 @@
      "kind": "STOP_BOUNDARY",
      "ready": true,
      "evidence_grade": "CLOSE_CONFIRMED",
-     "blockers": []
+     "blockers": [],
+     "outcome": "CLOSED_WITH_PROGRESS",
+     "tps_reached_before_stop": [
+      "TP1"
+     ]
     }
    }
   },
@@ -1340,10 +1419,17 @@
     "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "WAITING_FOR_TRIGGER",
-    "state_since": "2026-09-29T11:07:52.568Z",
+    "state": "TRIGGERED",
+    "state_since": "2026-09-29T12:50:31.392Z",
     "published_at": "2026-09-29T10:55:40.000Z",
-    "trigger": null,
+    "trigger": {
+     "level_id": "TRIGGER_1",
+     "zone": {
+      "low": 0.233,
+      "high": 0.235
+     },
+     "reached_at": "2026-09-29T11:00:00.000Z"
+    },
     "targets": [
      {
       "level_id": "TP1",
@@ -1394,7 +1480,9 @@
      "kind": null,
      "ready": false,
      "evidence_grade": null,
-     "blockers": []
+     "blockers": [],
+     "outcome": null,
+     "tps_reached_before_stop": []
     }
    }
   },
@@ -1468,7 +1556,8 @@
      },
      "reached_at": "2026-09-24T12:00:00.000Z",
      "in_trade": false,
-     "relation_to_final_tp": null
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
     },
     "evidence_grade": null,
     "confirm": null,
@@ -1556,7 +1645,9 @@
      "kind": "TRADE_COMPLETE",
      "ready": true,
      "evidence_grade": "CLOSE_CONFIRMED",
-     "blockers": []
+     "blockers": [],
+     "outcome": "COMPLETED",
+     "tps_reached_before_stop": []
     }
    }
   },
@@ -1634,7 +1725,9 @@
      "kind": "TRADE_COMPLETE",
      "ready": true,
      "evidence_grade": "CLOSE_CONFIRMED",
-     "blockers": []
+     "blockers": [],
+     "outcome": "COMPLETED",
+     "tps_reached_before_stop": []
     }
    }
   },
@@ -1701,7 +1794,9 @@
      "kind": null,
      "ready": false,
      "evidence_grade": null,
-     "blockers": []
+     "blockers": [],
+     "outcome": null,
+     "tps_reached_before_stop": []
     }
    }
   },
@@ -1775,7 +1870,11 @@
      },
      "reached_at": "2026-09-28T02:00:00.000Z",
      "in_trade": true,
-     "relation_to_final_tp": null
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": [
+      "TP1",
+      "TP2"
+     ]
     },
     "evidence_grade": "CLOSE_CONFIRMED",
     "confirm": {
@@ -1789,7 +1888,12 @@
      "kind": "STOP_BOUNDARY",
      "ready": true,
      "evidence_grade": "CLOSE_CONFIRMED",
-     "blockers": []
+     "blockers": [],
+     "outcome": "CLOSED_WITH_PROGRESS",
+     "tps_reached_before_stop": [
+      "TP1",
+      "TP2"
+     ]
     }
    }
   },
@@ -1856,7 +1960,9 @@
      "kind": null,
      "ready": false,
      "evidence_grade": null,
-     "blockers": []
+     "blockers": [],
+     "outcome": null,
+     "tps_reached_before_stop": []
     }
    }
   },
@@ -1923,7 +2029,8 @@
      },
      "reached_at": "2026-09-28T11:00:00.000Z",
      "in_trade": false,
-     "relation_to_final_tp": null
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
     },
     "evidence_grade": null,
     "confirm": null,
@@ -1933,7 +2040,9 @@
      "kind": null,
      "ready": false,
      "evidence_grade": null,
-     "blockers": []
+     "blockers": [],
+     "outcome": null,
+     "tps_reached_before_stop": []
     }
    }
   },
@@ -2000,7 +2109,8 @@
      },
      "reached_at": "2026-09-18T13:00:00.000Z",
      "in_trade": true,
-     "relation_to_final_tp": null
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
     },
     "evidence_grade": "CLOSE_CONFIRMED",
     "confirm": {
@@ -2014,7 +2124,9 @@
      "kind": "STOP_BOUNDARY",
      "ready": true,
      "evidence_grade": "CLOSE_CONFIRMED",
-     "blockers": []
+     "blockers": [],
+     "outcome": "STOPPED",
+     "tps_reached_before_stop": []
     }
    }
   },
@@ -2088,7 +2200,8 @@
      },
      "reached_at": "2026-09-23T11:00:00.000Z",
      "in_trade": true,
-     "relation_to_final_tp": "BEFORE"
+     "relation_to_final_tp": "BEFORE",
+     "tps_reached_before_stop": []
     },
     "evidence_grade": "CLOSE_CONFIRMED",
     "confirm": {
@@ -2105,7 +2218,9 @@
      "blockers": [
       "STOP_BOUNDARY_TOUCHED_BEFORE_FINAL_TP",
       "CONFLICTING_EVIDENCE"
-     ]
+     ],
+     "outcome": "COMPLETED",
+     "tps_reached_before_stop": []
     }
    }
   },
@@ -2172,7 +2287,9 @@
      "kind": null,
      "ready": false,
      "evidence_grade": null,
-     "blockers": []
+     "blockers": [],
+     "outcome": null,
+     "tps_reached_before_stop": []
     }
    }
   },
@@ -2239,7 +2356,8 @@
      },
      "reached_at": "2026-09-28T11:00:00.000Z",
      "in_trade": false,
-     "relation_to_final_tp": null
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
     },
     "evidence_grade": null,
     "confirm": null,
@@ -2249,7 +2367,9 @@
      "kind": null,
      "ready": false,
      "evidence_grade": null,
-     "blockers": []
+     "blockers": [],
+     "outcome": null,
+     "tps_reached_before_stop": []
     }
    }
   },
@@ -2316,7 +2436,9 @@
      "kind": null,
      "ready": false,
      "evidence_grade": null,
-     "blockers": []
+     "blockers": [],
+     "outcome": null,
+     "tps_reached_before_stop": []
     }
    }
   },
@@ -2383,7 +2505,9 @@
      "kind": null,
      "ready": false,
      "evidence_grade": null,
-     "blockers": []
+     "blockers": [],
+     "outcome": null,
+     "tps_reached_before_stop": []
     }
    }
   },
@@ -2450,7 +2574,8 @@
      },
      "reached_at": "2026-09-26T20:00:00.000Z",
      "in_trade": false,
-     "relation_to_final_tp": null
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
     },
     "evidence_grade": null,
     "confirm": null,
@@ -2460,7 +2585,9 @@
      "kind": null,
      "ready": false,
      "evidence_grade": null,
-     "blockers": []
+     "blockers": [],
+     "outcome": null,
+     "tps_reached_before_stop": []
     }
    }
   },
@@ -2527,7 +2654,9 @@
      "kind": null,
      "ready": false,
      "evidence_grade": null,
-     "blockers": []
+     "blockers": [],
+     "outcome": null,
+     "tps_reached_before_stop": []
     }
    }
   },
@@ -2672,7 +2801,9 @@
      "kind": null,
      "ready": false,
      "evidence_grade": null,
-     "blockers": []
+     "blockers": [],
+     "outcome": null,
+     "tps_reached_before_stop": []
     }
    }
   },
@@ -2746,7 +2877,11 @@
      },
      "reached_at": "2026-09-26T20:00:00.000Z",
      "in_trade": true,
-     "relation_to_final_tp": null
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": [
+      "TP1",
+      "TP2"
+     ]
     },
     "evidence_grade": "CLOSE_CONFIRMED",
     "confirm": {
@@ -2760,12 +2895,182 @@
      "kind": "STOP_BOUNDARY",
      "ready": true,
      "evidence_grade": "CLOSE_CONFIRMED",
-     "blockers": []
+     "blockers": [],
+     "outcome": "CLOSED_WITH_PROGRESS",
+     "tps_reached_before_stop": [
+      "TP1",
+      "TP2"
+     ]
     }
    }
   }
  },
  "receipts": [
+  {
+   "receipt_id": "rcpt_10abad1f609549134695e4e25ae3",
+   "asset": "AVAX",
+   "setup_instance_key": "AVAX|1790679138000|12c3dec6cc531b04462333404d76",
+   "setup_fingerprint": "12c3dec6cc531b04462333404d76",
+   "outcome": "OBJECTIVES_EXHAUSTED",
+   "opened_at": "2026-09-29T11:07:52.568Z",
+   "superseded": false,
+   "superseded_at": null,
+   "snapshot": {
+    "setup_published_at": "2026-09-29T10:52:18.000Z",
+    "setup_timestamp_text": "9/29/2026 6:52:18",
+    "direction": "long",
+    "sheet_status_at_open": {
+     "text": "Watching",
+     "class": "WATCHING"
+    },
+    "levels": [
+     {
+      "id": "TRIGGER_1",
+      "kind": "trigger",
+      "label": "Trigger 1",
+      "zone": {
+       "low": 10.8,
+       "high": 10.8
+      },
+      "raw": "1H open-and-hold above $10.80 followed by a defended retest. Entry Zone: $10.66–$10.80 after confirmation"
+     },
+     {
+      "id": "TP1",
+      "kind": "tp",
+      "label": "TP1",
+      "zone": {
+       "low": 10.95,
+       "high": 10.95
+      },
+      "raw": "TP1: $10.95 | TP2: $11.20 | TP3: $11.50 | Extended: $11.80–$12.00"
+     },
+     {
+      "id": "TP2",
+      "kind": "tp",
+      "label": "TP2",
+      "zone": {
+       "low": 11.2,
+       "high": 11.2
+      },
+      "raw": "TP1: $10.95 | TP2: $11.20 | TP3: $11.50 | Extended: $11.80–$12.00"
+     },
+     {
+      "id": "TP3",
+      "kind": "tp",
+      "label": "TP3",
+      "zone": {
+       "low": 11.5,
+       "high": 11.5
+      },
+      "raw": "TP1: $10.95 | TP2: $11.20 | TP3: $11.50 | Extended: $11.80–$12.00"
+     },
+     {
+      "id": "EXTENDED",
+      "kind": "extended",
+      "label": "Extended",
+      "zone": {
+       "low": 11.8,
+       "high": 12
+      },
+      "raw": "TP1: $10.95 | TP2: $11.20 | TP3: $11.50 | Extended: $11.80–$12.00"
+     },
+     {
+      "id": "STOP",
+      "kind": "stop",
+      "label": "Stop",
+      "zone": {
+       "low": 10.48,
+       "high": 10.56
+      },
+      "raw": "$10.48–$10.56"
+     }
+    ],
+    "published_text": {
+     "headline": "AVAX — LONG TRADE SETUP",
+     "why": "Current Price: ~$10.67\nSetup/Pattern: Bullish reload / breakout-retest\nWhat I'm Watching: Buyers continue defending $10.58–$10.62 and build the higher low.\nWhy I like it: Controlled reload near the current intraday support instead of an extended chase. TradingView has AVAX around $10.67, with the active Binance perpetual ranging roughly $10.60–$10.80.\nRisk/Reward: Best if the retest stays near $10.70.",
+     "warning": "Invalidation: Loss of $10.58 and failure to reclaim.\nMISSED IT?: Above $10.95 without the retest — wait for the next reload. DON'T CHASE.",
+     "triggers": [
+      "1H open-and-hold above $10.80 followed by a defended retest. Entry Zone: $10.66–$10.80 after confirmation",
+      "",
+      ""
+     ],
+     "targets": "TP1: $10.95 | TP2: $11.20 | TP3: $11.50 | Extended: $11.80–$12.00",
+     "stop": "$10.48–$10.56",
+     "safety": ""
+    }
+   },
+   "lifecycle": {
+    "state": "OBJECTIVES_EXHAUSTED",
+    "state_since": "2026-09-29T11:07:52.568Z",
+    "published_at": "2026-09-29T10:52:18.000Z",
+    "trigger": {
+     "level_id": "TRIGGER_1",
+     "zone": {
+      "low": 10.8,
+      "high": 10.8
+     },
+     "reached_at": "2026-09-29T10:00:00.000Z"
+    },
+    "targets": [
+     {
+      "level_id": "TP1",
+      "zone": {
+       "low": 10.95,
+       "high": 10.95
+      },
+      "reached_at": "2026-09-29T10:00:00.000Z"
+     },
+     {
+      "level_id": "TP2",
+      "zone": {
+       "low": 11.2,
+       "high": 11.2
+      },
+      "reached_at": "2026-09-29T10:00:00.000Z"
+     },
+     {
+      "level_id": "TP3",
+      "zone": {
+       "low": 11.5,
+       "high": 11.5
+      },
+      "reached_at": "2026-09-29T10:00:00.000Z"
+     }
+    ],
+    "objectives": {
+     "defined": 3,
+     "reached": 3,
+     "all_reached": true,
+     "ladder_problems": [],
+     "completed_at": "2026-09-29T10:00:00.000Z"
+    },
+    "extended": {
+     "level_id": "EXTENDED",
+     "zone": {
+      "low": 11.8,
+      "high": 12
+     },
+     "reached_at": "2026-09-29T11:56:00.000Z"
+    },
+    "stop_boundary": null,
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-09-29T11:00:00.000Z",
+     "close": 11.545,
+     "level_id": "TP3"
+    },
+    "terminal_at": "2026-09-29T10:00:00.000Z",
+    "later_evidence": null,
+    "public_display": {
+     "kind": "TRADE_COMPLETE",
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
+     "blockers": [],
+     "outcome": "COMPLETED",
+     "tps_reached_before_stop": []
+    }
+   }
+  },
   {
    "receipt_id": "rcpt_039003e46fe4631e975e0fc584f1",
    "asset": "AAVE",
@@ -2910,7 +3215,7 @@
       "low": 174,
       "high": 180
      },
-     "reached_at": null
+     "reached_at": "2026-09-29T12:16:00.000Z"
     },
     "stop_boundary": null,
     "evidence_grade": "CLOSE_CONFIRMED",
@@ -2925,7 +3230,9 @@
      "kind": "TRADE_COMPLETE",
      "ready": true,
      "evidence_grade": "CLOSE_CONFIRMED",
-     "blockers": []
+     "blockers": [],
+     "outcome": "COMPLETED",
+     "tps_reached_before_stop": []
     }
    }
   },
@@ -3084,7 +3391,8 @@
      },
      "reached_at": "2026-09-28T14:44:00.000Z",
      "in_trade": true,
-     "relation_to_final_tp": null
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
     },
     "evidence_grade": "CLOSE_CONFIRMED",
     "confirm": {
@@ -3420,7 +3728,8 @@
      },
      "reached_at": "2026-09-28T02:00:00.000Z",
      "in_trade": true,
-     "relation_to_final_tp": null
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
     },
     "evidence_grade": "CLOSE_CONFIRMED",
     "confirm": {
@@ -3593,7 +3902,8 @@
      },
      "reached_at": "2026-09-28T02:00:00.000Z",
      "in_trade": true,
-     "relation_to_final_tp": null
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
     },
     "evidence_grade": "CLOSE_CONFIRMED",
     "confirm": {
@@ -3766,7 +4076,8 @@
      },
      "reached_at": "2026-09-26T20:00:00.000Z",
      "in_trade": true,
-     "relation_to_final_tp": null
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
     },
     "evidence_grade": "CLOSE_CONFIRMED",
     "confirm": {
@@ -3939,7 +4250,8 @@
      },
      "reached_at": "2026-09-26T20:00:00.000Z",
      "in_trade": true,
-     "relation_to_final_tp": null
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
     },
     "evidence_grade": "CLOSE_CONFIRMED",
     "confirm": {
@@ -4112,7 +4424,8 @@
      },
      "reached_at": "2026-09-23T11:00:00.000Z",
      "in_trade": false,
-     "relation_to_final_tp": "BEFORE"
+     "relation_to_final_tp": "BEFORE",
+     "tps_reached_before_stop": []
     },
     "evidence_grade": "CLOSE_CONFIRMED",
     "confirm": {
@@ -4285,7 +4598,8 @@
      },
      "reached_at": "2026-09-23T11:00:00.000Z",
      "in_trade": false,
-     "relation_to_final_tp": "BEFORE"
+     "relation_to_final_tp": "BEFORE",
+     "tps_reached_before_stop": []
     },
     "evidence_grade": "CLOSE_CONFIRMED",
     "confirm": {
@@ -4458,7 +4772,8 @@
      },
      "reached_at": "2026-09-24T21:06:00.000Z",
      "in_trade": true,
-     "relation_to_final_tp": null
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
     },
     "evidence_grade": "CLOSE_CONFIRMED",
     "confirm": {
@@ -4794,7 +5109,8 @@
      },
      "reached_at": "2026-09-24T09:00:00.000Z",
      "in_trade": true,
-     "relation_to_final_tp": null
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
     },
     "evidence_grade": "CLOSE_CONFIRMED",
     "confirm": {
@@ -4967,7 +5283,8 @@
      },
      "reached_at": "2026-09-23T16:00:00.000Z",
      "in_trade": true,
-     "relation_to_final_tp": null
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
     },
     "evidence_grade": "CLOSE_CONFIRMED",
     "confirm": {
@@ -5140,7 +5457,8 @@
      },
      "reached_at": "2026-09-23T14:00:00.000Z",
      "in_trade": true,
-     "relation_to_final_tp": null
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
     },
     "evidence_grade": "CLOSE_CONFIRMED",
     "confirm": {
@@ -5313,7 +5631,8 @@
      },
      "reached_at": "2026-09-23T14:00:00.000Z",
      "in_trade": true,
-     "relation_to_final_tp": null
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
     },
     "evidence_grade": "CLOSE_CONFIRMED",
     "confirm": {
@@ -5486,7 +5805,8 @@
      },
      "reached_at": "2026-09-23T14:00:00.000Z",
      "in_trade": true,
-     "relation_to_final_tp": null
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
     },
     "evidence_grade": "CLOSE_CONFIRMED",
     "confirm": {
@@ -5659,7 +5979,8 @@
      },
      "reached_at": "2026-09-23T13:00:00.000Z",
      "in_trade": true,
-     "relation_to_final_tp": null
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
     },
     "evidence_grade": "CLOSE_CONFIRMED",
     "confirm": {
@@ -5832,7 +6153,8 @@
      },
      "reached_at": "2026-09-23T12:00:00.000Z",
      "in_trade": true,
-     "relation_to_final_tp": null
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
     },
     "evidence_grade": "CLOSE_CONFIRMED",
     "confirm": {
@@ -6176,7 +6498,8 @@
      },
      "reached_at": "2026-09-22T14:00:00.000Z",
      "in_trade": true,
-     "relation_to_final_tp": null
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
     },
     "evidence_grade": "CLOSE_CONFIRMED",
     "confirm": {
@@ -6671,7 +6994,8 @@
      },
      "reached_at": "2026-09-18T13:00:00.000Z",
      "in_trade": true,
-     "relation_to_final_tp": null
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
     },
     "evidence_grade": "CLOSE_CONFIRMED",
     "confirm": {
