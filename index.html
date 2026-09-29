@@ -1010,6 +1010,7 @@ load();setInterval(load,60000);
 .mech-headline{font-family:"Archivo",sans-serif;font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;margin:2px 0 4px}
 .mech-headline.mech-active{color:var(--green-d)}
 .mech-headline.mech-stopped{color:var(--red-d)}
+.mech-headline.mech-closed{color:var(--gray)}
 .mech-headline.mech-complete{color:var(--pink)}
 /* COMPLETION COIN (2026-09-29) - see sheet.html's copy of this comment for the full rationale. Smaller here (grid
    card / Active Now) than on the detail page, sized so it never competes with the COMPLETE headline text. */
@@ -1126,7 +1127,9 @@ load();setInterval(load,60000);
         // 2026-09-29 fix: a stop that already banked real TP progress (m.outcome/m.tpsBeforeStop, from the
         // monitor's own stop_boundary.tps_reached_before_stop - never invented here) must not read as a plain
         // failed stop. A genuine zero-TP stop (outcome !== 'CLOSED_WITH_PROGRESS') is unchanged: still 'STOPPED'.
-        if (m.outcome === 'CLOSED_WITH_PROGRESS' && m.tpsBeforeStop.length) return { text: 'CLOSED — ' + m.tpsBeforeStop.join(' + ') + ' HIT', kind: 'stopped' };
+        // 2026-09-29: kind is 'closed' (not 'stopped') for the banked-progress case, so this never paints the
+        // same alarm-red as a genuine zero-TP/before-any-TP stop - see .mech-headline.mech-closed below.
+        if (m.outcome === 'CLOSED_WITH_PROGRESS' && m.tpsBeforeStop.length) return { text: 'CLOSED — ' + m.tpsBeforeStop.join(' + ') + ' HIT', kind: 'closed' };
         return { text: 'STOPPED', kind: 'stopped' };
       }
       if (m.complete) return { text: 'COMPLETE', kind: 'complete' };
@@ -1160,7 +1163,12 @@ load();setInterval(load,60000);
       if (!m) return '';
       var parts = ['<span class="mech-tick on">&#10003; TRIGGERED</span>'];
       m.tp.forEach(function (hit, i) { parts.push('<span class="mech-tick' + (hit ? ' on' : '') + '">' + (hit ? '&#10003;' : '&#9675;') + ' TP' + (i + 1) + '</span>'); });
-      if (m.stopped) parts.push('<span class="mech-tick stop">&#9632; STOPPED</span>');
+      if (m.stopped) {
+        // 2026-09-29: banked TP progress before the stop reads as a plain (non-alarm) tick - the raw
+        // STOP_BOUNDARY_REACHED fact is unchanged (m.stopped stays true), only this presentation differs.
+        if (m.outcome === 'CLOSED_WITH_PROGRESS' && m.tpsBeforeStop.length) parts.push('<span class="mech-tick">CLOSED AFTER ' + m.tpsBeforeStop[m.tpsBeforeStop.length - 1] + '</span>');
+        else parts.push('<span class="mech-tick stop">&#9632; STOPPED</span>');
+      }
       else if (m.complete) parts.push('<span class="mech-tick complete">&#10003; COMPLETE</span>');
       return '<div class="mech-row" title="Observation of Chelsea’s published levels - not a signal, not the Sheet status">' + parts.join('') + '</div>';
     }
@@ -1248,7 +1256,7 @@ load();setInterval(load,60000);
     load();
     setInterval(load, 60000);
     obs.observe(grid.parentNode, { childList: true, subtree: true });
-    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, currentInstanceKeyFor: currentInstanceKeyFor, resolveCurrentState: resolveCurrentState, directionFor: directionFor, decorate: decorate, decorateActiveNow: decorateActiveNow, coinEligible: coinEligible };   // test hook (read-only)
+    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, currentInstanceKeyFor: currentInstanceKeyFor, resolveCurrentState: resolveCurrentState, directionFor: directionFor, decorate: decorate, decorateActiveNow: decorateActiveNow, coinEligible: coinEligible, badgeHtml: badgeHtml };   // test hook (read-only)
   } catch (e) { if (window.console) console.warn('mechanical feed addon disabled:', e); }
 })();
 </script>

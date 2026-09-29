@@ -1011,6 +1011,7 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
 .mech-headline{margin:0 0 22px;padding:14px 18px;border-radius:12px;font-family:Archivo,sans-serif;font-weight:800;font-size:15px;letter-spacing:.08em;text-transform:uppercase;display:flex;flex-direction:column;gap:4px}
 .mech-headline.mech-active{background:rgba(34,197,94,.12);color:#15803D}
 .mech-headline.mech-stopped{background:rgba(239,68,68,.10);color:#B91C1C}
+.mech-headline.mech-closed{background:rgba(107,114,128,.10);color:#374151}
 .mech-headline.mech-complete{background:rgba(250,3,152,.06);color:#FA0398}
 .mech-headline-sub{font-family:Inter,sans-serif;font-weight:600;font-size:12px;letter-spacing:.02em;text-transform:none;opacity:.85}
 /* Hides the stale "% TO TRIGGER" chip - any variant except the already-correct ACTIVE_LONG/SHORT one - once the
@@ -1202,7 +1203,9 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
         // 2026-09-29 fix: a stop that already banked real TP progress (m.outcome/m.tpsBeforeStop, from the
         // monitor's own stop_boundary.tps_reached_before_stop - never invented here) must not read as a plain
         // failed stop. A genuine zero-TP stop (outcome !== 'CLOSED_WITH_PROGRESS') is unchanged: still 'STOPPED'.
-        if (m.outcome === 'CLOSED_WITH_PROGRESS' && m.tpsBeforeStop.length) return { text: 'CLOSED — ' + m.tpsBeforeStop.join(' + ') + ' HIT', kind: 'stopped' };
+        // 2026-09-29: kind is 'closed' (not 'stopped') for the banked-progress case, so this never paints the
+        // same alarm-red as a genuine zero-TP/before-any-TP stop - see .mech-headline.mech-closed below.
+        if (m.outcome === 'CLOSED_WITH_PROGRESS' && m.tpsBeforeStop.length) return { text: 'CLOSED — ' + m.tpsBeforeStop.join(' + ') + ' HIT', kind: 'closed' };
         return { text: 'STOPPED', kind: 'stopped' };
       }
       if (m.complete) return { text: 'COMPLETE', kind: 'complete' };
@@ -1359,7 +1362,12 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
       if (!m) return '';
       var rows = ['<div class="mech-item on">&#10003; TRIGGERED</div>'];
       m.tp.forEach(function (hit, i) { rows.push('<div class="mech-item' + (hit ? ' on' : '') + '">' + (hit ? '&#10003;' : '&#9675;') + ' TP' + (i + 1) + (hit ? ' HIT' : '') + '</div>'); });
-      if (m.stopped) rows.push('<div class="mech-item stop">&#9632; STOPPED</div>');
+      if (m.stopped) {
+        // 2026-09-29: banked TP progress before the stop reads as a plain (non-alarm) item - the raw
+        // STOP_BOUNDARY_REACHED fact is unchanged (m.stopped stays true), only this presentation differs.
+        if (m.outcome === 'CLOSED_WITH_PROGRESS' && m.tpsBeforeStop.length) rows.push('<div class="mech-item">CLOSED AFTER ' + m.tpsBeforeStop[m.tpsBeforeStop.length - 1] + '</div>');
+        else rows.push('<div class="mech-item stop">&#9632; STOPPED</div>');
+      }
       else if (m.complete) rows.push('<div class="mech-item complete">&#10003; COMPLETE</div>');
       var note = feed ? ('Feed updated ' + fmtAgo(feed.generated_at) + ((Date.now() - Date.parse(feed.generated_at)) > STALE_MS ? ' (may be stale)' : '')) : '';
       return '<div id="mech-panel">'
@@ -1487,7 +1495,7 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
     setInterval(function () { loadDirection().then(applyAll); }, 60000);
     setInterval(applyAll, 15000);
     obs.observe(app, { childList: true });
-    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, getCurrentInstanceKey: function () { return currentInstanceKey; }, resolveCurrentState: resolveCurrentState, directionFor: directionFor, ensure: ensure, ensureHeadline: ensureHeadline, suppressStaleChip: suppressStaleChip, attnTarget: attnTarget, attnChipHtml: attnChipHtml, ensureAttnChip: ensureAttnChip, loadLivePrice: loadLivePrice, coinEligible: coinEligible, coinBadgeHtml: coinBadgeHtml, ensureCoinHero: ensureCoinHero, triggerMarkerHtml: triggerMarkerHtml, conditionalTrigger: conditionalTrigger, readinessHtml: readinessHtml, ensureReadiness: ensureReadiness, loadReadinessPrice: loadReadinessPrice };   // test hook (read-only)
+    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, getCurrentInstanceKey: function () { return currentInstanceKey; }, resolveCurrentState: resolveCurrentState, directionFor: directionFor, ensure: ensure, ensureHeadline: ensureHeadline, suppressStaleChip: suppressStaleChip, attnTarget: attnTarget, attnChipHtml: attnChipHtml, ensureAttnChip: ensureAttnChip, loadLivePrice: loadLivePrice, coinEligible: coinEligible, coinBadgeHtml: coinBadgeHtml, ensureCoinHero: ensureCoinHero, triggerMarkerHtml: triggerMarkerHtml, conditionalTrigger: conditionalTrigger, readinessHtml: readinessHtml, ensureReadiness: ensureReadiness, loadReadinessPrice: loadReadinessPrice, panelHtml: panelHtml };   // test hook (read-only)
   } catch (e) { if (window.console) console.warn('mechanical feed addon disabled:', e); }
 })();
 </script>
