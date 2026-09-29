@@ -181,7 +181,6 @@ a.act-card.side-short:hover{box-shadow:0 10px 26px rgba(185,28,28,.18)}
 <script>
 const SHEET_CSV = "https://docs.google.com/spreadsheets/d/1MqfOX5EzRYvjQbd6U9RZTZ2ujm9_xx0LoT5rAzZxcPI/gviz/tq?tqx=out:csv&gid=1165837241";
 const LOGO_SRC  = "bb_logo_pink.png";
-const GECKO = {AERO:"aerodrome-finance",AAVE:"aave",BTC:"bitcoin",ETH:"ethereum",SOL:"solana",SHIB:"shiba-inu",BONK:"bonk",SYRUP:"maple",FARTCOIN:"fartcoin",XRP:"ripple",DOGE:"dogecoin",LINK:"chainlink",AVAX:"avalanche-2",ADA:"cardano",SUI:"sui",PEPE:"pepe",WIF:"dogwifcoin",POPCAT:"popcat",BLESS:"bless"};
 
 const $=s=>document.querySelector(s);
 const q=new URLSearchParams(location.search); const ASSET=(q.get("asset")||"AAVE").toUpperCase();
@@ -328,10 +327,15 @@ async function load(){
 
 let nowRow=null;
 async function livePrice(L){
-  let id=GECKO[ASSET]||localStorage.getItem("gecko:"+ASSET);
-  if(!id){try{const s=await (await fetch("https://api.coingecko.com/api/v3/search?query="+ASSET)).json();const hit=(s.coins||[]).filter(c=>c.symbol.toUpperCase()===ASSET).sort((a,b)=>(a.market_cap_rank||1e9)-(b.market_cap_rank||1e9))[0];if(hit){id=hit.id;localStorage.setItem("gecko:"+ASSET,id);}}catch(e){}}
-  if(!id)return;let px=0;
-  try{const g=await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${id}&vs_currencies=usd`);px=parseFloat((await g.json())[id].usd);}catch(e){}
+  // 2026-09-29 fix: this used to resolve a CoinGecko id (hardcoded map, else a /search lookup) and read
+  // /simple/price - CoinGecko's public API is failing ("Failed to fetch", live-verified) for at least some
+  // assets, which silently broke this row (an empty/failed fetch just returns, per the pre-existing `if(!px)
+  // return` below - no error shown, no stale indicator, it just never appears). Rather than debug or replace
+  // CoinGecko, this now reads the SAME established, reliable, key-free Binance/Coinbase price source the rest
+  // of this page already depends on (LevelUpAttention.fetchPrices(), att-module - no second pricing engine).
+  const A=(typeof window!=="undefined"&&window.LevelUpAttention)||(typeof LevelUpAttention!=="undefined"&&LevelUpAttention)||null; if(!A)return;
+  let px=0;
+  try{const r=await A.fetchPrices([ASSET]);px=(r.prices&&r.prices[ASSET])||0;}catch(e){}
   if(!px)return;
   const t=new Date().toLocaleTimeString("en-US",{timeZone:"America/New_York",hour:"numeric",minute:"2-digit"});
   const dl=$("#dateline");if(dl)dl.innerHTML=dl.textContent.split("  ·  LIVE")[0]+`  ·  LIVE ${fmt(px)} @ ${t} EST`;

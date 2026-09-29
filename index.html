@@ -761,13 +761,22 @@ load();setInterval(load,60000);
     var CSV = (typeof SHEET_CSV !== 'undefined' && SHEET_CSV) || '';
     var grid = document.getElementById('grid');
     if (!CSV || !grid) return;
-    /* Anchor LIVE ATTENTION / ACTIVE NOW AFTER the entire "Today's Setups" heading+grid block (operational
-       priority: today's Chelsea-published setups read first, then what's actually active, then what's merely
-       being watched). Falls back to the grid itself if reset-watch isn't found, so a future markup change can't
-       silently break the addon. Insertion order below matters: whichever is inserted SECOND lands closer to the
-       anchor - active-now first, then attention, produces grid -> active-now -> attention -> reset-watch. */
+    /* Anchor points (2026-09-29 reorder - Angela's explicit desired hierarchy):
+         LIVE ATTENTION -> TODAY'S SETUPS -> ACTIVE NOW -> OLDER ACTIVE/ADMINISTRATIVE -> RESET WATCH/HISTORY
+       Live Attention moves ABOVE "Today's Setups" entirely (members see what needs eyes immediately, before
+       today's calls) - anchored on the page's first .section-head, with a fail-safe fallback to the old
+       before-reset-watch anchor so a future markup change can never silently break the addon. Active Now and
+       the new Older Active/Administrative section keep the prior after-Today's-Setups anchor; insertion order
+       matters here - whichever is inserted SECOND lands closer to the anchor, so active-now first, then
+       older-active, produces grid -> active-now -> older-active -> reset-watch. */
     var afterToday = document.getElementById('reset-watch') || grid.nextSibling || grid;
+    var todayHead = document.querySelector('.section-head');
     var PRICE_MS = 30000, SHEET_MS = 60000, STALE_MS = 150000;
+    // 2026-09-29 (temporary policy pending Chelsea's confirmation - see secOld below): how long an Active
+    // Long/Short Sheet status can stand unchanged before it reads as a forgotten administrative record rather
+    // than a trade members should still be watching. A general age rule (status_iso), never hardcoded to an
+    // asset name - TURBO is simply today's real example, not a special case in this code.
+    var STALE_ACTIVE_MS = 72 * 3600000;
     var opts = { includeNoTrade: !!window.LEVELUP_ATTENTION_INCLUDE_NO_TRADE };   // default: Watching only (No Trade is not actionable)
     var setups = null, ps = { prices: {}, sources: {}, at: 0 }, sheetErr = false;
     var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
@@ -777,9 +786,13 @@ load();setInterval(load,60000);
     var secA = document.createElement('section');
     secA.className = 'att act'; secA.id = 'active-now'; secA.hidden = true; secA.setAttribute('aria-label', 'Active now: setups whose current status is Active Long or Active Short');
     afterToday.parentNode.insertBefore(secA, afterToday);
+    var secOld = document.createElement('section');
+    secOld.className = 'att act-old'; secOld.id = 'older-active'; secOld.hidden = true; secOld.setAttribute('aria-label', 'Older active/administrative: Active Long or Active Short records whose status has stood unchanged a long time');
+    afterToday.parentNode.insertBefore(secOld, afterToday);
     var sec = document.createElement('section');
     sec.className = 'att'; sec.id = 'attention'; sec.hidden = true; sec.setAttribute('aria-label', 'Live attention: setups ranked by distance to trigger');
-    afterToday.parentNode.insertBefore(sec, afterToday);
+    if (todayHead && todayHead.parentNode) todayHead.parentNode.insertBefore(sec, todayHead);
+    else afterToday.parentNode.insertBefore(sec, afterToday);   // fail-safe fallback - never breaks the page
 
     function view() {
       if (!setups) return null;
@@ -857,20 +870,31 @@ load();setInterval(load,60000);
     /* ACTIVE NOW — status-driven (the Sheet's current administrative status); prices are shown only as context and never decide anything */
     function etStamp(iso) { if (!iso) return ''; var d = new Date(iso); return isNaN(d) ? '' : d.toLocaleString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) + ' ET'; }
     function renderActive() {
-      if (!setups) { secA.hidden = true; return; }
+      if (!setups) { secA.hidden = true; secOld.hidden = true; return; }
       var list = A.activeNow(setups);
-      if (!list.length) { secA.hidden = true; return; }
+      if (!list.length) { secA.hidden = true; secOld.hidden = true; return; }
       var fresh = !!ps.at && (Date.now() - ps.at) < STALE_MS;
-      secA.hidden = false;
-      secA.innerHTML = '<div class="att-head"><div class="att-title">Active <em class="act-em">now</em></div></div>' +
+      var now = Date.now();
+      // 2026-09-29 split: a status_iso older than STALE_ACTIVE_MS goes to Older Active/Administrative instead
+      // of Active Now. Missing status_iso is treated as fresh (never demoted on absent data).
+      var isStale = function (it) { return !!it.status_iso && (now - Date.parse(it.status_iso)) >= STALE_ACTIVE_MS; };
+      var freshList = list.filter(function (it) { return !isStale(it); });
+      var staleList = list.filter(isStale);
+      var cardHtmlActive = function (it) {
+        var px = fresh ? ps.prices[it.asset] : null;
+        return '<a class="act-card side-' + it.side + '" href="sheet.html?asset=' + encodeURIComponent(it.asset) + '" data-asset="' + esc(it.asset) + '" data-side="' + it.side + '">' +
+          '<div class="att-top"><span class="att-asset">' + esc(it.asset) + '</span></div>' +
+          '<div class="act-status">' + esc(it.label) + '</div><span class="act-tag">Triggered</span>' +
+          '<div class="att-meta">' + (px ? 'LIVE $' + A.fmtPrice(px) + ' (' + (srcName[ps.sources[it.asset]] || 'live') + ')<br>' : '') + (it.status_iso ? 'status set ' + esc(etStamp(it.status_iso)) : '') + '</div></a>';
+      };
+      secA.hidden = !freshList.length;
+      if (freshList.length) secA.innerHTML = '<div class="att-head"><div class="att-title">Active <em class="act-em">now</em></div></div>' +
         '<div class="att-note">Setups whose current status in the Sheet is <b>Active Long</b> or <b>Active Short</b>. This is a status label from the published record — not a recommendation and not a new entry.</div>' +
-        '<div class="att-grid act-grid">' + list.map(function (it) {
-          var px = fresh ? ps.prices[it.asset] : null;
-          return '<a class="act-card side-' + it.side + '" href="sheet.html?asset=' + encodeURIComponent(it.asset) + '" data-asset="' + esc(it.asset) + '" data-side="' + it.side + '">' +
-            '<div class="att-top"><span class="att-asset">' + esc(it.asset) + '</span></div>' +
-            '<div class="act-status">' + esc(it.label) + '</div><span class="act-tag">Triggered</span>' +
-            '<div class="att-meta">' + (px ? 'LIVE $' + A.fmtPrice(px) + ' (' + (srcName[ps.sources[it.asset]] || 'live') + ')<br>' : '') + (it.status_iso ? 'status set ' + esc(etStamp(it.status_iso)) : '') + '</div></a>';
-        }).join('') + '</div>';
+        '<div class="att-grid act-grid">' + freshList.map(cardHtmlActive).join('') + '</div>';
+      secOld.hidden = !staleList.length;
+      if (staleList.length) secOld.innerHTML = '<details class="hist-toggle"><summary>Older active / administrative<span> (' + staleList.length + ')</span></summary>' +
+        '<div class="att-note">Active Long/Short records whose Sheet status has stood unchanged a long time. Still real published history — nothing is deleted, just moved out of the current view so it does not read as a fresh call.</div>' +
+        '<div class="att-grid act-grid">' + staleList.map(cardHtmlActive).join('') + '</div></details>';
     }
 
     function loadSheet() {
