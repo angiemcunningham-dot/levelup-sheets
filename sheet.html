@@ -986,7 +986,7 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
       var tp = (lc.targets || []).filter(function (t) { return /^TP[0-9]+$/.test(t.level_id); })
         .sort(function (x, y) { return x.level_id.localeCompare(y.level_id, undefined, { numeric: true }); })
         .map(function (t) { return !!t.reached_at; });
-      return { triggered: true, tp: tp, stopped: lc.state === 'STOP_BOUNDARY_REACHED', complete: lc.state === 'OBJECTIVES_EXHAUSTED' };
+      return { triggered: true, tp: tp, stopped: lc.state === 'STOP_BOUNDARY_REACHED', complete: lc.state === 'OBJECTIVES_EXHAUSTED', outcome: (lc.public_display && lc.public_display.outcome) || null, tpsBeforeStop: (lc.stop_boundary && lc.stop_boundary.tps_reached_before_stop) || [] };
     }
     /* Recomputes the SAME setup_instance.key formula core/levelup-core.js defines (asset|published_ms|fingerprint)
        from fields the embedded LevelUpCore copy on THIS page already exposes (.fingerprint, .setup_row.utcMs/
@@ -1032,7 +1032,13 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
     function resolveCurrentState(asset) {
       var m = mechanicalFor(asset, directionAsset === asset ? currentInstanceKey : null);
       if (!m || !m.triggered) return null;   // not mechanically confirmed yet - Sheet stays primary (SEI-shaped)
-      if (m.stopped) return { text: 'STOPPED', kind: 'stopped' };
+      if (m.stopped) {
+        // 2026-09-29 fix: a stop that already banked real TP progress (m.outcome/m.tpsBeforeStop, from the
+        // monitor's own stop_boundary.tps_reached_before_stop - never invented here) must not read as a plain
+        // failed stop. A genuine zero-TP stop (outcome !== 'CLOSED_WITH_PROGRESS') is unchanged: still 'STOPPED'.
+        if (m.outcome === 'CLOSED_WITH_PROGRESS' && m.tpsBeforeStop.length) return { text: 'CLOSED — ' + m.tpsBeforeStop.join(' + ') + ' HIT', kind: 'stopped' };
+        return { text: 'STOPPED', kind: 'stopped' };
+      }
       if (m.complete) return { text: 'COMPLETE', kind: 'complete' };
       var dir = directionFor(asset);
       if (!dir) return null;                  // never fabricate a direction we can't evidence
