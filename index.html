@@ -206,6 +206,12 @@ if(SHEET_CSV){try{text=await (await fetch(SHEET_CSV+(SHEET_CSV.includes("?")?"&"
 if(!text){document.getElementById("grid").innerHTML=`<div class="empty">Hub not wired yet — paste the sheet link into SHEET_CSV.</div>`;document.getElementById("grid-history").innerHTML="";return;}
 const rows=objs(parseCSV(text));const by={},pc={},all={},rw={};
 rows.forEach(r=>{const a=get(r,"asset").toUpperCase();if(!a)return;(all[a]=all[a]||[]).push(r);const newer=o=>!o||new Date(get(r,"timestamp"))>new Date(get(o,"timestamp"));if(isResetWatch(r)){if(newer(rw[a]))rw[a]=r;return;}if(isPC(r)){if(newer(pc[a]))pc[a]=r;return;}if(!get(r,"status"))return;if(newer(by[a]))by[a]=r;});
+// 2026-09-29 fix: a price-check row belongs to the CURRENT setup instance only - drop any pc[a] older than that
+// asset's own current status row (by[a]), so an OLD/superseded instance's price check never surfaces on a
+// brand-new card (real LINK/TAO case: a 9-day-old price check was showing on today's fresh setup). Same rule as
+// core/levelup-core.js's selectRows() fix; kept as this file's own pass since pc[]/by[] are built by ticker here,
+// not per-instance.
+Object.keys(pc).forEach(a=>{if(pc[a]&&by[a]&&new Date(get(pc[a],"timestamp"))<new Date(get(by[a],"timestamp")))delete pc[a];});
 /* "Today's Setups" = the single most recent calendar day (America/New_York) on which Chelsea published a real,
    level-bearing setup row - never admin/price-check rows, never invented. Computed fresh from the live Sheet every
    load; nothing here is a hardcoded asset list, so it stays correct as soon as a new daily batch is published. */
@@ -612,7 +618,13 @@ load();setInterval(load,60000);
     // T-07: a Chelsea setup row must not replace a valid level-bearing setup merely because it contains WHY. Prefer the most
     // recent Chelsea setup row that actually HAS levels; only fall back to a WHY-only Chelsea row if none ever has levels.
     const S = upto.find((o) => srcType(o) === 'CHELSEA SETUP' && hasLevels(o)) || upto.find((o) => srcType(o) === 'CHELSEA SETUP' && F.why(o)) || upto.find(hasLevels) || upto.find((o) => F.why(o)) || cur;
-    const lastPC = [...rs].reverse().find(isPC) || null;
+    // 2026-09-29 fix: a PRICE CHECK row belongs to the CURRENT setup instance's own monitoring window only - never
+    // a prior, superseded instance's. Scoped by timestamp (>= the current instance's own setup row S), since a
+    // price-check row carries no level fingerprint of its own to compare directly. A row with an unparseable
+    // timestamp is excluded rather than guessed into either window. Real case this fixes: LINK/TAO's fresh
+    // 2026-09-29 setups were showing a "last price check" from their OLD instance, ~9 days earlier.
+    const sMs = tsInfo(S).utcMs;
+    const lastPC = [...rs].reverse().find((o) => { if (!isPC(o)) return false; const ms = tsInfo(o).utcMs; return ms !== null && sMs !== null && ms >= sMs; }) || null;
     return { rows: rs, cur, S, lastPC, carried: S !== cur };
   }
 

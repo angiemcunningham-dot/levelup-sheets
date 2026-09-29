@@ -256,7 +256,11 @@ async function load(){
   const upto=rows.slice(0,rows.indexOf(cur)+1).reverse();
   const setupRows=upto.filter(r=>!isPC(r));
   const S=setupRows.find(r=>srcType(r)==="CHELSEA SETUP"&&(hasLevels(r)||get(r,"why")))||setupRows.find(hasLevels)||setupRows.find(r=>get(r,"why"))||cur;
-  const carried=S!==cur;const lastPC=[...rows].reverse().find(isPC);
+  const carried=S!==cur;
+  // 2026-09-29 fix: scope to the CURRENT setup instance only - a price-check row from an OLD, superseded instance
+  // (e.g. LINK/TAO's real case, ~9 days stale) must never surface on a brand-new one. See core/levelup-core.js's
+  // selectRows() for the canonical version of this same fix.
+  const sTs=rowTs(S).getTime();const lastPC=[...rows].reverse().find(r=>isPC(r)&&!isNaN(rowTs(r).getTime())&&!isNaN(sTs)&&rowTs(r).getTime()>=sTs)||null;
   const [bcls,btxt]=STATUS(get(cur,"status"));const closed=/closed|invalid/i.test(get(cur,"status"));const paused=/watch|no trade/i.test(get(cur,"status"));
   const L=levels(S);const img=chartImg(get(S,"chart image"),get(S,"chart link"));const vm=driveId(get(S,"voice"));
   const P=rows.filter(r=>!isPC(r)&&hasLevels(r)&&rowTs(r)<rowTs(S)).pop();
@@ -732,7 +736,13 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
     // T-07: a Chelsea setup row must not replace a valid level-bearing setup merely because it contains WHY. Prefer the most
     // recent Chelsea setup row that actually HAS levels; only fall back to a WHY-only Chelsea row if none ever has levels.
     const S = upto.find((o) => srcType(o) === 'CHELSEA SETUP' && hasLevels(o)) || upto.find((o) => srcType(o) === 'CHELSEA SETUP' && F.why(o)) || upto.find(hasLevels) || upto.find((o) => F.why(o)) || cur;
-    const lastPC = [...rs].reverse().find(isPC) || null;
+    // 2026-09-29 fix: a PRICE CHECK row belongs to the CURRENT setup instance's own monitoring window only - never
+    // a prior, superseded instance's. Scoped by timestamp (>= the current instance's own setup row S), since a
+    // price-check row carries no level fingerprint of its own to compare directly. A row with an unparseable
+    // timestamp is excluded rather than guessed into either window. Real case this fixes: LINK/TAO's fresh
+    // 2026-09-29 setups were showing a "last price check" from their OLD instance, ~9 days earlier.
+    const sMs = tsInfo(S).utcMs;
+    const lastPC = [...rs].reverse().find((o) => { if (!isPC(o)) return false; const ms = tsInfo(o).utcMs; return ms !== null && sMs !== null && ms >= sMs; }) || null;
     return { rows: rs, cur, S, lastPC, carried: S !== cur };
   }
 
