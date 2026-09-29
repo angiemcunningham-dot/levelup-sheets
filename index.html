@@ -425,6 +425,47 @@ load();setInterval(load,60000);
       out.trigger = mkLevel(id, 'trigger', 'Trigger ' + n, zoneAt(nums, 0, text), 'Trigger ' + n, text, 'present');
       return out;
     }
+    // Conditional / multi-step trigger (e.g. "Failed 1H reclaim of approximately $X-$Y, followed by an
+    // open-and-hold back below the MAs" or "Decisive loss of $X, followed by failed reclaim/lower high";
+    // 2026-09-29: also "$X-$Y area + 1H open-and-hold back below the moving-average structure" ('+' as a
+    // conjunction), "through $X-$Y and successful retest" ('and ... retest' as a confirmation marker), and
+    // "<condition> -> <condition> -> ... through $X-$Y" where the numeric anchor comes AFTER the condition
+    // arrows rather than before them):
+    // Chelsea has stated a real numeric anchor, but the trigger is not a simple "touch this zone" condition -
+    // it requires additional confirmation. Representing this as 'present' would let the mechanical engine
+    // (monitor/engine.js line ~176, `if (level.state !== 'present' ...) continue`) silently treat a bare wick
+    // touch of the anchor as a completed Chelsea trigger, which is not what she said. Representing it as the
+    // old 'ambiguous'/no-zone fallback would silently DISCARD the real number she gave. Neither is acceptable,
+    // so this is its own state: the numeric anchor and her confirmation wording are both preserved as
+    // structured data, but `state !== 'present'` keeps every existing mechanical consumer (lifecycle.js,
+    // engine.js, receipts.js all gate on `state === 'present'`) correctly inert on it - no lifecycle/trigger
+    // rule changes anywhere, this asset simply stays out of mechanical evaluation until a human/product
+    // decision defines how a conditional trigger should be evaluated.
+    const CONDITION_SPLIT = /\b(?:followed by|then)\b|→|->|\+|\band\s+(?=(?:a\s+)?(?:successful|confirmed|defended)\s+retest\b)/i;
+    const splitAt = CONDITION_SPLIT.exec(text);
+    if (nums.length && splitAt) {
+      // 2026-09-29: the anchor is the first zone/number found anywhere BEFORE an "Entry Zone:" sentence
+      // (parsed separately as out.entry, above) - not necessarily before the first condition-split marker,
+      // since Chelsea sometimes states her confirmation steps first and the numeric anchor last (e.g. ALGO:
+      // "Defense of the reload zone -> higher low -> 1H reclaim/open-and-hold through $0.130-$0.132").
+      const entryIdx = text.search(/entry\s+zone/i);
+      const anchorScanEnd = entryIdx >= 0 ? entryIdx : text.length;
+      const anchorNums = nums.filter((x) => x.idx < anchorScanEnd);
+      if (anchorNums.length) {
+        const z = zoneAt(anchorNums, 0, text);
+        const conditionSource = text.slice(0, anchorScanEnd);
+        const conditions = conditionSource.split(CONDITION_SPLIT)
+          .map((s) => s.replace(/^[\s,.→+-]+|[\s,.→+-]+$/g, '')).filter(Boolean);
+        if (/\b(loss of|below|lower[\s-]?high)\b/i.test(conditionSource)) out.dirHint = 'short';
+        else if (/\b(higher low|above)\b/i.test(conditionSource)) out.dirHint = 'long';
+        out.trigger = mkLevel(id, 'trigger', 'Trigger ' + n, z, 'Trigger ' + n, text, 'conditional', {
+          review: true,
+          conditions,
+          notes: ['conditional/multi-step trigger: a numeric anchor is present, but Chelsea requires additional confirmation (see conditions) before this is a completed trigger - not mechanically evaluated as a simple level touch'],
+        });
+        return out;
+      }
+    }
     if (nums.length) { out.trigger = mkLevel(id, 'trigger', 'Trigger ' + n, null, 'Trigger ' + n, text, 'ambiguous', { review: true, notes: ['numbers found inside prose; no level definition recognised'], candidates: nums.map((x) => x.v) }); return out; }
     out.trigger = mkLevel(id, 'trigger', 'Trigger ' + n, null, 'Trigger ' + n, text, 'absent', { notes: ['text only - no numeric level'] });
     return out;
@@ -482,13 +523,22 @@ load();setInterval(load,60000);
     if (/\bshort\b/i.test(head)) votes.short.push('headline'); if (/\blong\b/i.test(head)) votes.long.push('headline');
     if (/short/i.test(st)) votes.short.push('status'); else if (/active long|\blong\b/i.test(st)) votes.long.push('status');
     const trig = levels.find((l) => l.kind === 'trigger' && l.state === 'present'), tp1 = levels.find((l) => l.id === 'TP1' && l.state === 'present'), stop = levels.find((l) => l.id === 'STOP' && l.state === 'present');
-    if (trig && tp1) (mid(tp1) > mid(trig) ? votes.long : votes.short).push('target geometry');
-    else if (stop && tp1) (mid(tp1) > mid(stop) ? votes.long : votes.short).push('target vs stop geometry');
+    // Geometry is only informative when the two prices actually differ. When Chelsea's TP1 sits at exactly the
+    // same price as the trigger/stop (e.g. ONDO 2026-09-28: trigger $0.587, TP1 $0.587 - both numbers are hers,
+    // preserved exactly, not changed here), `mid(tp1) > mid(trig)` is neither true nor meaningfully false - the
+    // old code silently voted 'short' via the ternary's else-branch, which could outvote two genuine explicit
+    // signals (headline + trigger wording) and force the whole setup to direction: null. A tie casts no vote at
+    // all; it is recorded as a diagnostic instead so the conflict stays visible without being fabricated evidence.
+    const EPS = 1e-9;
+    let geometryTie = false;
+    if (trig && tp1) { const a = mid(tp1), b = mid(trig); if (Math.abs(a - b) < EPS) geometryTie = true; else (a > b ? votes.long : votes.short).push('target geometry'); }
+    else if (stop && tp1) { const a = mid(tp1), b = mid(stop); if (Math.abs(a - b) < EPS) geometryTie = true; else (a > b ? votes.long : votes.short).push('target vs stop geometry'); }
+    const tieNote = geometryTie ? ['DIRECTION_EXPLICIT_GEOMETRY_CONFLICT: TP1 is priced at exactly the same level as the trigger/stop, so target geometry could not vote on direction - explicit wording (headline/trigger/status) decided it instead'] : [];
     const L = votes.long.length, S = votes.short.length;
-    if (L >= 2 && S === 0) return { value: 'long', status: 'present', evidence: votes.long };
-    if (S >= 2 && L === 0) return { value: 'short', status: 'present', evidence: votes.short };
+    if (L >= 2 && S === 0) return { value: 'long', status: 'present', evidence: votes.long, notes: tieNote };
+    if (S >= 2 && L === 0) return { value: 'short', status: 'present', evidence: votes.short, notes: tieNote };
     if (L && S) return { value: null, status: 'ambiguous', evidence: votes, notes: ['conflicting direction evidence'] };
-    return { value: null, status: (L + S) ? 'ambiguous' : 'absent', evidence: votes, notes: ['fewer than two agreeing direction sources'] };
+    return { value: null, status: (L + S) ? 'ambiguous' : 'absent', evidence: votes, notes: ['fewer than two agreeing direction sources', ...tieNote] };
   }
 
   /* near / far edges as price approaches the level in the direction of the trade */
@@ -559,7 +609,9 @@ load();setInterval(load,60000);
     const auth = rs.filter((o) => !isPC(o) && F.status(o));
     const cur = auth[auth.length - 1] || rs[rs.length - 1];
     const upto = rs.slice(0, rs.indexOf(cur) + 1).reverse().filter((o) => !isPC(o));
-    const S = upto.find((o) => srcType(o) === 'CHELSEA SETUP' && (hasLevels(o) || F.why(o))) || upto.find(hasLevels) || upto.find((o) => F.why(o)) || cur;
+    // T-07: a Chelsea setup row must not replace a valid level-bearing setup merely because it contains WHY. Prefer the most
+    // recent Chelsea setup row that actually HAS levels; only fall back to a WHY-only Chelsea row if none ever has levels.
+    const S = upto.find((o) => srcType(o) === 'CHELSEA SETUP' && hasLevels(o)) || upto.find((o) => srcType(o) === 'CHELSEA SETUP' && F.why(o)) || upto.find(hasLevels) || upto.find((o) => F.why(o)) || cur;
     const lastPC = [...rs].reverse().find(isPC) || null;
     return { rows: rs, cur, S, lastPC, carried: S !== cur };
   }
@@ -571,11 +623,22 @@ load();setInterval(load,60000);
     // publication time = earliest non-price-check row carrying the identical level set
     const same = sel.rows.filter((o) => !isPC(o) && hasLevels(o) && levelFingerprint(extractLevels(o)) === fp);
     const pubRow = same[0] || sel.S;
+    // SETUP INSTANCE = the actual published call. levelFingerprint (above) identifies the level configuration only and is deliberately unchanged.
+    // Instance time = the CHELSEA SETUP row that carries the levels (NOT `publication`, which collapses re-posts onto the earliest identical-levels row),
+    // so a later admin/status row that merely restates the levels is not a new call, while a new Chelsea setup row with identical levels is.
+    const iti = tsInfo(sel.S);
+    const itsPart = iti.utcMs !== null ? String(iti.utcMs) : 'raw:' + String(iti.ts_text || '').trim().replace(/\s+/g, ' ').toLowerCase();
+    const earlierInstances = new Set(sel.rows.filter((o) => !isPC(o) && srcType(o) === 'CHELSEA SETUP' && hasLevels(o) && levelFingerprint(extractLevels(o)) === fp).map((o) => tsInfo(o).utcMs).filter((ms) => ms !== null && iti.utcMs !== null && ms < iti.utcMs));
     const stClass = statusClass(F.status(sel.cur));
     const flags = [];
     const present = ex.levels.filter((l) => l.state === 'present' && l.zone).length;
-    if (!ex.levels.some((l) => l.kind === 'trigger' && l.state === 'present')) flags.push('NO_NUMERIC_TRIGGER');
+    // A 'conditional' trigger (see parseTrigger) still carries a real Chelsea-stated numeric anchor - NO_NUMERIC_TRIGGER
+    // would be false for it. It is intentionally its own, separate flag rather than being folded into NO_NUMERIC_TRIGGER
+    // or silently treated the same as a simple present trigger.
+    if (!ex.levels.some((l) => l.kind === 'trigger' && l.zone && (l.state === 'present' || l.state === 'conditional'))) flags.push('NO_NUMERIC_TRIGGER');
+    if (ex.levels.some((l) => l.kind === 'trigger' && l.state === 'conditional')) flags.push('CONDITIONAL_TRIGGER');
     if (ex.direction.status !== 'present') flags.push('DIRECTION_' + ex.direction.status.toUpperCase());
+    if (ex.direction.notes && ex.direction.notes.some((nt) => nt.startsWith('DIRECTION_EXPLICIT_GEOMETRY_CONFLICT'))) flags.push('DIRECTION_EXPLICIT_GEOMETRY_CONFLICT');
     if (ex.levels.some((l) => l.review)) flags.push('AMBIGUOUS_LEVEL');
     if (ex.free_text_refs.length) flags.push('FREE_TEXT_INVALIDATION_REFERENCE');
     if (!present) flags.push('NO_MONITORABLE_LEVELS');
@@ -593,11 +656,17 @@ load();setInterval(load,60000);
       levels: ex.levels,
       free_text_refs: ex.free_text_refs,
       fingerprint: fp,
+      setup_instance: { key: asset + '|' + itsPart + '|' + fp, asset, published_ms: iti.utcMs, published_iso: iti.iso, ts_text: iti.ts_text, row_id: rowId(sel.S), levels_fingerprint: fp, ordinal: earlierInstances.size },
       last_price_check: sel.lastPC ? { row_ref: rowRef(sel.lastPC), ...tsInfo(sel.lastPC), headline: F.headline(sel.lastPC) } : null,
       row_counts: sel.rows.reduce((a, o) => { const t = srcType(o); a[t] = (a[t] || 0) + 1; a.total++; return a; }, { total: 0 }),
       history_row_refs: sel.rows.map(rowRef),
       data_quality_flags: flags,
       reasoning_reference: { asset, setup_row: rowRef(sel.S), setup_timestamp: F.timestamp(sel.S), board: 'sheet.html?asset=' + asset },
+      // Verbatim copy of Chelsea's published words for the setup row (used by journal receipts; never rewritten or summarised)
+      published_text: {
+        source_row_ref: rowRef(sel.S), source_row_id: rowId(sel.S), timestamp_text: F.timestamp(sel.S), headline: F.headline(sel.S), why: F.why(sel.S), warning: F.warning(sel.S), confidence: F.confidence(sel.S),
+        triggers: [1, 2, 3].map((n) => F.trigger(sel.S, n)), targets: F.targets(sel.S), stop: F.stop(sel.S), safety: F.safety(sel.S),
+      },
     };
   }
 
@@ -930,6 +999,12 @@ load();setInterval(load,60000);
 .mech-headline.mech-active{color:var(--green-d)}
 .mech-headline.mech-stopped{color:var(--red-d)}
 .mech-headline.mech-complete{color:var(--pink)}
+/* COMPLETION COIN (2026-09-29) - see sheet.html's copy of this comment for the full rationale. Smaller here (grid
+   card / Active Now) than on the detail page, sized so it never competes with the COMPLETE headline text. */
+.mech-coin{display:inline-flex;flex:none;width:16px;height:16px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 1px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.25);vertical-align:-3px;margin-right:5px}
+.mech-coin img{display:block;width:100%;height:100%;object-fit:cover;animation:mechCoinSpinIn .9s ease-out 1}
+@keyframes mechCoinSpinIn{from{transform:scale(1.22) rotate(0deg);opacity:0}to{transform:scale(1.22) rotate(360deg);opacity:1}}
+@media (prefers-reduced-motion:reduce){.mech-coin img{animation:none;transform:scale(1.22)}}
 .pill.mech-demoted{opacity:.55;font-size:10px;transform:scale(.92);transform-origin:left center}
 /* Active Now's base .act-status (26px/900, styled for short text like "ACTIVE LONG") wraps the longer reconciled
    labels ("ACTIVE LONG — TP1 HIT") across 3-4 lines with the dash stranded alone. Higher specificity than both the
@@ -1075,7 +1150,17 @@ load();setInterval(load,60000);
       m.tp.forEach(function (hit, i) { parts.push('<span class="mech-tick' + (hit ? ' on' : '') + '">' + (hit ? '&#10003;' : '&#9675;') + ' TP' + (i + 1) + '</span>'); });
       if (m.stopped) parts.push('<span class="mech-tick stop">&#9632; STOPPED</span>');
       else if (m.complete) parts.push('<span class="mech-tick complete">&#10003; COMPLETE</span>');
-      return '<div class="mech-row" title="Mechanical observation of Chelsea’s published levels - not a signal, not the Sheet status">' + parts.join('') + '</div>';
+      return '<div class="mech-row" title="Observation of Chelsea’s published levels - not a signal, not the Sheet status">' + parts.join('') + '</div>';
+    }
+    /* COMPLETION COIN eligibility (2026-09-29) - see sheet.html's copy of this same function for the full
+       rationale (every DEFINED TP reached, not hardcoded to exactly 3). Reuses mechanicalFor() as-is - never a
+       second identity/lookup system - so an OLD completed instance can never decorate a NEW current setup. */
+    function coinEligible(asset) {
+      var m = mechanicalFor(asset, currentInstanceKeyFor(asset));
+      return !!(m && m.complete && m.tp.length > 0 && m.tp.every(Boolean));
+    }
+    function coinBadgeHtml() {
+      return '<span class="mech-coin" title="Level Up completion coin" role="img" aria-label="Level Up completion coin — all published targets reached"><img src="levelup_icon_coin_1024.png" alt=""></span>';
     }
     /* ACTIVE NOW reconciliation: att-ui's renderActive() (untouched) always writes a static "ACTIVE LONG"/"Triggered"
        label from the Sheet status alone. Once the mechanical feed confirms more (a specific TP hit, or a terminal
@@ -1087,7 +1172,14 @@ load();setInterval(load,60000);
         var asset = (c.getAttribute('data-asset') || '').toUpperCase(); if (!asset) return;
         var resolved = resolveCurrentState(asset); if (!resolved) return;
         var statusEl = c.querySelector('.act-status');
-        if (statusEl) { statusEl.textContent = resolved.text; statusEl.classList.add('mech-reconciled'); }
+        if (statusEl) {
+          statusEl.textContent = resolved.text;
+          statusEl.classList.add('mech-reconciled');
+          if (resolved.kind === 'complete' && coinEligible(asset)) {
+            var wrap = document.createElement('span'); wrap.innerHTML = coinBadgeHtml();
+            statusEl.insertBefore(wrap.firstChild, statusEl.firstChild);
+          }
+        }
         var tagEl = c.querySelector('.act-tag'); if (tagEl) tagEl.style.display = 'none';
       });
     }
@@ -1105,7 +1197,8 @@ load();setInterval(load,60000);
           if (pill) {
             if (resolved) {
               pill.classList.add('mech-demoted');
-              var hd = document.createElement('div'); hd.innerHTML = '<div class="mech-headline mech-' + resolved.kind + '">' + resolved.text + '</div>';
+              var coinBadge = (resolved.kind === 'complete' && coinEligible(asset)) ? coinBadgeHtml() : '';
+              var hd = document.createElement('div'); hd.innerHTML = '<div class="mech-headline mech-' + resolved.kind + '">' + coinBadge + resolved.text + '</div>';
               pill.parentNode.insertBefore(hd.firstChild, pill);
               // label the demoted pill so it reads as Chelsea's source status, not a second current-state claim
               var lbl = document.createElement('span'); lbl.innerHTML = '<span class="mech-pill-label">Chelsea status:</span>';
@@ -1119,7 +1212,7 @@ load();setInterval(load,60000);
           if (pill && pill.parentNode) pill.parentNode.insertBefore(d.firstChild, pill.nextSibling);
         });
         decorateActiveNow();
-        var note = feed ? ('Mechanical feed updated ' + fmtAgo(feed.generated_at) + ((Date.now() - Date.parse(feed.generated_at)) > STALE_MS ? ' (may be stale)' : '')) : '';
+        var note = feed ? ('Feed updated ' + fmtAgo(feed.generated_at) + ((Date.now() - Date.parse(feed.generated_at)) > STALE_MS ? ' (may be stale)' : '')) : '';
         var head = document.querySelector('.section-head');
         var n = document.getElementById('mech-note');
         if (note && head) { if (!n) { n = document.createElement('div'); n.id = 'mech-note'; n.className = 'mech-note'; head.parentNode.insertBefore(n, head.nextSibling); } n.textContent = note; }
@@ -1142,7 +1235,7 @@ load();setInterval(load,60000);
     load();
     setInterval(load, 60000);
     obs.observe(grid.parentNode, { childList: true, subtree: true });
-    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, currentInstanceKeyFor: currentInstanceKeyFor, resolveCurrentState: resolveCurrentState, directionFor: directionFor, decorate: decorate, decorateActiveNow: decorateActiveNow };   // test hook (read-only)
+    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, currentInstanceKeyFor: currentInstanceKeyFor, resolveCurrentState: resolveCurrentState, directionFor: directionFor, decorate: decorate, decorateActiveNow: decorateActiveNow, coinEligible: coinEligible };   // test hook (read-only)
   } catch (e) { if (window.console) console.warn('mechanical feed addon disabled:', e); }
 })();
 </script>

@@ -545,6 +545,47 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
       out.trigger = mkLevel(id, 'trigger', 'Trigger ' + n, zoneAt(nums, 0, text), 'Trigger ' + n, text, 'present');
       return out;
     }
+    // Conditional / multi-step trigger (e.g. "Failed 1H reclaim of approximately $X-$Y, followed by an
+    // open-and-hold back below the MAs" or "Decisive loss of $X, followed by failed reclaim/lower high";
+    // 2026-09-29: also "$X-$Y area + 1H open-and-hold back below the moving-average structure" ('+' as a
+    // conjunction), "through $X-$Y and successful retest" ('and ... retest' as a confirmation marker), and
+    // "<condition> -> <condition> -> ... through $X-$Y" where the numeric anchor comes AFTER the condition
+    // arrows rather than before them):
+    // Chelsea has stated a real numeric anchor, but the trigger is not a simple "touch this zone" condition -
+    // it requires additional confirmation. Representing this as 'present' would let the mechanical engine
+    // (monitor/engine.js line ~176, `if (level.state !== 'present' ...) continue`) silently treat a bare wick
+    // touch of the anchor as a completed Chelsea trigger, which is not what she said. Representing it as the
+    // old 'ambiguous'/no-zone fallback would silently DISCARD the real number she gave. Neither is acceptable,
+    // so this is its own state: the numeric anchor and her confirmation wording are both preserved as
+    // structured data, but `state !== 'present'` keeps every existing mechanical consumer (lifecycle.js,
+    // engine.js, receipts.js all gate on `state === 'present'`) correctly inert on it - no lifecycle/trigger
+    // rule changes anywhere, this asset simply stays out of mechanical evaluation until a human/product
+    // decision defines how a conditional trigger should be evaluated.
+    const CONDITION_SPLIT = /\b(?:followed by|then)\b|→|->|\+|\band\s+(?=(?:a\s+)?(?:successful|confirmed|defended)\s+retest\b)/i;
+    const splitAt = CONDITION_SPLIT.exec(text);
+    if (nums.length && splitAt) {
+      // 2026-09-29: the anchor is the first zone/number found anywhere BEFORE an "Entry Zone:" sentence
+      // (parsed separately as out.entry, above) - not necessarily before the first condition-split marker,
+      // since Chelsea sometimes states her confirmation steps first and the numeric anchor last (e.g. ALGO:
+      // "Defense of the reload zone -> higher low -> 1H reclaim/open-and-hold through $0.130-$0.132").
+      const entryIdx = text.search(/entry\s+zone/i);
+      const anchorScanEnd = entryIdx >= 0 ? entryIdx : text.length;
+      const anchorNums = nums.filter((x) => x.idx < anchorScanEnd);
+      if (anchorNums.length) {
+        const z = zoneAt(anchorNums, 0, text);
+        const conditionSource = text.slice(0, anchorScanEnd);
+        const conditions = conditionSource.split(CONDITION_SPLIT)
+          .map((s) => s.replace(/^[\s,.→+-]+|[\s,.→+-]+$/g, '')).filter(Boolean);
+        if (/\b(loss of|below|lower[\s-]?high)\b/i.test(conditionSource)) out.dirHint = 'short';
+        else if (/\b(higher low|above)\b/i.test(conditionSource)) out.dirHint = 'long';
+        out.trigger = mkLevel(id, 'trigger', 'Trigger ' + n, z, 'Trigger ' + n, text, 'conditional', {
+          review: true,
+          conditions,
+          notes: ['conditional/multi-step trigger: a numeric anchor is present, but Chelsea requires additional confirmation (see conditions) before this is a completed trigger - not mechanically evaluated as a simple level touch'],
+        });
+        return out;
+      }
+    }
     if (nums.length) { out.trigger = mkLevel(id, 'trigger', 'Trigger ' + n, null, 'Trigger ' + n, text, 'ambiguous', { review: true, notes: ['numbers found inside prose; no level definition recognised'], candidates: nums.map((x) => x.v) }); return out; }
     out.trigger = mkLevel(id, 'trigger', 'Trigger ' + n, null, 'Trigger ' + n, text, 'absent', { notes: ['text only - no numeric level'] });
     return out;
@@ -602,13 +643,22 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
     if (/\bshort\b/i.test(head)) votes.short.push('headline'); if (/\blong\b/i.test(head)) votes.long.push('headline');
     if (/short/i.test(st)) votes.short.push('status'); else if (/active long|\blong\b/i.test(st)) votes.long.push('status');
     const trig = levels.find((l) => l.kind === 'trigger' && l.state === 'present'), tp1 = levels.find((l) => l.id === 'TP1' && l.state === 'present'), stop = levels.find((l) => l.id === 'STOP' && l.state === 'present');
-    if (trig && tp1) (mid(tp1) > mid(trig) ? votes.long : votes.short).push('target geometry');
-    else if (stop && tp1) (mid(tp1) > mid(stop) ? votes.long : votes.short).push('target vs stop geometry');
+    // Geometry is only informative when the two prices actually differ. When Chelsea's TP1 sits at exactly the
+    // same price as the trigger/stop (e.g. ONDO 2026-09-28: trigger $0.587, TP1 $0.587 - both numbers are hers,
+    // preserved exactly, not changed here), `mid(tp1) > mid(trig)` is neither true nor meaningfully false - the
+    // old code silently voted 'short' via the ternary's else-branch, which could outvote two genuine explicit
+    // signals (headline + trigger wording) and force the whole setup to direction: null. A tie casts no vote at
+    // all; it is recorded as a diagnostic instead so the conflict stays visible without being fabricated evidence.
+    const EPS = 1e-9;
+    let geometryTie = false;
+    if (trig && tp1) { const a = mid(tp1), b = mid(trig); if (Math.abs(a - b) < EPS) geometryTie = true; else (a > b ? votes.long : votes.short).push('target geometry'); }
+    else if (stop && tp1) { const a = mid(tp1), b = mid(stop); if (Math.abs(a - b) < EPS) geometryTie = true; else (a > b ? votes.long : votes.short).push('target vs stop geometry'); }
+    const tieNote = geometryTie ? ['DIRECTION_EXPLICIT_GEOMETRY_CONFLICT: TP1 is priced at exactly the same level as the trigger/stop, so target geometry could not vote on direction - explicit wording (headline/trigger/status) decided it instead'] : [];
     const L = votes.long.length, S = votes.short.length;
-    if (L >= 2 && S === 0) return { value: 'long', status: 'present', evidence: votes.long };
-    if (S >= 2 && L === 0) return { value: 'short', status: 'present', evidence: votes.short };
+    if (L >= 2 && S === 0) return { value: 'long', status: 'present', evidence: votes.long, notes: tieNote };
+    if (S >= 2 && L === 0) return { value: 'short', status: 'present', evidence: votes.short, notes: tieNote };
     if (L && S) return { value: null, status: 'ambiguous', evidence: votes, notes: ['conflicting direction evidence'] };
-    return { value: null, status: (L + S) ? 'ambiguous' : 'absent', evidence: votes, notes: ['fewer than two agreeing direction sources'] };
+    return { value: null, status: (L + S) ? 'ambiguous' : 'absent', evidence: votes, notes: ['fewer than two agreeing direction sources', ...tieNote] };
   }
 
   /* near / far edges as price approaches the level in the direction of the trade */
@@ -679,7 +729,9 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
     const auth = rs.filter((o) => !isPC(o) && F.status(o));
     const cur = auth[auth.length - 1] || rs[rs.length - 1];
     const upto = rs.slice(0, rs.indexOf(cur) + 1).reverse().filter((o) => !isPC(o));
-    const S = upto.find((o) => srcType(o) === 'CHELSEA SETUP' && (hasLevels(o) || F.why(o))) || upto.find(hasLevels) || upto.find((o) => F.why(o)) || cur;
+    // T-07: a Chelsea setup row must not replace a valid level-bearing setup merely because it contains WHY. Prefer the most
+    // recent Chelsea setup row that actually HAS levels; only fall back to a WHY-only Chelsea row if none ever has levels.
+    const S = upto.find((o) => srcType(o) === 'CHELSEA SETUP' && hasLevels(o)) || upto.find((o) => srcType(o) === 'CHELSEA SETUP' && F.why(o)) || upto.find(hasLevels) || upto.find((o) => F.why(o)) || cur;
     const lastPC = [...rs].reverse().find(isPC) || null;
     return { rows: rs, cur, S, lastPC, carried: S !== cur };
   }
@@ -691,11 +743,22 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
     // publication time = earliest non-price-check row carrying the identical level set
     const same = sel.rows.filter((o) => !isPC(o) && hasLevels(o) && levelFingerprint(extractLevels(o)) === fp);
     const pubRow = same[0] || sel.S;
+    // SETUP INSTANCE = the actual published call. levelFingerprint (above) identifies the level configuration only and is deliberately unchanged.
+    // Instance time = the CHELSEA SETUP row that carries the levels (NOT `publication`, which collapses re-posts onto the earliest identical-levels row),
+    // so a later admin/status row that merely restates the levels is not a new call, while a new Chelsea setup row with identical levels is.
+    const iti = tsInfo(sel.S);
+    const itsPart = iti.utcMs !== null ? String(iti.utcMs) : 'raw:' + String(iti.ts_text || '').trim().replace(/\s+/g, ' ').toLowerCase();
+    const earlierInstances = new Set(sel.rows.filter((o) => !isPC(o) && srcType(o) === 'CHELSEA SETUP' && hasLevels(o) && levelFingerprint(extractLevels(o)) === fp).map((o) => tsInfo(o).utcMs).filter((ms) => ms !== null && iti.utcMs !== null && ms < iti.utcMs));
     const stClass = statusClass(F.status(sel.cur));
     const flags = [];
     const present = ex.levels.filter((l) => l.state === 'present' && l.zone).length;
-    if (!ex.levels.some((l) => l.kind === 'trigger' && l.state === 'present')) flags.push('NO_NUMERIC_TRIGGER');
+    // A 'conditional' trigger (see parseTrigger) still carries a real Chelsea-stated numeric anchor - NO_NUMERIC_TRIGGER
+    // would be false for it. It is intentionally its own, separate flag rather than being folded into NO_NUMERIC_TRIGGER
+    // or silently treated the same as a simple present trigger.
+    if (!ex.levels.some((l) => l.kind === 'trigger' && l.zone && (l.state === 'present' || l.state === 'conditional'))) flags.push('NO_NUMERIC_TRIGGER');
+    if (ex.levels.some((l) => l.kind === 'trigger' && l.state === 'conditional')) flags.push('CONDITIONAL_TRIGGER');
     if (ex.direction.status !== 'present') flags.push('DIRECTION_' + ex.direction.status.toUpperCase());
+    if (ex.direction.notes && ex.direction.notes.some((nt) => nt.startsWith('DIRECTION_EXPLICIT_GEOMETRY_CONFLICT'))) flags.push('DIRECTION_EXPLICIT_GEOMETRY_CONFLICT');
     if (ex.levels.some((l) => l.review)) flags.push('AMBIGUOUS_LEVEL');
     if (ex.free_text_refs.length) flags.push('FREE_TEXT_INVALIDATION_REFERENCE');
     if (!present) flags.push('NO_MONITORABLE_LEVELS');
@@ -713,11 +776,17 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
       levels: ex.levels,
       free_text_refs: ex.free_text_refs,
       fingerprint: fp,
+      setup_instance: { key: asset + '|' + itsPart + '|' + fp, asset, published_ms: iti.utcMs, published_iso: iti.iso, ts_text: iti.ts_text, row_id: rowId(sel.S), levels_fingerprint: fp, ordinal: earlierInstances.size },
       last_price_check: sel.lastPC ? { row_ref: rowRef(sel.lastPC), ...tsInfo(sel.lastPC), headline: F.headline(sel.lastPC) } : null,
       row_counts: sel.rows.reduce((a, o) => { const t = srcType(o); a[t] = (a[t] || 0) + 1; a.total++; return a; }, { total: 0 }),
       history_row_refs: sel.rows.map(rowRef),
       data_quality_flags: flags,
       reasoning_reference: { asset, setup_row: rowRef(sel.S), setup_timestamp: F.timestamp(sel.S), board: 'sheet.html?asset=' + asset },
+      // Verbatim copy of Chelsea's published words for the setup row (used by journal receipts; never rewritten or summarised)
+      published_text: {
+        source_row_ref: rowRef(sel.S), source_row_id: rowId(sel.S), timestamp_text: F.timestamp(sel.S), headline: F.headline(sel.S), why: F.why(sel.S), warning: F.warning(sel.S), confidence: F.confidence(sel.S),
+        triggers: [1, 2, 3].map((n) => F.trigger(sel.S, n)), targets: F.targets(sel.S), stop: F.stop(sel.S), safety: F.safety(sel.S),
+      },
     };
   }
 
@@ -939,6 +1008,40 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
    why this must never touch #att-chip's own attributes). Broadened 2026-09-25 from ":not(.act)" being just
    ".passed" - the same staleness applies to the "<0.1% TO TRIGGER" tier chip (the real ETH case). */
 body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
+/* COMPLETION COIN (2026-09-29) - the existing, previously-approved levelup_icon_coin_1024.png asset, used exactly
+   as provided (no recolor/redesign). Circular-cropped via CSS clipping only - the file on disk is never touched.
+   Sized small on purpose so it decorates the COMPLETE headline instead of competing with it. A one-time spin-in
+   plays once when the badge first appears (a coin toss settling) - deliberately NOT a continuous/infinite spin,
+   since this badge sits inline in running text a member may look at repeatedly; a never-ending animation there
+   would read as distracting rather than celebratory. */
+.mech-headline-top{display:flex;align-items:center;gap:8px}
+.mech-coin{display:inline-flex;flex:none;width:26px;height:26px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 1px rgba(0,0,0,.08),0 1px 3px rgba(0,0,0,.25)}
+.mech-coin img{display:block;width:100%;height:100%;object-fit:cover;animation:mechCoinSpinIn .9s ease-out 1}
+@keyframes mechCoinSpinIn{from{transform:scale(1.22) rotate(0deg);opacity:0}to{transform:scale(1.22) rotate(360deg);opacity:1}}
+@media (prefers-reduced-motion:reduce){.mech-coin img{animation:none;transform:scale(1.22)}}
+/* TRIGGER HISTORY MARKER (2026-09-29) - a permanent record of the mechanical trigger event, from persisted
+   monitor evidence only (lc.trigger.reached_at + .zone). Never an exact price (the schema does not persist one -
+   only which published zone was entered and when), never page-load/current time. Stays visible for the life of
+   the setup instance, even after later TP/stop/complete - "everything above this line is earned" applies to this
+   fact too. */
+.mech-trigger-marker{font-family:"JetBrains Mono",monospace;font-size:11.5px;color:#374151;background:#F8F8FA;border:1.5px solid #E5E7EB;border-radius:10px;padding:8px 12px;margin-top:10px;line-height:1.5}
+.mech-trigger-marker b{color:#15803D;font-family:Archivo,sans-serif;letter-spacing:.03em}
+/* TRIGGER READINESS (2026-09-29) - condition PROGRESS only, never a probability. Shown only for a conditional/
+   multi-step trigger that has not mechanically triggered. The single condition that carries Chelsea's own
+   published numeric zone is checked against a live price (the same established Binance/Coinbase fetchPrices()
+   this page already uses elsewhere - no second pricing engine); every other stated condition (a rejection, a
+   reclaim, a retest, a higher low...) has no mechanical detector in this system today and is always shown as
+   UNKNOWN rather than guessed - see readinessHtml()'s own comment for why this is an honest, deliberate limit of
+   this release, not an oversight. */
+.mech-readiness{margin-top:14px}
+.mech-readiness-title{font-family:Archivo,sans-serif;font-weight:800;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#6B7280;margin-bottom:8px}
+.mech-cond-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.mech-cond{font-family:"JetBrains Mono",monospace;font-size:11px;font-weight:700;letter-spacing:.02em;padding:6px 10px;border-radius:8px;border:1.5px solid #9CA3AF;color:#6B7280;cursor:default;background:#fff}
+.mech-cond.verified{border-color:#22C55E;color:#15803D;background:rgba(34,197,94,.08)}
+.mech-cond.developing{border-color:#E67E00;color:#B45900;background:rgba(230,126,0,.08)}
+.mech-cond.unknown{border-style:dashed;color:#9CA3AF}
+.mech-readiness-count{font-family:"JetBrains Mono",monospace;font-size:11px;color:#6B7280;margin-bottom:4px}
+.mech-readiness-status{font-family:Archivo,sans-serif;font-weight:800;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#374151}
 </style>
 <script id="mech-feed">
 /* MECHANICAL FEED (staging addon). Reads the published monitor feed - durable trigger/TP/stop facts computed from
@@ -990,7 +1093,36 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
       var tp = (lc.targets || []).filter(function (t) { return /^TP[0-9]+$/.test(t.level_id); })
         .sort(function (x, y) { return x.level_id.localeCompare(y.level_id, undefined, { numeric: true }); })
         .map(function (t) { return !!t.reached_at; });
-      return { triggered: true, tp: tp, stopped: lc.state === 'STOP_BOUNDARY_REACHED', complete: lc.state === 'OBJECTIVES_EXHAUSTED', outcome: (lc.public_display && lc.public_display.outcome) || null, tpsBeforeStop: (lc.stop_boundary && lc.stop_boundary.tps_reached_before_stop) || [] };
+      return { triggered: true, tp: tp, stopped: lc.state === 'STOP_BOUNDARY_REACHED', complete: lc.state === 'OBJECTIVES_EXHAUSTED', outcome: (lc.public_display && lc.public_display.outcome) || null, tpsBeforeStop: (lc.stop_boundary && lc.stop_boundary.tps_reached_before_stop) || [], triggerAt: lc.trigger.reached_at, triggerZone: lc.trigger.zone };
+    }
+    /* COMPLETION COIN eligibility (2026-09-29) - reuses mechanicalFor() as-is, so it inherits the same
+       instance-safety for free and never names a ticker. Coin appears ONLY on a genuine full completion: every
+       DEFINED TP reached, not hardcoded to exactly 3 - m.tp already only contains TP1..TPn for the setup's own
+       published ladder (per mechanicalFor()'s own filter/sort), so a setup published with e.g. only TP1/TP2 that
+       legitimately reaches OBJECTIVES_EXHAUSTED still earns the coin. The m.tp.length>0 guard excludes the
+       (should-be-impossible-under-OBJECTIVES_EXHAUSTED, since NO_TP_DEFINED blocks all_reached) degenerate case
+       where .every() on an empty array would otherwise vacuously be true. */
+    function coinEligible(asset) {
+      var m = mechanicalFor(asset, directionAsset === asset ? currentInstanceKey : null);
+      return !!(m && m.complete && m.tp.length > 0 && m.tp.every(Boolean));
+    }
+    function coinBadgeHtml() {
+      return '<span class="mech-coin" title="3/3 targets complete" role="img" aria-label="Level Up completion coin — 3 of 3 targets complete"><img src="levelup_icon_coin_1024.png" alt=""></span>';
+    }
+    /* TRIGGER HISTORY MARKER (2026-09-29) - a permanent record built ONLY from persisted evidence
+       (m.triggerAt/m.triggerZone, sourced from lc.trigger.reached_at/.zone). No exact touched price exists in the
+       schema, so this always reads "entered trigger zone $X-Y", never an invented single price. */
+    function fmtEt(iso) {
+      var ms = Date.parse(iso); if (isNaN(ms)) return '';
+      return new Date(ms).toLocaleString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }) + ' ET';
+    }
+    function triggerMarkerHtml(m) {
+      if (!m || !m.triggerAt) return '';
+      var A = window.LevelUpAttention;
+      var z = m.triggerZone ? ('$' + m.triggerZone.low + '–$' + m.triggerZone.high) : null;
+      var fresh = A && livePriceAt && (Date.now() - livePriceAt) < PRICE_STALE_MS;
+      var curLine = fresh ? ('<br>Current price: $' + A.fmtPrice(livePrice) + (livePriceSrc ? ' (' + livePriceSrc.charAt(0).toUpperCase() + livePriceSrc.slice(1) + ')' : '')) : '';
+      return '<div class="mech-trigger-marker"><b>&#10003; TRIGGER HIT</b><br>' + escH(fmtEt(m.triggerAt)) + (z ? '<br>Entered trigger zone ' + escH(z) : '') + curLine + '</div>';
     }
     /* Recomputes the SAME setup_instance.key formula core/levelup-core.js defines (asset|published_ms|fingerprint)
        from fields the embedded LevelUpCore copy on THIS page already exposes (.fingerprint, .setup_row.utcMs/
@@ -1152,8 +1284,9 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
       var sheetTxt = (a && a.sheet_status && a.sheet_status.text) || '';
       var pubAgo = (a && a.instance_published_at) ? fmtAgo(a.instance_published_at) : '';
       banner.style.display = 'none';
+      var coinBadge = (resolved.kind === 'complete' && coinEligible(ASSET_)) ? coinBadgeHtml() : '';
       var html = '<div id="mech-headline" class="mech-headline mech-' + resolved.kind + '">'
-        + '<span class="mech-headline-main">' + resolved.text + '</span>'
+        + '<span class="mech-headline-top">' + coinBadge + '<span class="mech-headline-main">' + resolved.text + '</span></span>'
         + (sheetTxt ? '<small class="mech-headline-sub">Chelsea’s Sheet status: ' + escH(sheetTxt) + (pubAgo ? ' · published ' + pubAgo : '') + '</small>' : '')
         + '</div>';
       var d = document.createElement('div'); d.innerHTML = html;
@@ -1180,11 +1313,12 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
       m.tp.forEach(function (hit, i) { rows.push('<div class="mech-item' + (hit ? ' on' : '') + '">' + (hit ? '&#10003;' : '&#9675;') + ' TP' + (i + 1) + (hit ? ' HIT' : '') + '</div>'); });
       if (m.stopped) rows.push('<div class="mech-item stop">&#9632; STOPPED</div>');
       else if (m.complete) rows.push('<div class="mech-item complete">&#10003; COMPLETE</div>');
-      var note = feed ? ('Mechanical feed updated ' + fmtAgo(feed.generated_at) + ((Date.now() - Date.parse(feed.generated_at)) > STALE_MS ? ' (may be stale)' : '')) : '';
+      var note = feed ? ('Feed updated ' + fmtAgo(feed.generated_at) + ((Date.now() - Date.parse(feed.generated_at)) > STALE_MS ? ' (may be stale)' : '')) : '';
       return '<div id="mech-panel">'
-        + '<div class="sect"><div class="bar"></div><h2>Mechanical</h2><div class="hint">market evidence</div></div>'
+        + '<div class="sect"><div class="bar"></div><h2>Market Evidence</h2></div>'
         + '<div class="card mech-panel-card"><div class="mech-items">' + rows.join('') + '</div>'
-        + '<p class="rn" style="margin-top:10px">Mechanical observation of Chelsea’s published levels, computed independently from real market candles. Not a signal, not the Sheet status, not a recommendation.' + (note ? '<br>' + note : '') + '</p></div>'
+        + triggerMarkerHtml(m)
+        + '<p class="rn" style="margin-top:10px">Observation of Chelsea’s published levels, computed independently from real market candles. Not a signal, not the Sheet status, not a recommendation.' + (note ? '<br>' + note : '') + '</p></div>'
         + '</div>';
     }
     function ensure() {
@@ -1195,6 +1329,71 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
       var d = document.createElement('div'); d.innerHTML = html; var panel = d.firstChild;
       var chip = document.getElementById('att-chip');
       var afterEl = chip || banner;
+      if (old) old.replaceWith(panel); else afterEl.parentNode.insertBefore(panel, afterEl.nextSibling);
+    }
+    /* TRIGGER READINESS (2026-09-29) - see this file's own CSS comment for the full rationale. Independent price
+       fetch (own closure-private state, same "redundant fetch, several addons" pattern already used elsewhere on
+       this page) - only fetches at all once a conditional trigger with a real zone exists for the CURRENT
+       instance, and only while nothing has mechanically resolved yet (once triggered, panelHtml()/ensureHeadline()
+       take over and this panel removes itself). */
+    var readinessPrice = null, readinessPriceAt = 0;
+    function conditionalTrigger() {
+      if (!currentSetup) return null;
+      var trig = (currentSetup.levels || []).filter(function (l) { return l.kind === 'trigger'; })[0];
+      return (trig && trig.state === 'conditional' && trig.zone && trig.conditions && trig.conditions.length) ? trig : null;
+    }
+    function loadReadinessPrice() {
+      var A = window.LevelUpAttention;
+      var trig = conditionalTrigger();
+      if (!A || !trig || resolveCurrentState(ASSET_)) return Promise.resolve();
+      if (readinessPriceAt && (Date.now() - readinessPriceAt) < PRICE_STALE_MS) return Promise.resolve();
+      return A.fetchPrices([ASSET_]).then(function (r) { if (r.prices && r.prices[ASSET_]) { readinessPrice = r.prices[ASSET_]; readinessPriceAt = Date.now(); } ensureReadiness(); }).catch(function () { ensureReadiness(); });
+    }
+    /* Condition-state rule (deliberately narrow, see the CSS comment above): the ONE stated condition that carries
+       Chelsea's own published $ zone is checked against a live price - VERIFIED if price is currently inside that
+       zone, DEVELOPING if within 2% of either edge, otherwise NOT VERIFIED. Every OTHER stated condition (a
+       rejection, a reclaim, a retest, a higher low - anything this system has no mechanical detector for) is
+       ALWAYS UNKNOWN. This never advances or invents a trigger - it is a read-only observation panel; the real
+       lifecycle stays exactly as monitor/lifecycle.js computes it, mechanically inert, exactly as before. */
+    function readinessHtml() {
+      var trig = conditionalTrigger();
+      if (!trig || resolveCurrentState(ASSET_)) return '';
+      var A = window.LevelUpAttention;
+      var fresh = A && readinessPriceAt && (Date.now() - readinessPriceAt) < PRICE_STALE_MS;
+      var price = fresh ? readinessPrice : null;
+      var verified = 0, firstUnmet = null;
+      var chips = trig.conditions.map(function (c) {
+        var hasZone = /\$/.test(c);
+        var state = 'unknown';
+        if (hasZone) {
+          if (price == null) state = 'unknown';
+          else if (price >= trig.zone.low && price <= trig.zone.high) state = 'verified';
+          else {
+            var nearest = Math.min(Math.abs(price - trig.zone.low) / (trig.zone.low || 1), Math.abs(price - trig.zone.high) / (trig.zone.high || 1));
+            state = nearest <= 0.02 ? 'developing' : 'not';
+          }
+        }
+        if (state === 'verified') verified++; else if (!firstUnmet) firstUnmet = c;
+        var icon = { verified: '&#10003;', developing: '&#9680;', unknown: '?', not: '&#9675;' }[state];
+        var cls = state === 'not' ? '' : state;
+        var title = { verified: 'Price is currently within Chelsea’s published zone.', developing: 'Price is close to Chelsea’s published zone but has not reached it.', unknown: 'Not mechanically tracked yet - requires human confirmation of Chelsea’s stated condition.', not: 'Price has not reached Chelsea’s published zone.' }[state];
+        return '<span class="mech-cond' + (cls ? ' ' + cls : '') + '" title="' + escH(title) + '">' + icon + ' ' + escH(c) + '</span>';
+      }).join('');
+      var statusLine = firstUnmet ? ('NOT TRIGGERED — WAITING FOR ' + escH(firstUnmet.toUpperCase())) : 'NOT TRIGGERED';
+      return '<div id="mech-readiness"><div class="sect"><div class="bar"></div><h2>Trigger Readiness</h2></div>'
+        + '<div class="card mech-panel-card"><div class="mech-cond-row">' + chips + '</div>'
+        + '<div class="mech-readiness-count">' + verified + ' OF ' + trig.conditions.length + ' CONDITIONS OBSERVED</div>'
+        + '<div class="mech-readiness-status">' + statusLine + '</div>'
+        + '<p class="rn" style="margin-top:10px">Observed condition progress only - never a probability, never a completed condition this system cannot actually verify.</p></div></div>';
+    }
+    function ensureReadiness() {
+      var banner = app.querySelector('.banner'); if (!banner) return;
+      var old = document.getElementById('mech-readiness');
+      var html = readinessHtml();
+      if (!html) { if (old) old.remove(); return; }
+      var d = document.createElement('div'); d.innerHTML = html; var panel = d.firstChild;
+      var mechPanel = document.getElementById('mech-panel'), chip = document.getElementById('att-chip');
+      var afterEl = mechPanel || chip || banner;
       if (old) old.replaceWith(panel); else afterEl.parentNode.insertBefore(panel, afterEl.nextSibling);
     }
     /* The client-side "% TO TRIGGER" chip (att-ui's own #att-chip, unconfirmed live-tick proximity to the ORIGINAL
@@ -1231,7 +1430,7 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
        either of those async fetches has resolved would permanently no-op (attnTarget() null -> early return) and
        never get a second chance. applyAll() already reliably fires again once each of those resolves, and
        loadLivePrice()'s own freshness check above keeps this from re-fetching on every one of those cycles. */
-    function applyAll() { ensure(); ensureHeadline(); suppressStaleChip(); ensureAttnChip(); loadLivePrice(); }
+    function applyAll() { ensure(); ensureHeadline(); ensureReadiness(); suppressStaleChip(); ensureAttnChip(); loadLivePrice(); loadReadinessPrice(); }
     var obs = new MutationObserver(function () { obs.disconnect(); applyAll(); obs.observe(app, { childList: true }); });
     function load() { return fetchFeed().then(function (f) { feed = f; applyAll(); }); }
     load();
@@ -1240,7 +1439,7 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
     setInterval(function () { loadDirection().then(applyAll); }, 60000);
     setInterval(applyAll, 15000);
     obs.observe(app, { childList: true });
-    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, getCurrentInstanceKey: function () { return currentInstanceKey; }, resolveCurrentState: resolveCurrentState, directionFor: directionFor, ensure: ensure, ensureHeadline: ensureHeadline, suppressStaleChip: suppressStaleChip, attnTarget: attnTarget, attnChipHtml: attnChipHtml, ensureAttnChip: ensureAttnChip, loadLivePrice: loadLivePrice };   // test hook (read-only)
+    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, getCurrentInstanceKey: function () { return currentInstanceKey; }, resolveCurrentState: resolveCurrentState, directionFor: directionFor, ensure: ensure, ensureHeadline: ensureHeadline, suppressStaleChip: suppressStaleChip, attnTarget: attnTarget, attnChipHtml: attnChipHtml, ensureAttnChip: ensureAttnChip, loadLivePrice: loadLivePrice, coinEligible: coinEligible, triggerMarkerHtml: triggerMarkerHtml, conditionalTrigger: conditionalTrigger, readinessHtml: readinessHtml, ensureReadiness: ensureReadiness, loadReadinessPrice: loadReadinessPrice };   // test hook (read-only)
   } catch (e) { if (window.console) console.warn('mechanical feed addon disabled:', e); }
 })();
 </script>
