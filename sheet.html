@@ -1008,17 +1008,33 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
    why this must never touch #att-chip's own attributes). Broadened 2026-09-25 from ":not(.act)" being just
    ".passed" - the same staleness applies to the "<0.1% TO TRIGGER" tier chip (the real ETH case). */
 body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
-/* COMPLETION COIN (2026-09-29) - the existing, previously-approved levelup_icon_coin_1024.png asset, used exactly
-   as provided (no recolor/redesign). Circular-cropped via CSS clipping only - the file on disk is never touched.
-   Sized small on purpose so it decorates the COMPLETE headline instead of competing with it. A one-time spin-in
-   plays once when the badge first appears (a coin toss settling) - deliberately NOT a continuous/infinite spin,
-   since this badge sits inline in running text a member may look at repeatedly; a never-ending animation there
-   would read as distracting rather than celebratory. */
+/* COMPLETION COIN - HERO (2026-09-29 visual polish). The existing, previously-approved levelup_icon_coin_1024.png
+   asset, used exactly as provided (no recolor/redesign/replacement) - only its PRESENTATION is enhanced.
+   Takes over the page's existing .logo slot (top-right of the H1, already correctly responsive - see .head's own
+   pre-existing column-reverse mobile rule, unchanged) on a genuinely coin-eligible completed trade only.
+   Sequence: a bouncy scale-in + a fast two-turn entrance spin + a radial gold spark burst + a brief glow pulse,
+   then settles into a slow, gentle continuous rotation so it still feels alive without being distracting on a
+   page a member may sit on for a while. Entrance ends at 720deg (=0deg visually) so the handoff into the idle
+   rotation (0deg->360deg) is seamless, no visible snap. `rotate`/`scale` are used as their own standalone CSS
+   properties (not the `transform` shorthand) specifically so the one-shot entrance and the infinite idle
+   rotation can be two independent, non-conflicting animations on the same element. */
 .mech-headline-top{display:flex;align-items:center;gap:8px}
-.mech-coin{display:inline-flex;flex:none;width:26px;height:26px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 1px rgba(0,0,0,.08),0 1px 3px rgba(0,0,0,.25)}
-.mech-coin img{display:block;width:100%;height:100%;object-fit:cover;animation:mechCoinSpinIn .9s ease-out 1}
-@keyframes mechCoinSpinIn{from{transform:scale(1.22) rotate(0deg);opacity:0}to{transform:scale(1.22) rotate(360deg);opacity:1}}
-@media (prefers-reduced-motion:reduce){.mech-coin img{animation:none;transform:scale(1.22)}}
+.logo.mech-coin-hero-slot{width:auto;height:auto;filter:none;overflow:visible}
+.mech-coin-hero{position:relative;display:inline-flex;align-items:center;justify-content:center;width:112px;height:112px}
+.mech-coin-glow{position:absolute;inset:-14px;border-radius:50%;background:radial-gradient(circle,rgba(250,3,152,.55),rgba(255,197,0,.35) 45%,transparent 72%);opacity:0;animation:mechCoinGlow 1.6s ease-out 1}
+.logo.mech-coin-hero-slot .mech-coin-img{position:relative;display:block;width:100%;height:100%;border-radius:50%;object-fit:cover;box-shadow:0 0 0 3px #fff,0 0 0 5px rgba(250,3,152,.35),0 10px 26px rgba(13,13,15,.28);
+  scale:.2;opacity:0;animation:mechCoinPopScale .85s cubic-bezier(.34,1.56,.64,1) 1 forwards,mechCoinSpin 1.05s cubic-bezier(.22,1,.36,1) 1 both,mechCoinIdleSpin 16s linear 1.05s infinite}
+.mech-spark{position:absolute;top:50%;left:50%;width:7px;height:7px;margin:-3.5px 0 0 -3.5px;border-radius:50%;background:radial-gradient(circle,#FFE27A,#FF9500 60%,transparent 75%);opacity:0;animation:mechSparkBurst .85s ease-out 1}
+.mech-spark:nth-child(2){animation-delay:.02s}.mech-spark:nth-child(3){animation-delay:.04s}.mech-spark:nth-child(4){animation-delay:.06s}
+.mech-spark:nth-child(5){animation-delay:.02s}.mech-spark:nth-child(6){animation-delay:.05s}.mech-spark:nth-child(7){animation-delay:.03s}.mech-spark:nth-child(8){animation-delay:.01s}
+@keyframes mechCoinPopScale{0%{scale:.2;opacity:0}55%{scale:1.14;opacity:1}75%{scale:.96}100%{scale:1;opacity:1}}
+@keyframes mechCoinSpin{from{rotate:0deg}to{rotate:720deg}}
+@keyframes mechCoinIdleSpin{from{rotate:0deg}to{rotate:360deg}}
+@keyframes mechCoinGlow{0%{opacity:0;scale:.6}35%{opacity:1;scale:1.05}100%{opacity:0;scale:1.25}}
+@keyframes mechSparkBurst{0%{transform:translate(0,0) scale(0);opacity:1}55%{opacity:1}100%{transform:translate(calc(var(--dx) * 54px),calc(var(--dy) * 54px)) scale(1);opacity:0}}
+@media(max-width:640px){.mech-coin-hero{width:76px;height:76px}.mech-coin-glow{inset:-10px}.mech-spark{width:5px;height:5px;margin:-2.5px 0 0 -2.5px}
+  @keyframes mechSparkBurst{0%{transform:translate(0,0) scale(0);opacity:1}55%{opacity:1}100%{transform:translate(calc(var(--dx) * 36px),calc(var(--dy) * 36px)) scale(1);opacity:0}}}
+@media (prefers-reduced-motion:reduce){.mech-coin-img{animation:none;scale:1;opacity:1}.mech-coin-glow{animation:none;opacity:.5;scale:1}.mech-spark{display:none}}
 /* TRIGGER HISTORY MARKER (2026-09-29) - a permanent record of the mechanical trigger event, from persisted
    monitor evidence only (lc.trigger.reached_at + .zone). Never an exact price (the schema does not persist one -
    only which published zone was entered and when), never page-load/current time. Stays visible for the life of
@@ -1104,7 +1120,14 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
       return !!(m && m.complete && m.tp.length >= 3 && m.tp[0] && m.tp[1] && m.tp[2]);
     }
     function coinBadgeHtml() {
-      return '<span class="mech-coin" title="3/3 targets complete" role="img" aria-label="Level Up completion coin — 3 of 3 targets complete"><img src="levelup_icon_coin_1024.png" alt=""></span>';
+      // 8 sparks at 45deg increments; --a is just used to stagger each spark's animation start via CSS nth-child,
+      // --dx/--dy are the (unit-circle) burst direction the keyframe scales into an actual travel distance.
+      var dirs = [[0, -1], [0.71, -0.71], [1, 0], [0.71, 0.71], [0, 1], [-0.71, 0.71], [-1, 0], [-0.71, -0.71]];
+      var sparks = dirs.map(function (d) { return '<i class="mech-spark" style="--dx:' + d[0] + ';--dy:' + d[1] + '"></i>'; }).join('');
+      return '<span class="mech-coin-hero" title="Trade complete - TP1, TP2 and TP3 all reached" role="img" aria-label="Bullish Babe completion coin — TP1, TP2 and TP3 all reached">'
+        + '<span class="mech-coin-glow"></span>' + sparks
+        + '<img class="mech-coin-img" src="levelup_icon_coin_1024.png" alt="">'
+        + '</span>';
     }
     /* TRIGGER HISTORY MARKER (2026-09-29) - a permanent record built ONLY from persisted evidence
        (m.triggerAt/m.triggerZone, sourced from lc.trigger.reached_at/.zone). No exact touched price exists in the
@@ -1281,14 +1304,32 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
       var sheetTxt = (a && a.sheet_status && a.sheet_status.text) || '';
       var pubAgo = (a && a.instance_published_at) ? fmtAgo(a.instance_published_at) : '';
       banner.style.display = 'none';
-      var coinBadge = (resolved.kind === 'complete' && coinEligible(ASSET_)) ? coinBadgeHtml() : '';
+      // 2026-09-29 (visual polish): the completion coin no longer lives inline in this small banner text - it now
+      // renders large in the page's own .logo slot beside the H1 title (see ensureCoinHero()) so it actually reads
+      // as a winner's badge instead of a tiny decorative icon next to a word.
       var html = '<div id="mech-headline" class="mech-headline mech-' + resolved.kind + '">'
-        + '<span class="mech-headline-top">' + coinBadge + '<span class="mech-headline-main">' + resolved.text + '</span></span>'
+        + '<span class="mech-headline-top"><span class="mech-headline-main">' + resolved.text + '</span></span>'
         + (sheetTxt ? '<small class="mech-headline-sub">Chelsea’s Sheet status: ' + escH(sheetTxt) + (pubAgo ? ' · published ' + pubAgo : '') + '</small>' : '')
         + '</div>';
       var d = document.createElement('div'); d.innerHTML = html;
       if (old) old.replaceWith(d.firstChild); else banner.parentNode.insertBefore(d.firstChild, banner);
       relabelSourceStatus();
+      ensureCoinHero();
+    }
+    /* COMPLETION COIN - HERO PLACEMENT (2026-09-29 visual polish). Takes over the page's existing .logo slot
+       (top-right of the H1 title, already flex-positioned and already handled correctly on mobile by .head's own
+       existing column-reverse breakpoint - reusing that proven layout plumbing rather than inventing new
+       positioning rules). Only ever touches .logo when the CURRENT instance is genuinely coin-eligible; otherwise
+       the page's real brand logo renders completely untouched, exactly as it always has. */
+    function ensureCoinHero() {
+      var logo = document.querySelector('.head .logo'); if (!logo) return;
+      var eligible = coinEligible(ASSET_);
+      if (!eligible) { if (logo.dataset.mechCoin) { logo.innerHTML = logo.dataset.origHtml || logo.innerHTML; delete logo.dataset.mechCoin; } return; }
+      if (logo.dataset.mechCoin) return;   // already swapped - never restart the entrance animation on a re-render
+      logo.dataset.origHtml = logo.innerHTML;
+      logo.dataset.mechCoin = '1';
+      logo.innerHTML = coinBadgeHtml();
+      logo.classList.add('mech-coin-hero-slot');
     }
     /* Surgical label swap only - never touches the value text/timestamp/source-badge next to it, and never touches
        the base render() template that builds this row. Only runs once a reconciled state exists, so an asset the
@@ -1436,7 +1477,7 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
     setInterval(function () { loadDirection().then(applyAll); }, 60000);
     setInterval(applyAll, 15000);
     obs.observe(app, { childList: true });
-    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, getCurrentInstanceKey: function () { return currentInstanceKey; }, resolveCurrentState: resolveCurrentState, directionFor: directionFor, ensure: ensure, ensureHeadline: ensureHeadline, suppressStaleChip: suppressStaleChip, attnTarget: attnTarget, attnChipHtml: attnChipHtml, ensureAttnChip: ensureAttnChip, loadLivePrice: loadLivePrice, coinEligible: coinEligible, triggerMarkerHtml: triggerMarkerHtml, conditionalTrigger: conditionalTrigger, readinessHtml: readinessHtml, ensureReadiness: ensureReadiness, loadReadinessPrice: loadReadinessPrice };   // test hook (read-only)
+    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, getCurrentInstanceKey: function () { return currentInstanceKey; }, resolveCurrentState: resolveCurrentState, directionFor: directionFor, ensure: ensure, ensureHeadline: ensureHeadline, suppressStaleChip: suppressStaleChip, attnTarget: attnTarget, attnChipHtml: attnChipHtml, ensureAttnChip: ensureAttnChip, loadLivePrice: loadLivePrice, coinEligible: coinEligible, coinBadgeHtml: coinBadgeHtml, ensureCoinHero: ensureCoinHero, triggerMarkerHtml: triggerMarkerHtml, conditionalTrigger: conditionalTrigger, readinessHtml: readinessHtml, ensureReadiness: ensureReadiness, loadReadinessPrice: loadReadinessPrice };   // test hook (read-only)
   } catch (e) { if (window.console) console.warn('mechanical feed addon disabled:', e); }
 })();
 </script>
