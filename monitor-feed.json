@@ -1,10 +1,10 @@
 {
  "schema_version": 1,
  "kind": "levelup-public-feed",
- "generated_at": "2026-09-30T11:27:24.853Z",
+ "generated_at": "2026-09-30T11:32:31.594Z",
  "notice": "Mechanical observations of Chelsea's published levels. Not a Sheet status, not a signal, and not a record of anyone's entry or exit.",
  "monitor": {
-  "last_successful_check_at": "2026-09-30T11:27:24.853Z"
+  "last_successful_check_at": "2026-09-30T11:32:31.594Z"
  },
  "assets": {
   "AAVE": {
@@ -679,47 +679,40 @@
    }
   },
   "BNB": {
-   "setup_instance_key": "BNB|1790075799000|18a61c6c74fd301480919dfbb097",
-   "setup_fingerprint": "18a61c6c74fd301480919dfbb097",
-   "instance_published_at": "2026-09-22T11:16:39.000Z",
+   "setup_instance_key": "BNB|1790767725000|1aaa12f8b18dc118e74d7d903c59",
+   "setup_fingerprint": "1aaa12f8b18dc118e74d7d903c59",
+   "instance_published_at": "2026-09-30T11:28:45.000Z",
    "sheet_status": {
-    "text": "No Trade",
-    "class": "NO_TRADE"
+    "text": "Watching",
+    "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "STOP_BOUNDARY_REACHED",
-    "state_since": "2026-09-25T15:59:18.088Z",
-    "published_at": "2026-09-22T11:16:39.000Z",
-    "trigger": {
-     "level_id": "TRIGGER_1",
-     "zone": {
-      "low": 789,
-      "high": 795
-     },
-     "reached_at": "2026-09-22T12:00:00.000Z"
-    },
+    "state": "WAITING_FOR_TRIGGER",
+    "state_since": "2026-09-30T11:32:31.594Z",
+    "published_at": "2026-09-30T11:28:45.000Z",
+    "trigger": null,
     "targets": [
      {
       "level_id": "TP1",
       "zone": {
-       "low": 803,
-       "high": 808
+       "low": 772,
+       "high": 776
       },
       "reached_at": null
      },
      {
       "level_id": "TP2",
       "zone": {
-       "low": 818,
-       "high": 825
+       "low": 784,
+       "high": 790
       },
       "reached_at": null
      },
      {
       "level_id": "TP3",
       "zone": {
-       "low": 842,
-       "high": 850
+       "low": 798,
+       "high": 805
       },
       "reached_at": null
      }
@@ -734,37 +727,22 @@
     "extended": {
      "level_id": "EXTENDED",
      "zone": {
-      "low": 870,
-      "high": 885
+      "low": 810,
+      "high": 810
      },
      "reached_at": null
     },
-    "stop_boundary": {
-     "level_id": "STOP",
-     "kind": "stop",
-     "zone": {
-      "low": 777,
-      "high": 782
-     },
-     "reached_at": "2026-09-22T14:00:00.000Z",
-     "in_trade": true,
-     "relation_to_final_tp": null,
-     "tps_reached_before_stop": []
-    },
-    "evidence_grade": "CLOSE_CONFIRMED",
-    "confirm": {
-     "at": "2026-09-25T12:57:00.000Z",
-     "close": 777.98,
-     "level_id": "STOP"
-    },
-    "terminal_at": "2026-09-22T14:00:00.000Z",
+    "stop_boundary": null,
+    "evidence_grade": null,
+    "confirm": null,
+    "terminal_at": null,
     "later_evidence": null,
     "public_display": {
-     "kind": "STOP_BOUNDARY",
-     "ready": true,
-     "evidence_grade": "CLOSE_CONFIRMED",
+     "kind": null,
+     "ready": false,
+     "evidence_grade": null,
      "blockers": [],
-     "outcome": "STOPPED",
+     "outcome": null,
      "tps_reached_before_stop": []
     }
    }
@@ -1316,54 +1294,47 @@
    }
   },
   "ETH": {
-   "setup_instance_key": "ETH|1790336142000|17ece21d84cd00123cc6a2532af7",
-   "setup_fingerprint": "17ece21d84cd00123cc6a2532af7",
-   "instance_published_at": "2026-09-25T11:35:42.000Z",
+   "setup_instance_key": "ETH|1790767703000|1fc303d22453e50bfe47da2a02a6",
+   "setup_fingerprint": "1fc303d22453e50bfe47da2a02a6",
+   "instance_published_at": "2026-09-30T11:28:23.000Z",
    "sheet_status": {
-    "text": "No Trade",
-    "class": "NO_TRADE"
+    "text": "Watching",
+    "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "STOP_BOUNDARY_REACHED",
-    "state_since": "2026-09-28T13:18:16.115Z",
-    "published_at": "2026-09-25T11:35:42.000Z",
-    "trigger": {
-     "level_id": "TRIGGER_1",
-     "zone": {
-      "low": 2688,
-      "high": 2695
-     },
-     "reached_at": "2026-09-25T11:00:00.000Z"
-    },
+    "state": "WAITING_FOR_TRIGGER",
+    "state_since": "2026-09-30T11:32:31.594Z",
+    "published_at": "2026-09-30T11:28:23.000Z",
+    "trigger": null,
     "targets": [
      {
       "level_id": "TP1",
       "zone": {
-       "low": 2725,
-       "high": 2745
+       "low": 2708,
+       "high": 2718
       },
-      "reached_at": "2026-09-25T11:00:00.000Z"
+      "reached_at": null
      },
      {
       "level_id": "TP2",
       "zone": {
-       "low": 2760,
-       "high": 2790
+       "low": 2742,
+       "high": 2758
       },
       "reached_at": null
      },
      {
       "level_id": "TP3",
       "zone": {
-       "low": 2825,
-       "high": 2870
+       "low": 2788,
+       "high": 2805
       },
       "reached_at": null
      }
     ],
     "objectives": {
      "defined": 3,
-     "reached": 1,
+     "reached": 0,
      "all_reached": false,
      "ladder_problems": [],
      "completed_at": null
@@ -1371,42 +1342,23 @@
     "extended": {
      "level_id": "EXTENDED",
      "zone": {
-      "low": 2940,
-      "high": 3030
+      "low": 2840,
+      "high": 2840
      },
      "reached_at": null
     },
-    "stop_boundary": {
-     "level_id": "STOP",
-     "kind": "stop",
-     "zone": {
-      "low": 2655,
-      "high": 2668
-     },
-     "reached_at": "2026-09-26T20:00:00.000Z",
-     "in_trade": true,
-     "relation_to_final_tp": null,
-     "tps_reached_before_stop": [
-      "TP1"
-     ]
-    },
-    "evidence_grade": "CLOSE_CONFIRMED",
-    "confirm": {
-     "at": "2026-09-28T01:00:00.000Z",
-     "close": 2657.38,
-     "level_id": "STOP"
-    },
-    "terminal_at": "2026-09-26T20:00:00.000Z",
+    "stop_boundary": null,
+    "evidence_grade": null,
+    "confirm": null,
+    "terminal_at": null,
     "later_evidence": null,
     "public_display": {
-     "kind": "STOP_BOUNDARY",
-     "ready": true,
-     "evidence_grade": "CLOSE_CONFIRMED",
+     "kind": null,
+     "ready": false,
+     "evidence_grade": null,
      "blockers": [],
-     "outcome": "CLOSED_WITH_PROGRESS",
-     "tps_reached_before_stop": [
-      "TP1"
-     ]
+     "outcome": null,
+     "tps_reached_before_stop": []
     }
    }
   },
@@ -2834,54 +2786,47 @@
    }
   },
   "XRP": {
-   "setup_instance_key": "XRP|1790336230000|0c8f466d5b1e68124bbc3b54ae18",
-   "setup_fingerprint": "0c8f466d5b1e68124bbc3b54ae18",
-   "instance_published_at": "2026-09-25T11:37:10.000Z",
+   "setup_instance_key": "XRP|1790767680000|127d3897cc57281e5b60c7aef225",
+   "setup_fingerprint": "127d3897cc57281e5b60c7aef225",
+   "instance_published_at": "2026-09-30T11:28:00.000Z",
    "sheet_status": {
-    "text": "No Trade",
-    "class": "NO_TRADE"
+    "text": "Watching",
+    "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "STOP_BOUNDARY_REACHED",
-    "state_since": "2026-09-28T13:18:16.115Z",
-    "published_at": "2026-09-25T11:37:10.000Z",
-    "trigger": {
-     "level_id": "TRIGGER_1",
-     "zone": {
-      "low": 1.54,
-      "high": 1.545
-     },
-     "reached_at": "2026-09-25T11:00:00.000Z"
-    },
+    "state": "WAITING_FOR_TRIGGER",
+    "state_since": "2026-09-30T11:32:31.594Z",
+    "published_at": "2026-09-30T11:28:00.000Z",
+    "trigger": null,
     "targets": [
      {
       "level_id": "TP1",
       "zone": {
-       "low": 1.565,
-       "high": 1.58
+       "low": 1.528,
+       "high": 1.535
       },
-      "reached_at": "2026-09-25T11:00:00.000Z"
+      "reached_at": null
      },
      {
       "level_id": "TP2",
       "zone": {
-       "low": 1.61,
-       "high": 1.64
+       "low": 1.558,
+       "high": 1.572
       },
-      "reached_at": "2026-09-25T12:00:00.000Z"
+      "reached_at": null
      },
      {
       "level_id": "TP3",
       "zone": {
-       "low": 1.68,
-       "high": 1.72
+       "low": 1.592,
+       "high": 1.61
       },
       "reached_at": null
      }
     ],
     "objectives": {
      "defined": 3,
-     "reached": 2,
+     "reached": 0,
      "all_reached": false,
      "ladder_problems": [],
      "completed_at": null
@@ -2889,44 +2834,23 @@
     "extended": {
      "level_id": "EXTENDED",
      "zone": {
-      "low": 1.78,
-      "high": 1.82
+      "low": 1.648,
+      "high": 1.66
      },
      "reached_at": null
     },
-    "stop_boundary": {
-     "level_id": "STOP",
-     "kind": "stop",
-     "zone": {
-      "low": 1.505,
-      "high": 1.518
-     },
-     "reached_at": "2026-09-26T20:00:00.000Z",
-     "in_trade": true,
-     "relation_to_final_tp": null,
-     "tps_reached_before_stop": [
-      "TP1",
-      "TP2"
-     ]
-    },
-    "evidence_grade": "CLOSE_CONFIRMED",
-    "confirm": {
-     "at": "2026-09-27T00:00:00.000Z",
-     "close": 1.5175,
-     "level_id": "STOP"
-    },
-    "terminal_at": "2026-09-26T20:00:00.000Z",
+    "stop_boundary": null,
+    "evidence_grade": null,
+    "confirm": null,
+    "terminal_at": null,
     "later_evidence": null,
     "public_display": {
-     "kind": "STOP_BOUNDARY",
-     "ready": true,
-     "evidence_grade": "CLOSE_CONFIRMED",
+     "kind": null,
+     "ready": false,
+     "evidence_grade": null,
      "blockers": [],
-     "outcome": "CLOSED_WITH_PROGRESS",
-     "tps_reached_before_stop": [
-      "TP1",
-      "TP2"
-     ]
+     "outcome": null,
+     "tps_reached_before_stop": []
     }
    }
   }
@@ -4130,8 +4054,8 @@
    "setup_fingerprint": "17ece21d84cd00123cc6a2532af7",
    "outcome": "STOP_BOUNDARY_REACHED",
    "opened_at": "2026-09-28T13:18:16.115Z",
-   "superseded": false,
-   "superseded_at": null,
+   "superseded": true,
+   "superseded_at": "2026-09-30T11:32:31.594Z",
    "snapshot": {
     "setup_published_at": "2026-09-25T11:35:42.000Z",
     "setup_timestamp_text": "9/25/2026 7:35:42",
@@ -4304,8 +4228,8 @@
    "setup_fingerprint": "0c8f466d5b1e68124bbc3b54ae18",
    "outcome": "STOP_BOUNDARY_REACHED",
    "opened_at": "2026-09-28T13:18:16.115Z",
-   "superseded": false,
-   "superseded_at": null,
+   "superseded": true,
+   "superseded_at": "2026-09-30T11:32:31.594Z",
    "snapshot": {
     "setup_published_at": "2026-09-25T11:37:10.000Z",
     "setup_timestamp_text": "9/25/2026 7:37:10",
@@ -6552,8 +6476,8 @@
    "setup_fingerprint": "18a61c6c74fd301480919dfbb097",
    "outcome": "STOP_BOUNDARY_REACHED",
    "opened_at": "2026-09-25T15:59:18.088Z",
-   "superseded": false,
-   "superseded_at": null,
+   "superseded": true,
+   "superseded_at": "2026-09-30T11:32:31.594Z",
    "snapshot": {
     "setup_published_at": "2026-09-22T11:16:39.000Z",
     "setup_timestamp_text": "9/22/2026 7:16:39",
