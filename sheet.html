@@ -197,7 +197,15 @@ const get=(o,...keys)=>{
   if(k==="confidence up"||k==="confidence down"){const combo=Object.keys(o).find(h=>h.includes("confidence up")&&h.includes("down"));
     if(combo&&o[combo]){const parts=o[combo].split(/\n|\s\/\s|\|/).map(x=>x.trim()).filter(Boolean);return k==="confidence up"?(parts[0]||""):(parts[1]||"");} return _get(o,k);}
   return _get(o,...keys);};
-const num=s=>{const m=String(s).replace(/,/g,"").match(/\d+(\.\d+)?/);return m?parseFloat(m[0]):null;};
+/* 2026-09-30 fix (Angela-reported: "all trade setups showing a trigger of $1"): the old num() took the FIRST
+   bare digit anywhere in the text, with no exclusion for a timeframe/ratio suffix - so a Trigger field whose
+   real number has no leading "$" (e.g. BNB/ETH/XRP 2026-09-30: "Completed 1H hold above... Entry Zone: 754-761")
+   matched the "1" in "1H" instead of the real level. This never affected the mechanical monitor (core/levelup-
+   core.js's own scanNumbers already excludes these correctly) - it was this page's own separate, simpler Ladder-
+   display parser only. Mirrors the exclusion scanNumbers()/TF below already use, kept self-contained here since
+   this function runs before that later script block exists. */
+const NUM_TF_SUFFIX=/^\s*(?:h|hr|hrs|hour|hours|m|min|d|w|r)\b/i;
+const num=s=>{const clean=String(s).replace(/,/g,"");const re=/\d+(?:\.\d+)?/g;let m;while((m=re.exec(clean))){if(!NUM_TF_SUFFIX.test(clean.slice(m.index+m[0].length)))return parseFloat(m[0]);}return null;};
 const numTrigger=s=>{const clean=String(s).replace(/,/g,"");const dollar=clean.match(/\$\s*(\d+(\.\d+)?)/);if(dollar)return parseFloat(dollar[1]);return num(clean);};
 /* Low-price precision fix (2026-09-23): below $0.01, a fixed decimal count collapsed distinct published
    levels into the same string (e.g. SHIB's 0.0000057 and 0.00000575 both showed as "$0.000006"). This
