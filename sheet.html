@@ -604,6 +604,34 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
         return out;
       }
     }
+    // 2026-09-30 fix (BNB/ETH/XRP, Angela-reported: the Trigger Readiness box was missing): unlike the branch
+    // just above, sometimes Chelsea's leading condition sentence carries NO recognised connector marker at all
+    // (no arrow/+/followed-by/and-retest) - the only real number lives in a trailing "Entry Zone: NNN-NNN"
+    // clause, e.g. BNB: "Completed 1H hold above both Simple and Smooth plus a defending wick under the body.
+    // Entry Zone: 754-761, only after confirmation." Anchoring here on "Entry Zone" itself (rather than on
+    // Chelsea's ever-varying condition wording) is deliberately general: nearly every setup states an Entry
+    // Zone regardless of how the leading sentence is phrased, so this covers phrasings not seen yet, not just
+    // these three tickers. The whole leading clause is kept as ONE condition - never sub-split on bare
+    // "and"/"with"/"plus", since those words appear constantly inside real condition text (e.g. "Simple and
+    // Smooth") and splitting on them would mangle it - plus a second, explicit "Entry Zone $X-$Y" condition so
+    // the existing price-check UI (which looks for a "$" in a condition string) keeps working unmodified even
+    // when Chelsea's own text had no "$" sign at all.
+    const ezm = /entry\s+zone\s*:?\s*(?:approx\w*\s+)?/i.exec(text);
+    if (nums.length && ezm) {
+      const ezNums = scanNumbers(text.slice(ezm.index + ezm[0].length));
+      if (ezNums.length && ezNums[0].idx <= 3) {
+        const z = zoneAt(ezNums, 0, text.slice(ezm.index + ezm[0].length));
+        const conditionSource = text.slice(0, ezm.index).replace(/^[\s,.→+-]+|[\s,.→+-]+$/g, '');
+        if (/\b(loss of|below|lower[\s-]?high)\b/i.test(conditionSource)) out.dirHint = 'short';
+        else if (/\b(higher low|above)\b/i.test(conditionSource)) out.dirHint = 'long';
+        out.trigger = mkLevel(id, 'trigger', 'Trigger ' + n, z, 'Trigger ' + n, text, 'conditional', {
+          review: true,
+          conditions: [conditionSource, 'Entry Zone $' + z.low + (z.high !== z.low ? '–$' + z.high : '')],
+          notes: ['conditional/multi-step trigger: numeric anchor found only in the Entry Zone clause - no recognised condition-connector marker in the leading sentence'],
+        });
+        return out;
+      }
+    }
     if (nums.length) { out.trigger = mkLevel(id, 'trigger', 'Trigger ' + n, null, 'Trigger ' + n, text, 'ambiguous', { review: true, notes: ['numbers found inside prose; no level definition recognised'], candidates: nums.map((x) => x.v) }); return out; }
     out.trigger = mkLevel(id, 'trigger', 'Trigger ' + n, null, 'Trigger ' + n, text, 'absent', { notes: ['text only - no numeric level'] });
     return out;
