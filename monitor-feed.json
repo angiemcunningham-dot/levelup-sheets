@@ -1,10 +1,10 @@
 {
  "schema_version": 1,
  "kind": "levelup-public-feed",
- "generated_at": "2026-09-30T11:47:25.071Z",
+ "generated_at": "2026-09-30T11:52:23.005Z",
  "notice": "Mechanical observations of Chelsea's published levels. Not a Sheet status, not a signal, and not a record of anyone's entry or exit.",
  "monitor": {
-  "last_successful_check_at": "2026-09-30T11:47:25.071Z"
+  "last_successful_check_at": "2026-09-30T11:52:23.005Z"
  },
  "assets": {
   "AAVE": {
@@ -1929,7 +1929,18 @@
      },
      "reached_at": null
     },
-    "stop_boundary": null,
+    "stop_boundary": {
+     "level_id": "STOP",
+     "kind": "stop",
+     "zone": {
+      "low": 5.35,
+      "high": 5.48
+     },
+     "reached_at": "2026-09-30T11:00:00.000Z",
+     "in_trade": false,
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
+    },
     "evidence_grade": null,
     "confirm": null,
     "terminal_at": null,
