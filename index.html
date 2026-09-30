@@ -178,7 +178,7 @@ const SHEET_CSV = "https://docs.google.com/spreadsheets/d/1MqfOX5EzRYvjQbd6U9RZT
 function parseCSV(t){const rows=[];let row=[],cur="",inq=false;for(let i=0;i<t.length;i++){const c=t[i];if(inq){if(c==='"'){if(t[i+1]==='"'){cur+='"';i++;}else inq=false;}else cur+=c;}else{if(c==='"')inq=true;else if(c===","){row.push(cur);cur="";}else if(c==="\n"||c==="\r"){if(c==="\r"&&t[i+1]==="\n")i++;row.push(cur);rows.push(row);row=[];cur="";}else cur+=c;}}if(cur.length||row.length){row.push(cur);rows.push(row);}return rows.filter(r=>r.some(x=>x.trim()));}
 const objs=rows=>{const h=rows[0].map(x=>x.trim().toLowerCase());return rows.slice(1).map(r=>{const o={};h.forEach((k,i)=>o[k]=(r[i]||"").trim());return o;});};
 const get=(o,...k)=>{for(const x of k){const hit=Object.keys(o).find(h=>h.includes(x));if(hit&&o[hit])return o[hit];}return "";};
-const esc=s=>String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const stamp=s=>{const d=new Date(s);return isNaN(d)?s:d.toLocaleString("en-US",{timeZone:"America/New_York",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})+" EST";};
 const STATUS=s=>{s=s.toLowerCase();if(s.includes("short"))return["b-short","▼ Active short"];if(s.includes("active")||s.includes("long"))return["b-active","▲ Active long"];if(s.includes("watch"))return["b-watch","Watching"];if(s.includes("no trade"))return["b-none","No trade"];if(s.includes("invalid"))return["b-invalid","Invalidated"];if(s.includes("closed"))return["b-closed","Closed — lesson"];return["b-none",s];};
 const ORDER=["b-active","b-short","b-watch","b-none","b-invalid","b-closed"];
