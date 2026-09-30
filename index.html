@@ -182,6 +182,14 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"
 const stamp=s=>{const d=new Date(s);return isNaN(d)?s:d.toLocaleString("en-US",{timeZone:"America/New_York",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})+" EST";};
 const STATUS=s=>{s=s.toLowerCase();if(s.includes("short"))return["b-short","▼ Active short"];if(s.includes("active")||s.includes("long"))return["b-active","▲ Active long"];if(s.includes("watch"))return["b-watch","Watching"];if(s.includes("no trade"))return["b-none","No trade"];if(s.includes("invalid"))return["b-invalid","Invalidated"];if(s.includes("closed"))return["b-closed","Closed — lesson"];return["b-none",s];};
 const ORDER=["b-active","b-short","b-watch","b-none","b-invalid","b-closed"];
+/* 2026-09-30 (Angela, explicit/authorized, no threshold discussion needed): TURBO's stale 2026-09-20/21 "Active
+   Long" record is removed from every board listing below (main grid, Previous Calls/History, Active Now, Older
+   Active/Administrative) - not just demoted by the age-based Older Active/Administrative split. This is a
+   one-off named exclusion by direct instruction, deliberately NOT the general data-driven staleness rule used
+   elsewhere in this file - it never touches the Sheet/Form (the row and its history remain real and untouched
+   there), only what this page renders. Remove this array (and its two usages below) if Angela ever wants TURBO
+   visible on the board again. */
+const CHELSEA_RECORD_EXCLUSIONS=["TURBO"];
 const DETAIL="sheet.html";
 const isPC=r=>{const s=get(r,"source type");return s?/price/i.test(s):/^\s*price[- ]?check/i.test(get(r,"headline"));};
 /* Reset Watch: a DELIBERATE marker only - the Sheet's existing "source type" column (the same column that already
@@ -219,7 +227,7 @@ const dayKey=iso=>{const d=new Date(iso);return isNaN(d)?null:d.toLocaleDateStri
 let latestDay=null,latestDayMs=-Infinity;
 rows.forEach(r=>{if(isPC(r)||!get(r,"status")||!hasLevels(r))return;const ms=new Date(get(r,"timestamp")).getTime();if(isNaN(ms))return;if(ms>latestDayMs){latestDayMs=ms;latestDay=dayKey(get(r,"timestamp"));}});
 const isTodayBatch=a=>latestDay&&(all[a]||[]).some(r=>!isPC(r)&&get(r,"status")&&hasLevels(r)&&dayKey(get(r,"timestamp"))===latestDay);
-const cards=Object.entries(by).map(([a,r])=>{const [c,t]=STATUS(get(r,"status"));return {a,r,c,t,isActive:c==="b-active"||c==="b-short",today:isTodayBatch(a)};});
+const cards=Object.entries(by).filter(([a])=>!CHELSEA_RECORD_EXCLUSIONS.includes(a)).map(([a,r])=>{const [c,t]=STATUS(get(r,"status"));return {a,r,c,t,isActive:c==="b-active"||c==="b-short",today:isTodayBatch(a)};});
 /* Genuinely active/holding trades stay in the existing ACTIVE NOW section above (unchanged) rather than being
    duplicated here as an unstriggered "current setup" card - a live trade is never shown as "no trigger yet". */
 const today=cards.filter(x=>x.today&&!x.isActive).sort((x,y)=>x.a.localeCompare(y.a));
@@ -952,7 +960,7 @@ load();setInterval(load,60000);
     function etStamp(iso) { if (!iso) return ''; var d = new Date(iso); return isNaN(d) ? '' : d.toLocaleString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) + ' ET'; }
     function renderActive() {
       if (!setups) { secA.hidden = true; secOld.hidden = true; return; }
-      var list = A.activeNow(setups);
+      var list = A.activeNow(setups).filter(function (it) { return !CHELSEA_RECORD_EXCLUSIONS.includes(it.asset); });
       if (!list.length) { secA.hidden = true; secOld.hidden = true; return; }
       var fresh = !!ps.at && (Date.now() - ps.at) < STALE_MS;
       var now = Date.now();
