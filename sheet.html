@@ -54,7 +54,7 @@ h1 em{font-style:normal;color:var(--pink)}
 .dot{width:14px;height:14px;border-radius:50%;margin:0 auto}
 .d-tp{background:var(--green)}.d-res{background:var(--yellow)}.d-now{background:var(--pink);animation:pulse 1.8s infinite}.d-sup{background:var(--gray2)}.d-stop{background:var(--red)}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(250,3,152,.6)}70%{box-shadow:0 0 0 14px rgba(250,3,152,0)}100%{box-shadow:0 0 0 0 rgba(250,3,152,0)}}
-.rl{font-family:Archivo;font-weight:800;font-size:14px;letter-spacing:.06em;text-transform:uppercase}.rn{font-size:12px;color:var(--gray);margin-top:4px;line-height:1.45}
+.rl{font-family:Archivo;font-weight:800;font-size:14px;letter-spacing:.06em;text-transform:uppercase}.rl .now-ts{text-transform:none;font-weight:600;letter-spacing:0;color:var(--gray);font-size:11px;margin-left:2px}.rn{font-size:12px;color:var(--gray);margin-top:4px;line-height:1.45}
 .rp{font-family:"JetBrains Mono",monospace;font-weight:700;font-size:23px;text-align:right;white-space:nowrap}.rp small{display:block;font-size:10px;font-weight:500;color:var(--gray2);letter-spacing:.08em;text-transform:uppercase;margin-top:3px}
 .faded .ladder,.faded .card{opacity:.55}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -344,8 +344,10 @@ async function livePrice(L){
   const t=new Date().toLocaleTimeString("en-US",{timeZone:"America/New_York",hour:"numeric",minute:"2-digit"});
   const dl=$("#dateline");if(dl)dl.innerHTML=dl.textContent.split("  ·  LIVE")[0]+`  ·  LIVE ${fmt(px)} @ ${t} EST`;
   const lad=$("#ladder");if(!lad)return;
-  if(!nowRow){nowRow=document.createElement("div");nowRow.className="row now";nowRow.innerHTML=`<div class="dot d-now"></div><div><div class="rl">NOW</div><div class="rn">Live price. Everything above this line is earned, not assumed.</div></div><div class="rp"><span id="nowp"></span><small>live</small></div>`;}
+  if(!nowRow){nowRow=document.createElement("div");nowRow.className="row now";nowRow.innerHTML=`<div class="dot d-now"></div><div><div class="rl">NOW <span class="now-ts" id="nowts"></span></div><div class="rn">Live price. Everything above this line is earned, not assumed.</div></div><div class="rp"><span id="nowp"></span><small>live</small></div>`;}
   nowRow.querySelector("#nowp").textContent=fmt(px);
+  const nowStamp=new Date().toLocaleString("en-US",{timeZone:"America/New_York",month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit",second:"2-digit"});
+  nowRow.querySelector("#nowts").textContent=`(${nowStamp} ET)`;
   const rows=[...lad.querySelectorAll(".row:not(.now)")];let placed=false;
   for(const r of rows){if(parseFloat(r.dataset.p)<px){lad.insertBefore(nowRow,r);placed=true;break;}}
   if(!placed)lad.appendChild(nowRow);
