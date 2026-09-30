@@ -1327,7 +1327,7 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
       // renders large in the page's own .logo slot beside the H1 title (see ensureCoinHero()) so it actually reads
       // as a winner's badge instead of a tiny decorative icon next to a word.
       var html = '<div id="mech-headline" class="mech-headline mech-' + resolved.kind + '">'
-        + '<span class="mech-headline-top"><span class="mech-headline-main">' + resolved.text + '</span></span>'
+        + '<span class="mech-headline-top"><span class="mech-headline-main">' + escH(resolved.text) + '</span></span>'
         + (sheetTxt ? '<small class="mech-headline-sub">Chelsea’s Sheet status: ' + escH(sheetTxt) + (pubAgo ? ' · published ' + pubAgo : '') + '</small>' : '')
         + '</div>';
       var d = document.createElement('div'); d.innerHTML = html;
