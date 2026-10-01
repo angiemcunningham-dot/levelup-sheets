@@ -1,10 +1,10 @@
 {
  "schema_version": 1,
  "kind": "levelup-public-feed",
- "generated_at": "2026-10-01T23:37:16.608Z",
+ "generated_at": "2026-10-01T23:42:19.217Z",
  "notice": "Mechanical observations of Chelsea's published levels. Not a Sheet status, not a signal, and not a record of anyone's entry or exit.",
  "monitor": {
-  "last_successful_check_at": "2026-10-01T23:37:16.608Z"
+  "last_successful_check_at": "2026-10-01T23:42:19.217Z"
  },
  "assets": {
   "AAVE": {
@@ -2728,8 +2728,8 @@
     "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "TRIGGERED",
-    "state_since": "2026-10-01T23:25:01.512Z",
+    "state": "STOP_BOUNDARY_REACHED",
+    "state_since": "2026-10-01T23:42:19.217Z",
     "published_at": "2026-10-01T23:23:51.000Z",
     "trigger": {
      "level_id": "TRIGGER_1",
@@ -2780,17 +2780,30 @@
      },
      "reached_at": null
     },
-    "stop_boundary": null,
-    "evidence_grade": null,
+    "stop_boundary": {
+     "level_id": "STOP",
+     "kind": "stop",
+     "zone": {
+      "low": 1.4952,
+      "high": 1.496
+     },
+     "reached_at": "2026-10-01T23:38:00.000Z",
+     "in_trade": true,
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
+    },
+    "evidence_grade": "WICK_ONLY",
     "confirm": null,
-    "terminal_at": null,
+    "terminal_at": "2026-10-01T23:38:00.000Z",
     "later_evidence": null,
     "public_display": {
-     "kind": null,
+     "kind": "STOP_BOUNDARY",
      "ready": false,
-     "evidence_grade": null,
-     "blockers": [],
-     "outcome": null,
+     "evidence_grade": "WICK_ONLY",
+     "blockers": [
+      "AWAITING_CLOSE_CONFIRMATION"
+     ],
+     "outcome": "STOPPED",
      "tps_reached_before_stop": []
     }
    }
