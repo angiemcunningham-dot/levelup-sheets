@@ -1,10 +1,10 @@
 {
  "schema_version": 1,
  "kind": "levelup-public-feed",
- "generated_at": "2026-10-01T06:42:18.047Z",
+ "generated_at": "2026-10-01T06:47:19.589Z",
  "notice": "Mechanical observations of Chelsea's published levels. Not a Sheet status, not a signal, and not a record of anyone's entry or exit.",
  "monitor": {
-  "last_successful_check_at": "2026-10-01T06:42:18.047Z"
+  "last_successful_check_at": "2026-10-01T06:47:19.589Z"
  },
  "assets": {
   "AAVE": {
@@ -1389,7 +1389,7 @@
        "low": 0.242,
        "high": 0.242
       },
-      "reached_at": null
+      "reached_at": "2026-10-01T06:46:00.000Z"
      },
      {
       "level_id": "TP2",
@@ -1410,7 +1410,7 @@
     ],
     "objectives": {
      "defined": 3,
-     "reached": 0,
+     "reached": 1,
      "all_reached": false,
      "ladder_problems": [],
      "completed_at": null
@@ -1442,7 +1442,14 @@
      "level_id": "STOP"
     },
     "terminal_at": "2026-09-29T16:45:00.000Z",
-    "later_evidence": null,
+    "later_evidence": {
+     "historical_only": true,
+     "targets_after_stop": [
+      "TP1"
+     ],
+     "targets_same_candle_as_stop": [],
+     "note": "Later published TP levels were mechanically touched after the stop boundary."
+    },
     "public_display": {
      "kind": "STOP_BOUNDARY",
      "ready": true,
@@ -2990,7 +2997,7 @@
        "low": 0.242,
        "high": 0.242
       },
-      "reached_at": null
+      "reached_at": "2026-10-01T06:46:00.000Z"
      },
      {
       "level_id": "TP2",
@@ -3011,7 +3018,7 @@
     ],
     "objectives": {
      "defined": 3,
-     "reached": 0,
+     "reached": 1,
      "all_reached": false,
      "ladder_problems": [],
      "completed_at": null
@@ -3043,7 +3050,14 @@
      "level_id": "STOP"
     },
     "terminal_at": "2026-09-29T16:45:00.000Z",
-    "later_evidence": null,
+    "later_evidence": {
+     "historical_only": true,
+     "targets_after_stop": [
+      "TP1"
+     ],
+     "targets_same_candle_as_stop": [],
+     "note": "Later published TP levels were mechanically touched after the stop boundary."
+    },
     "public_display": {
      "kind": "STOP_BOUNDARY",
      "ready": true,
