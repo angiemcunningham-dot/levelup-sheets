@@ -1,10 +1,10 @@
 {
  "schema_version": 1,
  "kind": "levelup-public-feed",
- "generated_at": "2026-10-01T11:02:39.241Z",
+ "generated_at": "2026-10-01T11:07:23.629Z",
  "notice": "Mechanical observations of Chelsea's published levels. Not a Sheet status, not a signal, and not a record of anyone's entry or exit.",
  "monitor": {
-  "last_successful_check_at": "2026-10-01T11:02:39.241Z"
+  "last_successful_check_at": "2026-10-01T11:07:23.629Z"
  },
  "assets": {
   "AAVE": {
@@ -1706,40 +1706,47 @@
    }
   },
   "LINK": {
-   "setup_instance_key": "LINK|1790679256000|005dd66d38f0f61de2d29820e0d8",
-   "setup_fingerprint": "005dd66d38f0f61de2d29820e0d8",
-   "instance_published_at": "2026-09-29T10:54:16.000Z",
+   "setup_instance_key": "LINK|1790852657000|017c6207953e9b1f7477ef994ee4",
+   "setup_fingerprint": "017c6207953e9b1f7477ef994ee4",
+   "instance_published_at": "2026-10-01T11:04:17.000Z",
    "sheet_status": {
     "text": "Watching",
     "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "WAITING_FOR_TRIGGER",
-    "state_since": "2026-09-29T11:07:52.568Z",
-    "published_at": "2026-09-29T10:54:16.000Z",
-    "trigger": null,
+    "state": "TRIGGERED",
+    "state_since": "2026-10-01T11:07:23.629Z",
+    "published_at": "2026-10-01T11:04:17.000Z",
+    "trigger": {
+     "level_id": "TRIGGER_1",
+     "zone": {
+      "low": 14,
+      "high": 14
+     },
+     "reached_at": "2026-10-01T11:00:00.000Z"
+    },
     "targets": [
      {
       "level_id": "TP1",
       "zone": {
-       "low": 15.75,
-       "high": 15.75
+       "low": 14.48,
+       "high": 14.48
       },
       "reached_at": null
      },
      {
       "level_id": "TP2",
       "zone": {
-       "low": 16.2,
-       "high": 16.2
+       "low": 14.78,
+       "high": 14.78
       },
       "reached_at": null
      },
      {
       "level_id": "TP3",
       "zone": {
-       "low": 16.75,
-       "high": 16.75
+       "low": 15.15,
+       "high": 15.15
       },
       "reached_at": null
      }
@@ -1754,23 +1761,12 @@
     "extended": {
      "level_id": "EXTENDED",
      "zone": {
-      "low": 17.25,
-      "high": 17.25
+      "low": 15.6,
+      "high": 15.6
      },
      "reached_at": null
     },
-    "stop_boundary": {
-     "level_id": "STOP",
-     "kind": "stop",
-     "zone": {
-      "low": 14.75,
-      "high": 14.9
-     },
-     "reached_at": "2026-09-29T15:00:00.000Z",
-     "in_trade": false,
-     "relation_to_final_tp": null,
-     "tps_reached_before_stop": []
-    },
+    "stop_boundary": null,
     "evidence_grade": null,
     "confirm": null,
     "terminal_at": null,
@@ -1883,40 +1879,40 @@
    }
   },
   "NEAR": {
-   "setup_instance_key": "NEAR|1790596188000|0b2c0a12afdea40539eb40eff08a",
-   "setup_fingerprint": "0b2c0a12afdea40539eb40eff08a",
-   "instance_published_at": "2026-09-28T11:49:48.000Z",
+   "setup_instance_key": "NEAR|1790852629000|0a03c9b5600aea074ccaf894611f",
+   "setup_fingerprint": "0a03c9b5600aea074ccaf894611f",
+   "instance_published_at": "2026-10-01T11:03:49.000Z",
    "sheet_status": {
     "text": "Watching",
     "class": "WATCHING"
    },
    "lifecycle": {
     "state": "WAITING_FOR_TRIGGER",
-    "state_since": "2026-09-28T13:18:16.115Z",
-    "published_at": "2026-09-28T11:49:48.000Z",
+    "state_since": "2026-10-01T11:07:23.629Z",
+    "published_at": "2026-10-01T11:03:49.000Z",
     "trigger": null,
     "targets": [
      {
       "level_id": "TP1",
       "zone": {
-       "low": 4.6,
-       "high": 4.6
+       "low": 5.12,
+       "high": 5.12
       },
       "reached_at": null
      },
      {
       "level_id": "TP2",
       "zone": {
-       "low": 4.15,
-       "high": 4.15
+       "low": 5.02,
+       "high": 5.02
       },
       "reached_at": null
      },
      {
       "level_id": "TP3",
       "zone": {
-       "low": 4.02,
-       "high": 4.02
+       "low": 4.88,
+       "high": 4.88
       },
       "reached_at": null
      }
@@ -1931,23 +1927,12 @@
     "extended": {
      "level_id": "EXTENDED",
      "zone": {
-      "low": 3.55,
-      "high": 3.7
+      "low": 4.7,
+      "high": 4.7
      },
      "reached_at": null
     },
-    "stop_boundary": {
-     "level_id": "STOP",
-     "kind": "stop",
-     "zone": {
-      "low": 5.35,
-      "high": 5.48
-     },
-     "reached_at": "2026-09-30T11:00:00.000Z",
-     "in_trade": false,
-     "relation_to_final_tp": null,
-     "tps_reached_before_stop": []
-    },
+    "stop_boundary": null,
     "evidence_grade": null,
     "confirm": null,
     "terminal_at": null,
@@ -2880,6 +2865,75 @@
      "relation_to_final_tp": null,
      "tps_reached_before_stop": []
     },
+    "evidence_grade": null,
+    "confirm": null,
+    "terminal_at": null,
+    "later_evidence": null,
+    "public_display": {
+     "kind": null,
+     "ready": false,
+     "evidence_grade": null,
+     "blockers": [],
+     "outcome": null,
+     "tps_reached_before_stop": []
+    }
+   }
+  },
+  "ZEC": {
+   "setup_instance_key": "ZEC|1790852685000|0a644b801585e91d4e218fb90324",
+   "setup_fingerprint": "0a644b801585e91d4e218fb90324",
+   "instance_published_at": "2026-10-01T11:04:45.000Z",
+   "sheet_status": {
+    "text": "Watching",
+    "class": "WATCHING"
+   },
+   "lifecycle": {
+    "state": "WAITING_FOR_TRIGGER",
+    "state_since": "2026-10-01T11:07:23.629Z",
+    "published_at": "2026-10-01T11:04:45.000Z",
+    "trigger": null,
+    "targets": [
+     {
+      "level_id": "TP1",
+      "zone": {
+       "low": 1378,
+       "high": 1378
+      },
+      "reached_at": null
+     },
+     {
+      "level_id": "TP2",
+      "zone": {
+       "low": 1352,
+       "high": 1352
+      },
+      "reached_at": null
+     },
+     {
+      "level_id": "TP3",
+      "zone": {
+       "low": 1322,
+       "high": 1322
+      },
+      "reached_at": null
+     }
+    ],
+    "objectives": {
+     "defined": 3,
+     "reached": 0,
+     "all_reached": false,
+     "ladder_problems": [],
+     "completed_at": null
+    },
+    "extended": {
+     "level_id": "EXTENDED",
+     "zone": {
+      "low": 1280,
+      "high": 1280
+     },
+     "reached_at": null
+    },
+    "stop_boundary": null,
     "evidence_grade": null,
     "confirm": null,
     "terminal_at": null,
