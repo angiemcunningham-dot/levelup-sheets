@@ -1,10 +1,10 @@
 {
  "schema_version": 1,
  "kind": "levelup-public-feed",
- "generated_at": "2026-10-01T23:23:42.933Z",
+ "generated_at": "2026-10-01T23:25:01.512Z",
  "notice": "Mechanical observations of Chelsea's published levels. Not a Sheet status, not a signal, and not a record of anyone's entry or exit.",
  "monitor": {
-  "last_successful_check_at": "2026-10-01T23:23:42.933Z"
+  "last_successful_check_at": "2026-10-01T23:25:01.512Z"
  },
  "assets": {
   "AAVE": {
@@ -755,54 +755,54 @@
    }
   },
   "BTC": {
-   "setup_instance_key": "BTC|1789981980000|0b1201fe9ad0e50448b459956694",
-   "setup_fingerprint": "0b1201fe9ad0e50448b459956694",
-   "instance_published_at": "2026-09-21T09:13:00.000Z",
+   "setup_instance_key": "BTC|1790897080000|0caaa1ca2dcd4c0d6f80c0abae4b",
+   "setup_fingerprint": "0caaa1ca2dcd4c0d6f80c0abae4b",
+   "instance_published_at": "2026-10-01T23:24:40.000Z",
    "sheet_status": {
-    "text": "No Trade",
-    "class": "NO_TRADE"
+    "text": "Watching",
+    "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "STOP_BOUNDARY_REACHED",
-    "state_since": "2026-09-24T15:46:40.841Z",
-    "published_at": "2026-09-21T09:13:00.000Z",
+    "state": "TRIGGERED",
+    "state_since": "2026-10-01T23:25:01.512Z",
+    "published_at": "2026-10-01T23:24:40.000Z",
     "trigger": {
      "level_id": "TRIGGER_1",
      "zone": {
-      "low": 83800,
-      "high": 84100
+      "low": 84519,
+      "high": 84519
      },
-     "reached_at": "2026-09-21T09:00:00.000Z"
+     "reached_at": "2026-10-01T23:00:00.000Z"
     },
     "targets": [
      {
       "level_id": "TP1",
       "zone": {
-       "low": 84700,
-       "high": 85100
+       "low": 85090,
+       "high": 85090
       },
-      "reached_at": "2026-09-21T09:00:00.000Z"
+      "reached_at": null
      },
      {
       "level_id": "TP2",
       "zone": {
-       "low": 85800,
-       "high": 86300
+       "low": 85490,
+       "high": 85490
       },
-      "reached_at": "2026-09-21T13:00:00.000Z"
+      "reached_at": null
      },
      {
       "level_id": "TP3",
       "zone": {
-       "low": 87500,
-       "high": 88200
+       "low": 86200,
+       "high": 86200
       },
       "reached_at": null
      }
     ],
     "objectives": {
      "defined": 3,
-     "reached": 2,
+     "reached": 0,
      "all_reached": false,
      "ladder_problems": [],
      "completed_at": null
@@ -810,44 +810,23 @@
     "extended": {
      "level_id": "EXTENDED",
      "zone": {
-      "low": 89500,
-      "high": 91000
+      "low": 87600,
+      "high": 87600
      },
      "reached_at": null
     },
-    "stop_boundary": {
-     "level_id": "STOP",
-     "kind": "stop",
-     "zone": {
-      "low": 82850,
-      "high": 83200
-     },
-     "reached_at": "2026-09-24T09:00:00.000Z",
-     "in_trade": true,
-     "relation_to_final_tp": null,
-     "tps_reached_before_stop": [
-      "TP1",
-      "TP2"
-     ]
-    },
-    "evidence_grade": "CLOSE_CONFIRMED",
-    "confirm": {
-     "at": "2026-09-28T05:00:00.000Z",
-     "close": 83184.01,
-     "level_id": "STOP"
-    },
-    "terminal_at": "2026-09-24T09:00:00.000Z",
+    "stop_boundary": null,
+    "evidence_grade": null,
+    "confirm": null,
+    "terminal_at": null,
     "later_evidence": null,
     "public_display": {
-     "kind": "STOP_BOUNDARY",
-     "ready": true,
-     "evidence_grade": "CLOSE_CONFIRMED",
+     "kind": null,
+     "ready": false,
+     "evidence_grade": null,
      "blockers": [],
-     "outcome": "CLOSED_WITH_PROGRESS",
-     "tps_reached_before_stop": [
-      "TP1",
-      "TP2"
-     ]
+     "outcome": null,
+     "tps_reached_before_stop": []
     }
    }
   },
@@ -2741,40 +2720,47 @@
    }
   },
   "XRP": {
-   "setup_instance_key": "XRP|1790767680000|127d3897cc57281e5b60c7aef225",
-   "setup_fingerprint": "127d3897cc57281e5b60c7aef225",
-   "instance_published_at": "2026-09-30T11:28:00.000Z",
+   "setup_instance_key": "XRP|1790897031000|14d12fa6bd40660438f9e152388f",
+   "setup_fingerprint": "14d12fa6bd40660438f9e152388f",
+   "instance_published_at": "2026-10-01T23:23:51.000Z",
    "sheet_status": {
     "text": "Watching",
     "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "WAITING_FOR_TRIGGER",
-    "state_since": "2026-09-30T11:32:31.594Z",
-    "published_at": "2026-09-30T11:28:00.000Z",
-    "trigger": null,
+    "state": "TRIGGERED",
+    "state_since": "2026-10-01T23:25:01.512Z",
+    "published_at": "2026-10-01T23:23:51.000Z",
+    "trigger": {
+     "level_id": "TRIGGER_1",
+     "zone": {
+      "low": 1.493,
+      "high": 1.493
+     },
+     "reached_at": "2026-10-01T23:00:00.000Z"
+    },
     "targets": [
      {
       "level_id": "TP1",
       "zone": {
-       "low": 1.528,
-       "high": 1.535
+       "low": 1.4854,
+       "high": 1.4854
       },
       "reached_at": null
      },
      {
       "level_id": "TP2",
       "zone": {
-       "low": 1.558,
-       "high": 1.572
+       "low": 1.4786,
+       "high": 1.4786
       },
       "reached_at": null
      },
      {
       "level_id": "TP3",
       "zone": {
-       "low": 1.592,
-       "high": 1.61
+       "low": 1.472,
+       "high": 1.472
       },
       "reached_at": null
      }
@@ -2789,23 +2775,12 @@
     "extended": {
      "level_id": "EXTENDED",
      "zone": {
-      "low": 1.648,
-      "high": 1.66
+      "low": 1.46,
+      "high": 1.46
      },
      "reached_at": null
     },
-    "stop_boundary": {
-     "level_id": "STOP",
-     "kind": "stop",
-     "zone": {
-      "low": 1.478,
-      "high": 1.484
-     },
-     "reached_at": "2026-10-01T07:00:00.000Z",
-     "in_trade": false,
-     "relation_to_final_tp": null,
-     "tps_reached_before_stop": []
-    },
+    "stop_boundary": null,
     "evidence_grade": null,
     "confirm": null,
     "terminal_at": null,
@@ -5193,8 +5168,8 @@
    "setup_fingerprint": "0b1201fe9ad0e50448b459956694",
    "outcome": "STOP_BOUNDARY_REACHED",
    "opened_at": "2026-09-24T15:46:40.841Z",
-   "superseded": false,
-   "superseded_at": null,
+   "superseded": true,
+   "superseded_at": "2026-10-01T23:25:01.512Z",
    "snapshot": {
     "setup_published_at": "2026-09-21T09:13:00.000Z",
     "setup_timestamp_text": "9/21/2026 5:13:00",
