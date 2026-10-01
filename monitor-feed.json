@@ -1,10 +1,10 @@
 {
  "schema_version": 1,
  "kind": "levelup-public-feed",
- "generated_at": "2026-10-01T23:20:50.997Z",
+ "generated_at": "2026-10-01T23:22:18.719Z",
  "notice": "Mechanical observations of Chelsea's published levels. Not a Sheet status, not a signal, and not a record of anyone's entry or exit.",
  "monitor": {
-  "last_successful_check_at": "2026-10-01T23:20:50.997Z"
+  "last_successful_check_at": "2026-10-01T23:22:18.719Z"
  },
  "assets": {
   "AAVE": {
@@ -679,40 +679,47 @@
    }
   },
   "BNB": {
-   "setup_instance_key": "BNB|1790767725000|1aaa12f8b18dc118e74d7d903c59",
-   "setup_fingerprint": "1aaa12f8b18dc118e74d7d903c59",
-   "instance_published_at": "2026-09-30T11:28:45.000Z",
+   "setup_instance_key": "BNB|1790896929000|1e48594fa348560c90bae59ca1b0",
+   "setup_fingerprint": "1e48594fa348560c90bae59ca1b0",
+   "instance_published_at": "2026-10-01T23:22:09.000Z",
    "sheet_status": {
     "text": "Watching",
     "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "WAITING_FOR_TRIGGER",
-    "state_since": "2026-09-30T11:32:31.594Z",
-    "published_at": "2026-09-30T11:28:45.000Z",
-    "trigger": null,
+    "state": "TRIGGERED",
+    "state_since": "2026-10-01T23:22:18.719Z",
+    "published_at": "2026-10-01T23:22:09.000Z",
+    "trigger": {
+     "level_id": "TRIGGER_1",
+     "zone": {
+      "low": 770,
+      "high": 770
+     },
+     "reached_at": "2026-10-01T23:00:00.000Z"
+    },
     "targets": [
      {
       "level_id": "TP1",
       "zone": {
-       "low": 772,
-       "high": 776
+       "low": 772.6,
+       "high": 772.6
       },
       "reached_at": null
      },
      {
       "level_id": "TP2",
       "zone": {
-       "low": 784,
-       "high": 790
+       "low": 775.8,
+       "high": 775.8
       },
       "reached_at": null
      },
      {
       "level_id": "TP3",
       "zone": {
-       "low": 798,
-       "high": 805
+       "low": 780,
+       "high": 780
       },
       "reached_at": null
      }
@@ -727,8 +734,8 @@
     "extended": {
      "level_id": "EXTENDED",
      "zone": {
-      "low": 810,
-      "high": 810
+      "low": 786,
+      "high": 786
      },
      "reached_at": null
     },
