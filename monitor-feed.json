@@ -1,10 +1,10 @@
 {
  "schema_version": 1,
  "kind": "levelup-public-feed",
- "generated_at": "2026-10-01T15:12:24.862Z",
+ "generated_at": "2026-10-01T15:14:19.408Z",
  "notice": "Mechanical observations of Chelsea's published levels. Not a Sheet status, not a signal, and not a record of anyone's entry or exit.",
  "monitor": {
-  "last_successful_check_at": "2026-10-01T15:12:24.862Z"
+  "last_successful_check_at": "2026-10-01T15:14:19.408Z"
  },
  "assets": {
   "AAVE": {
@@ -1706,25 +1706,18 @@
    }
   },
   "LINK": {
-   "setup_instance_key": "LINK|1790852657000|017c6207953e9b1f7477ef994ee4",
-   "setup_fingerprint": "017c6207953e9b1f7477ef994ee4",
+   "setup_instance_key": "LINK|1790852657000|1da0e43ca85ab40806cd40c48652",
+   "setup_fingerprint": "1da0e43ca85ab40806cd40c48652",
    "instance_published_at": "2026-10-01T11:04:17.000Z",
    "sheet_status": {
     "text": "Watching",
     "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "TRIGGERED",
-    "state_since": "2026-10-01T11:07:23.629Z",
+    "state": "WAITING_FOR_TRIGGER",
+    "state_since": "2026-10-01T15:14:19.408Z",
     "published_at": "2026-10-01T11:04:17.000Z",
-    "trigger": {
-     "level_id": "TRIGGER_1",
-     "zone": {
-      "low": 14,
-      "high": 14
-     },
-     "reached_at": "2026-10-01T11:00:00.000Z"
-    },
+    "trigger": null,
     "targets": [
      {
       "level_id": "TP1",
