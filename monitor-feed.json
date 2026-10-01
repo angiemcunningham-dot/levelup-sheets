@@ -1,10 +1,10 @@
 {
  "schema_version": 1,
  "kind": "levelup-public-feed",
- "generated_at": "2026-10-01T17:02:35.365Z",
+ "generated_at": "2026-10-01T17:07:26.904Z",
  "notice": "Mechanical observations of Chelsea's published levels. Not a Sheet status, not a signal, and not a record of anyone's entry or exit.",
  "monitor": {
-  "last_successful_check_at": "2026-10-01T17:02:35.365Z"
+  "last_successful_check_at": "2026-10-01T17:07:26.904Z"
  },
  "assets": {
   "AAVE": {
@@ -599,81 +599,70 @@
    }
   },
   "AVAX": {
-   "setup_instance_key": "AVAX|1790679138000|12c3dec6cc531b04462333404d76",
-   "setup_fingerprint": "12c3dec6cc531b04462333404d76",
-   "instance_published_at": "2026-09-29T10:52:18.000Z",
+   "setup_instance_key": "AVAX|1790874358000|181d25011034cd116b9e74883297",
+   "setup_fingerprint": "181d25011034cd116b9e74883297",
+   "instance_published_at": "2026-10-01T17:05:58.000Z",
    "sheet_status": {
     "text": "Watching",
     "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "OBJECTIVES_EXHAUSTED",
-    "state_since": "2026-09-29T11:07:52.568Z",
-    "published_at": "2026-09-29T10:52:18.000Z",
-    "trigger": {
-     "level_id": "TRIGGER_1",
-     "zone": {
-      "low": 10.8,
-      "high": 10.8
-     },
-     "reached_at": "2026-09-29T10:00:00.000Z"
-    },
+    "state": "WAITING_FOR_TRIGGER",
+    "state_since": "2026-10-01T17:07:26.904Z",
+    "published_at": "2026-10-01T17:05:58.000Z",
+    "trigger": null,
     "targets": [
      {
       "level_id": "TP1",
       "zone": {
-       "low": 10.95,
-       "high": 10.95
+       "low": 10.5,
+       "high": 10.5
       },
-      "reached_at": "2026-09-29T10:00:00.000Z"
+      "reached_at": null
      },
      {
       "level_id": "TP2",
       "zone": {
-       "low": 11.2,
-       "high": 11.2
+       "low": 10.05,
+       "high": 10.2
       },
-      "reached_at": "2026-09-29T10:00:00.000Z"
+      "reached_at": null
      },
      {
       "level_id": "TP3",
       "zone": {
-       "low": 11.5,
-       "high": 11.5
+       "low": 9.4,
+       "high": 9.6
       },
-      "reached_at": "2026-09-29T10:00:00.000Z"
+      "reached_at": null
      }
     ],
     "objectives": {
      "defined": 3,
-     "reached": 3,
-     "all_reached": true,
+     "reached": 0,
+     "all_reached": false,
      "ladder_problems": [],
-     "completed_at": "2026-09-29T10:00:00.000Z"
+     "completed_at": null
     },
     "extended": {
      "level_id": "EXTENDED",
      "zone": {
-      "low": 11.8,
-      "high": 12
+      "low": 8.2,
+      "high": 8.4
      },
-     "reached_at": "2026-09-29T11:56:00.000Z"
+     "reached_at": null
     },
     "stop_boundary": null,
-    "evidence_grade": "CLOSE_CONFIRMED",
-    "confirm": {
-     "at": "2026-09-29T11:00:00.000Z",
-     "close": 11.545,
-     "level_id": "TP3"
-    },
-    "terminal_at": "2026-09-29T10:00:00.000Z",
+    "evidence_grade": null,
+    "confirm": null,
+    "terminal_at": null,
     "later_evidence": null,
     "public_display": {
-     "kind": "TRADE_COMPLETE",
-     "ready": true,
-     "evidence_grade": "CLOSE_CONFIRMED",
+     "kind": null,
+     "ready": false,
+     "evidence_grade": null,
      "blockers": [],
-     "outcome": "COMPLETED",
+     "outcome": null,
      "tps_reached_before_stop": []
     }
    }
@@ -3143,8 +3132,8 @@
    "setup_fingerprint": "12c3dec6cc531b04462333404d76",
    "outcome": "OBJECTIVES_EXHAUSTED",
    "opened_at": "2026-09-29T11:07:52.568Z",
-   "superseded": false,
-   "superseded_at": null,
+   "superseded": true,
+   "superseded_at": "2026-10-01T17:07:26.904Z",
    "snapshot": {
     "setup_published_at": "2026-09-29T10:52:18.000Z",
     "setup_timestamp_text": "9/29/2026 6:52:18",
