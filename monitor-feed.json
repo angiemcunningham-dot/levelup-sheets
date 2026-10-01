@@ -1,10 +1,10 @@
 {
  "schema_version": 1,
  "kind": "levelup-public-feed",
- "generated_at": "2026-10-01T23:16:07.203Z",
+ "generated_at": "2026-10-01T23:20:50.997Z",
  "notice": "Mechanical observations of Chelsea's published levels. Not a Sheet status, not a signal, and not a record of anyone's entry or exit.",
  "monitor": {
-  "last_successful_check_at": "2026-10-01T23:16:07.203Z"
+  "last_successful_check_at": "2026-10-01T23:20:50.997Z"
  },
  "assets": {
   "AAVE": {
@@ -2926,6 +2926,60 @@
      },
      "reached_at": null
     },
+    "stop_boundary": null,
+    "evidence_grade": null,
+    "confirm": null,
+    "terminal_at": null,
+    "later_evidence": null,
+    "public_display": {
+     "kind": null,
+     "ready": false,
+     "evidence_grade": null,
+     "blockers": [],
+     "outcome": null,
+     "tps_reached_before_stop": []
+    }
+   }
+  },
+  "ZRO": {
+   "setup_instance_key": "ZRO|1790896770000|1fe814895f16c513fda88579d9d0",
+   "setup_fingerprint": "1fe814895f16c513fda88579d9d0",
+   "instance_published_at": "2026-10-01T23:19:30.000Z",
+   "sheet_status": {
+    "text": "Watching",
+    "class": "WATCHING"
+   },
+   "lifecycle": {
+    "state": "WAITING_FOR_TRIGGER",
+    "state_since": "2026-10-01T23:20:50.997Z",
+    "published_at": "2026-10-01T23:19:30.000Z",
+    "trigger": null,
+    "targets": [
+     {
+      "level_id": "TP1",
+      "zone": {
+       "low": 1.82,
+       "high": 1.83
+      },
+      "reached_at": null
+     },
+     {
+      "level_id": "TP2",
+      "zone": {
+       "low": 1.86,
+       "high": 1.88
+      },
+      "reached_at": null
+     }
+    ],
+    "objectives": {
+     "defined": 2,
+     "reached": 0,
+     "all_reached": false,
+     "ladder_problems": [],
+     "completed_at": null
+    },
+    "extended": null,
     "stop_boundary": null,
     "evidence_grade": null,
     "confirm": null,
