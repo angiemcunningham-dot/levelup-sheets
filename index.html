@@ -915,13 +915,19 @@ load();setInterval(load,60000);
     if (todayHead && todayHead.parentNode) todayHead.parentNode.insertBefore(sec, todayHead);
     else afterToday.parentNode.insertBefore(sec, afterToday);   // fail-safe fallback - never breaks the page
 
-    // Ticker membership only - deliberately NOT A.applicable() (that shared/parity-tested fn also requires a
-    // resolved direction, which a setup like "Liquidity Sweep & Reclaim of 200 MA" may never get because it has
-    // only one direction vote). The scrolling ticker should carry every asset whose Sheet status is Watching,
-    // full stop; A.triggerProximity() below still independently decides whether it can show a numeric distance.
+    // Ticker membership only - bypasses ONLY A.applicable()'s resolved-direction requirement (a setup like
+    // "Liquidity Sweep & Reclaim of 200 MA" may never resolve one because it only gets one direction vote).
+    // It still defers to A.applicable() whenever a direction IS resolved, because that's the (mechanically
+    // wrapped, see mech-feed below) rule that correctly drops an asset once it has ALREADY triggered - Chelsea's
+    // Sheet can keep saying "Watching" for days after the real trigger fired, and there's no "distance to
+    // trigger" left to show once it's already happened. Skipping that would re-admit already-triggered assets
+    // into the ticker with no price (loadPrices() below still correctly never fetches a price for them).
     function isWatchingLike(s) {
       var st = s.status && s.status.class;
-      return st === 'WATCHING' || (!!opts.includeNoTrade && st === 'NO_TRADE');
+      if (!(st === 'WATCHING' || (!!opts.includeNoTrade && st === 'NO_TRADE'))) return false;
+      var dir = s.direction && s.direction.value;
+      if (!dir) return true;
+      return A.applicable(s, opts);
     }
     function view() {
       if (!setups) return null;
