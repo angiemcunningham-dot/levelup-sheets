@@ -915,18 +915,30 @@ load();setInterval(load,60000);
     if (todayHead && todayHead.parentNode) todayHead.parentNode.insertBefore(sec, todayHead);
     else afterToday.parentNode.insertBefore(sec, afterToday);   // fail-safe fallback - never breaks the page
 
+    // Ticker membership only - deliberately NOT A.applicable() (that shared/parity-tested fn also requires a
+    // resolved direction, which a setup like "Liquidity Sweep & Reclaim of 200 MA" may never get because it has
+    // only one direction vote). The scrolling ticker should carry every asset whose Sheet status is Watching,
+    // full stop; A.triggerProximity() below still independently decides whether it can show a numeric distance.
+    function isWatchingLike(s) {
+      var st = s.status && s.status.class;
+      return st === 'WATCHING' || (!!opts.includeNoTrade && st === 'NO_TRADE');
+    }
     function view() {
       if (!setups) return null;
       var fresh = !!ps.at && (Date.now() - ps.at) < STALE_MS && Object.keys(ps.prices).length > 0;
-      var items = [];
+      // watch = EVERY currently-Watching setup, including ones with no numeric trigger the engine can measure a
+      // distance against (e.g. a pure MA/structure call with no price level yet). items = the subset with a real
+      // computable proximity - still the only ones that get a distance %, a tier, or a Live Attention card.
+      var watch = [];
       Object.keys(setups).forEach(function (a) {
-        var s = setups[a]; if (!A.applicable(s, opts)) return;
+        var s = setups[a]; if (!isWatchingLike(s)) return;
         var price = fresh ? ps.prices[a] : null;
         var prox = A.triggerProximity(s, price, opts);
-        if (prox.state === 'NA') return;
-        items.push({ asset: a, setup: s, price: price, prox: prox });
+        watch.push({ asset: a, setup: s, price: price, prox: prox });
       });
-      return { fresh: fresh, items: A.sortAttention(items) };
+      watch = A.sortAttention(watch);
+      var items = watch.filter(function (i) { return i.prox.state !== 'NA'; });
+      return { fresh: fresh, items: items, watch: watch };
     }
 
     function tagFor(p) { return p.state === 'INSIDE' ? 'Trigger zone' : (p.band_ord >= 1 ? p.band : ''); }
@@ -948,7 +960,8 @@ load();setInterval(load,60000);
         var p = it.prox, isLive = (p.state === 'APPROACHING' || p.state === 'INSIDE');
         var label = isLive ? '<span class="p">' + A.fmtPct(p.distance_pct) + '%</span> to trigger'
           : p.state === 'PASSED' ? '<span class="p">past trigger zone</span>'
-          : '<span class="p">no live price</span>';
+          : p.state === 'NOPRICE' ? '<span class="p">no live price</span>'
+          : '<span class="p">no numeric trigger yet</span>';
         var cls = 'att-tape-item' + (isLive ? ' is-live tier-' + A.tier(p) : '');
         return '<a class="' + cls + '" href="sheet.html?asset=' + encodeURIComponent(it.asset) + '"><b>' + esc(it.asset) + '</b>' + label + '</a>';
       }).join('');
@@ -962,12 +975,12 @@ load();setInterval(load,60000);
       var near = v.items.filter(function (i) { return i.prox.state === 'APPROACHING' || i.prox.state === 'INSIDE'; });
       var past = v.items.filter(function (i) { return i.prox.state === 'PASSED'; });
       var noPx = v.items.filter(function (i) { return i.prox.state === 'NOPRICE'; });
-      if (!v.items.length) { sec.hidden = true; decorate(v); return; }
+      if (!v.watch.length) { sec.hidden = true; decorate(v); return; }
       sec.hidden = false;
       var head = '<div class="att-head"><div class="att-title">Live <em>attention</em></div><div class="att-live" aria-live="polite"><span class="att-dot' + (v.fresh ? '' : ' off') + '"></span>' + (v.fresh ? 'prices updated ' + etTime(ps.at) : 'live prices unavailable — distances hidden') + '</div></div>' +
         '<div class="att-note">Watching setups, closest to Chelsea’s published trigger first. <b>% to trigger</b> is the gap between the live price and the nearest edge of the published trigger zone — the same calculation and 3% / 2% / 1% / 0.5% bands the price monitor uses. It is a distance to a price level only: not a signal, not trade quality or probability. Chelsea’s confirmation rules still decide.</div>';
       var body = '';
-      if (v.items.length) body += tapeHtml(v.items);
+      if (v.watch.length) body += tapeHtml(v.watch);
       if (near.length) body += '<div class="att-grid">' + near.map(cardHtml).join('') + '</div>';
       else if (v.fresh) body += '<div class="att-empty">No watching setup is currently below its trigger zone.</div>';
       if (past.length) body += '<details class="hist-toggle att-past-toggle"><summary>Price past trigger zone<span> (' + past.length + ')</span></summary><div class="att-past">' + past.map(pastHtml).join('') + '</div></details>';
@@ -1179,9 +1192,10 @@ load();setInterval(load,60000);
         // 2026-09-29 fix: a stop that already banked real TP progress (m.outcome/m.tpsBeforeStop, from the
         // monitor's own stop_boundary.tps_reached_before_stop - never invented here) must not read as a plain
         // failed stop. A genuine zero-TP stop (outcome !== 'CLOSED_WITH_PROGRESS') is unchanged: still 'STOPPED'.
-        // 2026-09-29: kind is 'closed' (not 'stopped') for the banked-progress case, so this never paints the
-        // same alarm-red as a genuine zero-TP/before-any-TP stop - see .mech-headline.mech-closed below.
-        if (m.outcome === 'CLOSED_WITH_PROGRESS' && m.tpsBeforeStop.length) return { text: 'CLOSED — ' + m.tpsBeforeStop.join(' + ') + ' HIT', kind: 'closed' };
+        // 2026-10-02: reads as a win (kind 'complete', same pink as a full TP1+TP2+TP3 completion) rather than a
+        // plain closure - banking real TP progress before the stop is a completed, successful trade to Angela.
+        // The coin graphic stays reserved for the exact TP1+TP2+TP3 case (coinEligible() below is unchanged).
+        if (m.outcome === 'CLOSED_WITH_PROGRESS' && m.tpsBeforeStop.length) return { text: 'COMPLETE — ' + m.tpsBeforeStop.join(' + ') + ' HIT', kind: 'complete' };
         return { text: 'STOPPED', kind: 'stopped' };
       }
       if (m.complete) return { text: 'COMPLETE', kind: 'complete' };
@@ -1218,7 +1232,7 @@ load();setInterval(load,60000);
       if (m.stopped) {
         // 2026-09-29: banked TP progress before the stop reads as a plain (non-alarm) tick - the raw
         // STOP_BOUNDARY_REACHED fact is unchanged (m.stopped stays true), only this presentation differs.
-        if (m.outcome === 'CLOSED_WITH_PROGRESS' && m.tpsBeforeStop.length) parts.push('<span class="mech-tick">CLOSED AFTER ' + m.tpsBeforeStop[m.tpsBeforeStop.length - 1] + '</span>');
+        if (m.outcome === 'CLOSED_WITH_PROGRESS' && m.tpsBeforeStop.length) parts.push('<span class="mech-tick">COMPLETE AFTER ' + m.tpsBeforeStop[m.tpsBeforeStop.length - 1] + '</span>');
         else parts.push('<span class="mech-tick stop">&#9632; STOPPED</span>');
       }
       else if (m.complete) parts.push('<span class="mech-tick complete">&#10003; COMPLETE</span>');
