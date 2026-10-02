@@ -1,10 +1,10 @@
 {
  "schema_version": 1,
  "kind": "levelup-public-feed",
- "generated_at": "2026-10-01T23:57:17.459Z",
+ "generated_at": "2026-10-02T00:02:27.478Z",
  "notice": "Mechanical observations of Chelsea's published levels. Not a Sheet status, not a signal, and not a record of anyone's entry or exit.",
  "monitor": {
-  "last_successful_check_at": "2026-10-01T23:57:17.459Z"
+  "last_successful_check_at": "2026-10-02T00:02:27.478Z"
  },
  "assets": {
   "AAVE": {
@@ -2792,17 +2792,19 @@
      "relation_to_final_tp": null,
      "tps_reached_before_stop": []
     },
-    "evidence_grade": "WICK_ONLY",
-    "confirm": null,
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-10-02T00:01:00.000Z",
+     "close": 1.4954,
+     "level_id": "STOP"
+    },
     "terminal_at": "2026-10-01T23:38:00.000Z",
     "later_evidence": null,
     "public_display": {
      "kind": "STOP_BOUNDARY",
-     "ready": false,
-     "evidence_grade": "WICK_ONLY",
-     "blockers": [
-      "AWAITING_CLOSE_CONFIRMATION"
-     ],
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
+     "blockers": [],
      "outcome": "STOPPED",
      "tps_reached_before_stop": []
     }
@@ -2943,6 +2945,182 @@
   }
  },
  "receipts": [
+  {
+   "receipt_id": "rcpt_03bc3a08d8bfec11692ccd87a24a",
+   "asset": "XRP",
+   "setup_instance_key": "XRP|1790897031000|14d12fa6bd40660438f9e152388f",
+   "setup_fingerprint": "14d12fa6bd40660438f9e152388f",
+   "outcome": "STOP_BOUNDARY_REACHED",
+   "opened_at": "2026-10-01T23:42:19.217Z",
+   "superseded": false,
+   "superseded_at": null,
+   "snapshot": {
+    "setup_published_at": "2026-10-01T23:23:51.000Z",
+    "setup_timestamp_text": "10/1/2026 19:23:51",
+    "direction": "short",
+    "sheet_status_at_open": {
+     "text": "Watching",
+     "class": "WATCHING"
+    },
+    "levels": [
+     {
+      "id": "TRIGGER_1",
+      "kind": "trigger",
+      "label": "Trigger 1",
+      "zone": {
+       "low": 1.493,
+       "high": 1.493
+      },
+      "raw": "Next 1H open and hold below the short bundle (below 1.4930), confirming failure at 1.4938–1.4940 + staying under 1.4930. Entry Zone: $1.4910–$1.4930"
+     },
+     {
+      "id": "TP1",
+      "kind": "tp",
+      "label": "TP1",
+      "zone": {
+       "low": 1.4854,
+       "high": 1.4854
+      },
+      "raw": "TP1: $1.4854 | TP2: $1.4786 | TP3: $1.4720 | Extended: $1.4600"
+     },
+     {
+      "id": "TP2",
+      "kind": "tp",
+      "label": "TP2",
+      "zone": {
+       "low": 1.4786,
+       "high": 1.4786
+      },
+      "raw": "TP1: $1.4854 | TP2: $1.4786 | TP3: $1.4720 | Extended: $1.4600"
+     },
+     {
+      "id": "TP3",
+      "kind": "tp",
+      "label": "TP3",
+      "zone": {
+       "low": 1.472,
+       "high": 1.472
+      },
+      "raw": "TP1: $1.4854 | TP2: $1.4786 | TP3: $1.4720 | Extended: $1.4600"
+     },
+     {
+      "id": "EXTENDED",
+      "kind": "extended",
+      "label": "Extended",
+      "zone": {
+       "low": 1.46,
+       "high": 1.46
+      },
+      "raw": "TP1: $1.4854 | TP2: $1.4786 | TP3: $1.4720 | Extended: $1.4600"
+     },
+     {
+      "id": "STOP",
+      "kind": "stop",
+      "label": "Stop",
+      "zone": {
+       "low": 1.4952,
+       "high": 1.496
+      },
+      "raw": "Stop Range: 1.4952–1.4960 (tucked over the highest short line, EMA20 1.4940)"
+     }
+    ],
+    "published_text": {
+     "headline": "XRP — Short Watch — Compressed MA Shelf Rejection",
+     "why": "Current Price: $1.4924\nSetup/Pattern: 1H rejection into a compressed MA shelf. Short only if the next hour opens and holds below both short lines. 1H price is just under a tight short bundle. EMA10 1.4937, SMA10 1.4929, EMA20 1.4940, SMA20 1.4938. EMA50 1.4969 and SMA50 1.4972 sit just overhead. RSI(14) 47.9, Stoch %K 50.6, bull-bear power negative. This is a retest from below, not a chase.\nWhat I'm Watching: Failure at 1.4938–1.4940 and a 1H open that stays under 1.4930.\nWhy I like it: Public short bundle is tight and price is under it.\nRisk/Reward: About 1:4 to TP2 off a 1.4922 entry and 1.4956 stop",
+     "warning": "Invalidation: A 1H close above 1.4956, or a reclaim of the 50s at 1.4972.\nMISSED IT?: If price has already moved well below the 1.4910–1.4930 entry zone without the confirmed 1H hold, this setup may no longer apply as described.",
+     "triggers": [
+      "Next 1H open and hold below the short bundle (below 1.4930), confirming failure at 1.4938–1.4940 + staying under 1.4930. Entry Zone: $1.4910–$1.4930",
+      "",
+      ""
+     ],
+     "targets": "TP1: $1.4854 | TP2: $1.4786 | TP3: $1.4720 | Extended: $1.4600",
+     "stop": "Stop Range: 1.4952–1.4960 (tucked over the highest short line, EMA20 1.4940)",
+     "safety": ""
+    }
+   },
+   "lifecycle": {
+    "state": "STOP_BOUNDARY_REACHED",
+    "state_since": "2026-10-01T23:42:19.217Z",
+    "published_at": "2026-10-01T23:23:51.000Z",
+    "trigger": {
+     "level_id": "TRIGGER_1",
+     "zone": {
+      "low": 1.493,
+      "high": 1.493
+     },
+     "reached_at": "2026-10-01T23:00:00.000Z"
+    },
+    "targets": [
+     {
+      "level_id": "TP1",
+      "zone": {
+       "low": 1.4854,
+       "high": 1.4854
+      },
+      "reached_at": null
+     },
+     {
+      "level_id": "TP2",
+      "zone": {
+       "low": 1.4786,
+       "high": 1.4786
+      },
+      "reached_at": null
+     },
+     {
+      "level_id": "TP3",
+      "zone": {
+       "low": 1.472,
+       "high": 1.472
+      },
+      "reached_at": null
+     }
+    ],
+    "objectives": {
+     "defined": 3,
+     "reached": 0,
+     "all_reached": false,
+     "ladder_problems": [],
+     "completed_at": null
+    },
+    "extended": {
+     "level_id": "EXTENDED",
+     "zone": {
+      "low": 1.46,
+      "high": 1.46
+     },
+     "reached_at": null
+    },
+    "stop_boundary": {
+     "level_id": "STOP",
+     "kind": "stop",
+     "zone": {
+      "low": 1.4952,
+      "high": 1.496
+     },
+     "reached_at": "2026-10-01T23:38:00.000Z",
+     "in_trade": true,
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
+    },
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-10-02T00:01:00.000Z",
+     "close": 1.4954,
+     "level_id": "STOP"
+    },
+    "terminal_at": "2026-10-01T23:38:00.000Z",
+    "later_evidence": null,
+    "public_display": {
+     "kind": "STOP_BOUNDARY",
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
+     "blockers": [],
+     "outcome": "STOPPED",
+     "tps_reached_before_stop": []
+    }
+   }
+  },
   {
    "receipt_id": "rcpt_0411cb462b0eb50cb58c58667fe6",
    "asset": "FET",
