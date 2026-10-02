@@ -1,10 +1,10 @@
 {
  "schema_version": 1,
  "kind": "levelup-public-feed",
- "generated_at": "2026-10-02T04:22:18.315Z",
+ "generated_at": "2026-10-02T04:27:13.930Z",
  "notice": "Mechanical observations of Chelsea's published levels. Not a Sheet status, not a signal, and not a record of anyone's entry or exit.",
  "monitor": {
-  "last_successful_check_at": "2026-10-02T04:22:18.315Z"
+  "last_successful_check_at": "2026-10-02T04:27:13.930Z"
  },
  "assets": {
   "AAVE": {
@@ -721,15 +721,15 @@
        "low": 780,
        "high": 780
       },
-      "reached_at": null
+      "reached_at": "2026-10-02T04:26:00.000Z"
      }
     ],
     "objectives": {
      "defined": 3,
-     "reached": 2,
-     "all_reached": false,
+     "reached": 3,
+     "all_reached": true,
      "ladder_problems": [],
-     "completed_at": null
+     "completed_at": "2026-10-02T04:26:00.000Z"
     },
     "extended": {
      "level_id": "EXTENDED",
@@ -748,7 +748,7 @@
      },
      "reached_at": "2026-10-02T01:20:00.000Z",
      "in_trade": true,
-     "relation_to_final_tp": null,
+     "relation_to_final_tp": "BEFORE",
      "tps_reached_before_stop": [
       "TP1"
      ]
@@ -763,16 +763,20 @@
     "later_evidence": {
      "historical_only": true,
      "targets_after_stop": [
-      "TP2"
+      "TP2",
+      "TP3"
      ],
      "targets_same_candle_as_stop": [],
      "note": "Later published TP levels were mechanically touched after the stop boundary."
     },
     "public_display": {
      "kind": "STOP_BOUNDARY",
-     "ready": true,
+     "ready": false,
      "evidence_grade": "CLOSE_CONFIRMED",
-     "blockers": [],
+     "blockers": [
+      "STOP_BOUNDARY_TOUCHED_BEFORE_FINAL_TP",
+      "CONFLICTING_EVIDENCE"
+     ],
      "outcome": "CLOSED_WITH_PROGRESS",
      "tps_reached_before_stop": [
       "TP1"
@@ -3137,193 +3141,6 @@
      "blockers": [],
      "outcome": "COMPLETED",
      "tps_reached_before_stop": []
-    }
-   }
-  },
-  {
-   "receipt_id": "rcpt_0caf3d4058a60a0af6a9374f8a89",
-   "asset": "BNB",
-   "setup_instance_key": "BNB|1790896929000|1e48594fa348560c90bae59ca1b0",
-   "setup_fingerprint": "1e48594fa348560c90bae59ca1b0",
-   "outcome": "STOP_BOUNDARY_REACHED",
-   "opened_at": "2026-10-02T01:22:16.530Z",
-   "superseded": false,
-   "superseded_at": null,
-   "snapshot": {
-    "setup_published_at": "2026-10-01T23:22:09.000Z",
-    "setup_timestamp_text": "10/1/2026 19:22:09",
-    "direction": "long",
-    "sheet_status_at_open": {
-     "text": "Watching",
-     "class": "WATCHING"
-    },
-    "levels": [
-     {
-      "id": "TRIGGER_1",
-      "kind": "trigger",
-      "label": "Trigger 1",
-      "zone": {
-       "low": 770,
-       "high": 770
-      },
-      "raw": "Next 1H open and hold above the short bundle (above 770.00, not wicking back through 769.27) + confirmed hold above both short lines. Entry Zone: $769.60–$770.80"
-     },
-     {
-      "id": "TP1",
-      "kind": "tp",
-      "label": "TP1",
-      "zone": {
-       "low": 772.6,
-       "high": 772.6
-      },
-      "raw": "TP1: $772.60 | TP2: $775.80 | TP3: $780.00 | Extended: $786.00"
-     },
-     {
-      "id": "TP2",
-      "kind": "tp",
-      "label": "TP2",
-      "zone": {
-       "low": 775.8,
-       "high": 775.8
-      },
-      "raw": "TP1: $772.60 | TP2: $775.80 | TP3: $780.00 | Extended: $786.00"
-     },
-     {
-      "id": "TP3",
-      "kind": "tp",
-      "label": "TP3",
-      "zone": {
-       "low": 780,
-       "high": 780
-      },
-      "raw": "TP1: $772.60 | TP2: $775.80 | TP3: $780.00 | Extended: $786.00"
-     },
-     {
-      "id": "EXTENDED",
-      "kind": "extended",
-      "label": "Extended",
-      "zone": {
-       "low": 786,
-       "high": 786
-      },
-      "raw": "TP1: $772.60 | TP2: $775.80 | TP3: $780.00 | Extended: $786.00"
-     },
-     {
-      "id": "STOP",
-      "kind": "stop",
-      "label": "Stop",
-      "zone": {
-       "low": 768.4,
-       "high": 768.9
-      },
-      "raw": "Stop Range: $768.40–$768.90 (tucked under the lowest short line, SMA20 769.27)"
-     }
-    ],
-    "published_text": {
-     "headline": "BNB — Long Watch — 1H Coil on Compressed MA Bundle",
-     "why": "Current Price: $770.59\nSetup/Pattern: 1H coil on a tight MA bundle, long only if the next hour opens and holds above both short lines. 1H price is sitting on a fully compressed short-MA bundle. EMA10 769.95, SMA10 769.45, EMA20 769.36, and SMA20 769.27 are stacked within about $0.70. RSI(14) 53.7, Stoch %K 63.4, MACD positive, ADX 11. Not extended.\nWhat I'm Watching: A 1H open above 770.00 that does not wick back through 769.27.\nWhy I like it: Public 1H bundle is tight.\nRisk/Reward: About 1:3.7 to TP2 off a 770.20 entry and 768.70 stop",
-     "warning": "Invalidation: A 1H close back under 769.27, or the short lines spreading apart.\nMISSED IT?: No. Still on the bundle",
-     "triggers": [
-      "Next 1H open and hold above the short bundle (above 770.00, not wicking back through 769.27) + confirmed hold above both short lines. Entry Zone: $769.60–$770.80",
-      "",
-      ""
-     ],
-     "targets": "TP1: $772.60 | TP2: $775.80 | TP3: $780.00 | Extended: $786.00",
-     "stop": "Stop Range: $768.40–$768.90 (tucked under the lowest short line, SMA20 769.27)",
-     "safety": ""
-    }
-   },
-   "lifecycle": {
-    "state": "STOP_BOUNDARY_REACHED",
-    "state_since": "2026-10-02T01:22:16.530Z",
-    "published_at": "2026-10-01T23:22:09.000Z",
-    "trigger": {
-     "level_id": "TRIGGER_1",
-     "zone": {
-      "low": 770,
-      "high": 770
-     },
-     "reached_at": "2026-10-01T23:00:00.000Z"
-    },
-    "targets": [
-     {
-      "level_id": "TP1",
-      "zone": {
-       "low": 772.6,
-       "high": 772.6
-      },
-      "reached_at": "2026-10-02T00:20:00.000Z"
-     },
-     {
-      "level_id": "TP2",
-      "zone": {
-       "low": 775.8,
-       "high": 775.8
-      },
-      "reached_at": "2026-10-02T03:43:00.000Z"
-     },
-     {
-      "level_id": "TP3",
-      "zone": {
-       "low": 780,
-       "high": 780
-      },
-      "reached_at": null
-     }
-    ],
-    "objectives": {
-     "defined": 3,
-     "reached": 2,
-     "all_reached": false,
-     "ladder_problems": [],
-     "completed_at": null
-    },
-    "extended": {
-     "level_id": "EXTENDED",
-     "zone": {
-      "low": 786,
-      "high": 786
-     },
-     "reached_at": null
-    },
-    "stop_boundary": {
-     "level_id": "STOP",
-     "kind": "stop",
-     "zone": {
-      "low": 768.4,
-      "high": 768.9
-     },
-     "reached_at": "2026-10-02T01:20:00.000Z",
-     "in_trade": true,
-     "relation_to_final_tp": null,
-     "tps_reached_before_stop": [
-      "TP1"
-     ]
-    },
-    "evidence_grade": "CLOSE_CONFIRMED",
-    "confirm": {
-     "at": "2026-10-02T01:21:00.000Z",
-     "close": 768.65,
-     "level_id": "STOP"
-    },
-    "terminal_at": "2026-10-02T01:20:00.000Z",
-    "later_evidence": {
-     "historical_only": true,
-     "targets_after_stop": [
-      "TP2"
-     ],
-     "targets_same_candle_as_stop": [],
-     "note": "Later published TP levels were mechanically touched after the stop boundary."
-    },
-    "public_display": {
-     "kind": "STOP_BOUNDARY",
-     "ready": true,
-     "evidence_grade": "CLOSE_CONFIRMED",
-     "blockers": [],
-     "outcome": "CLOSED_WITH_PROGRESS",
-     "tps_reached_before_stop": [
-      "TP1"
-     ]
     }
    }
   },
