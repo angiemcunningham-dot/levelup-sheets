@@ -80,6 +80,11 @@ a.rw-card:hover{border-style:solid;box-shadow:0 10px 24px rgba(255,149,0,.16)}
 .att-tape-item.tier-3 .p,.att-tape-item.tier-4 .p{color:var(--pink)}
 .att-tape-item.is-live{background:rgba(250,3,152,.07);animation:attTapeLive 1.2s ease-in-out infinite}
 .att-tape-item.is-live b{color:var(--pink)}
+/* approx = an "unconfirmed anchor" conditional-trigger distance, not Chelsea's exact published number - deliberately
+   amber/dashed instead of the solid pink .is-live treatment, so it never reads as confirmed-precise at a glance */
+.att-tape-item.is-approx{background:rgba(217,164,4,.08);animation:attTapeApprox 1.6s ease-in-out infinite;border-right-style:dashed}
+.att-tape-item.is-approx .p{color:var(--orange-d)}
+.att-tape-item.is-approx b{color:var(--orange-d)}
 
 /* cards */
 .att-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(236px,1fr));gap:12px;margin-top:14px}
@@ -154,11 +159,13 @@ a.act-card.side-short:hover{box-shadow:0 10px 26px rgba(185,28,28,.18)}
 @keyframes attBlink{0%,100%{opacity:1}50%{opacity:.35}}
 @keyframes attTape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 @keyframes attTapeLive{0%,100%{background:rgba(250,3,152,.07)}50%{background:rgba(250,3,152,.28)}}
+@keyframes attTapeApprox{0%,100%{background:rgba(217,164,4,.08)}50%{background:rgba(217,164,4,.26)}}
 @media (prefers-reduced-motion:reduce){
-  a.att-card,a.act-card,.att-chip,.att-dot,.att-tape-track,.att-tape-item.is-live{animation:none!important;transition:none!important}
+  a.att-card,a.act-card,.att-chip,.att-dot,.att-tape-track,.att-tape-item.is-live,.att-tape-item.is-approx{animation:none!important;transition:none!important}
   .att-tape{overflow-x:auto}
   a.att-card.tier-3,a.att-card.tier-4,.att-chip.tier-3,.att-chip.tier-4{box-shadow:0 0 0 4px var(--tg)}
   .att-tape-item.is-live{background:rgba(250,3,152,.18)}
+  .att-tape-item.is-approx{background:rgba(217,164,4,.2)}
 }
 @media(max-width:640px){.att-title{font-size:20px}.act-grid{grid-template-columns:repeat(2,minmax(0,1fr))}a.act-card{min-width:0;padding:11px 11px 10px}.act-status{font-size:20px}.att-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}a.att-card{min-width:0;padding:11px 11px 10px}.att-top{flex-wrap:wrap}.att-meta{overflow-wrap:anywhere}.att-asset{font-size:21px}.att-pct b{font-size:26px!important}a.att-card.tier-4 .att-pct b{font-size:36px!important}a.att-card.tier-3 .att-pct b{font-size:32px!important}a.att-card.tier-2 .att-pct b{font-size:30px!important}}
 #att-chip{margin:12px 0 18px}
@@ -951,17 +958,49 @@ load();setInterval(load,60000);
       if (!dir) return true;
       return A.applicable(s, opts);
     }
+    // 2026-10-02 (Angela, option 1 of the scoping discussion): a 'conditional' multi-step trigger (parseTrigger()
+    // in att-core, byte-for-byte untouched per project rule - see att-ui's header comment) still carries a real
+    // numeric .zone, but att-module's own triggerProximity() deliberately only measures 'present' triggers, since
+    // a conditional one needs confirmation the mechanical engine can't verify from a price touch alone. Showing
+    // that anchor as a live distance is only safe when Chelsea stated it in an explicit "Entry Zone: $X-$Y"
+    // clause (zero ambiguity) - the OTHER conditional path (anchor picked from free text before a condition
+    // connector) can grab a stray number that isn't a price at all (e.g. AVAX's "200" in "200 MA"), so that path
+    // is deliberately left alone for now. Never modifies att-module/att-core; reuses their own exported
+    // primitives (C.edges, A.sidePre, A.distTo, A.bandOrd, A.BAND_NAMES) exactly like sheet.html's
+    // proximityToLevel() already does for a different overlay feature - not a second math implementation.
+    function entryZoneAnchoredTrigger(setup) {
+      var levels = (setup && setup.levels) || [];
+      for (var i = 0; i < levels.length; i++) {
+        var l = levels[i];
+        if (l.kind === 'trigger' && l.state === 'conditional' && l.zone && l.conditions &&
+          l.conditions.some(function (c) { return /^entry zone \$/i.test(c); })) return l;
+      }
+      return null;
+    }
+    function approxTriggerProximity(setup, price) {
+      var dir = setup.direction && setup.direction.value;
+      var level = dir && entryZoneAnchoredTrigger(setup);
+      if (!level) return { state: 'NA' };
+      if (price == null || !isFinite(price) || price <= 0) return { state: 'NOPRICE', approx: true };
+      var ed = C.edges(level, dir), side = A.sidePre(price, ed);
+      if (side === 'beyond') return { state: 'PASSED', approx: true, direction: dir, level_id: level.id, near_edge: ed.near, far_edge: ed.far, zone: level.zone, past_pct: A.distTo(price, ed.far) };
+      var d = side === 'inside' ? 0 : A.distTo(price, ed.near), ord = A.bandOrd(d);
+      return { state: side === 'inside' ? 'INSIDE' : 'APPROACHING', approx: true, distance_pct: d, band: A.BAND_NAMES[ord], band_ord: ord, level_id: level.id, near_edge: ed.near, far_edge: ed.far, zone: level.zone, direction: dir, inside: side === 'inside' };
+    }
     function view() {
       if (!setups) return null;
       var fresh = !!ps.at && (Date.now() - ps.at) < STALE_MS && Object.keys(ps.prices).length > 0;
       // watch = EVERY currently-Watching setup, including ones with no numeric trigger the engine can measure a
       // distance against (e.g. a pure MA/structure call with no price level yet). items = the subset with a real
-      // computable proximity - still the only ones that get a distance %, a tier, or a Live Attention card.
+      // (or approximate - prox.approx - see approxTriggerProximity above) computable proximity - still the only
+      // ones that get a distance %, a tier, or a Live Attention card (approx ones are excluded from the card
+      // grid itself below - ticker-only, see render()).
       var watch = [];
       Object.keys(setups).forEach(function (a) {
         var s = setups[a]; if (!isWatchingLike(s)) return;
         var price = fresh ? ps.prices[a] : null;
         var prox = A.triggerProximity(s, price, opts);
+        if (prox.state === 'NA') { var approx = approxTriggerProximity(s, price); if (approx.state !== 'NA') prox = approx; }
         watch.push({ asset: a, setup: s, price: price, prox: prox });
       });
       watch = A.sortAttention(watch);
@@ -985,12 +1024,12 @@ load();setInterval(load,60000);
     }
     function tapeHtml(list, ariaLabel) {
       var one = list.map(function (it) {
-        var p = it.prox, isLive = (p.state === 'APPROACHING' || p.state === 'INSIDE');
-        var label = isLive ? '<span class="p">' + A.fmtPct(p.distance_pct) + '%</span> to trigger'
-          : p.state === 'PASSED' ? '<span class="p">past trigger zone</span>'
+        var p = it.prox, isLive = (p.state === 'APPROACHING' || p.state === 'INSIDE'), approx = !!p.approx;
+        var label = isLive ? '<span class="p">' + (approx ? '~' : '') + A.fmtPct(p.distance_pct) + '%</span> to ' + (approx ? 'zone (unconfirmed)' : 'trigger')
+          : p.state === 'PASSED' ? '<span class="p">' + (approx ? 'approx. ' : '') + 'past trigger zone</span>'
           : p.state === 'NOPRICE' ? '<span class="p">no live price</span>'
           : '<span class="p">no numeric trigger yet</span>';
-        var cls = 'att-tape-item' + (isLive ? ' is-live tier-' + A.tier(p) : '');
+        var cls = 'att-tape-item' + (approx && isLive ? ' is-approx' : isLive ? ' is-live tier-' + A.tier(p) : '');
         return '<a class="' + cls + '" href="sheet.html?asset=' + encodeURIComponent(it.asset) + '"><b>' + esc(it.asset) + '</b>' + label + '</a>';
       }).join('');
       var dur = Math.max(24, list.length * 4.5);
@@ -1012,8 +1051,10 @@ load();setInterval(load,60000);
     function render() {
       var v = view();
       if (!v) { sec.hidden = true; secTodayTick.hidden = true; secHistTick.hidden = true; return; }
-      var near = v.items.filter(function (i) { return i.prox.state === 'APPROACHING' || i.prox.state === 'INSIDE'; });
-      var past = v.items.filter(function (i) { return i.prox.state === 'PASSED'; });
+      // approx (unconfirmed-anchor) items stay in the ticker only, never the full detail card/chip - those make a
+      // visual precision claim ("this is Chelsea's exact number") that an approximate anchor hasn't earned.
+      var near = v.items.filter(function (i) { return (i.prox.state === 'APPROACHING' || i.prox.state === 'INSIDE') && !i.prox.approx; });
+      var past = v.items.filter(function (i) { return i.prox.state === 'PASSED' && !i.prox.approx; });
       var noPx = v.items.filter(function (i) { return i.prox.state === 'NOPRICE'; });
       renderScopedTapes(v.watch);
       if (!v.watch.length) { sec.hidden = true; decorate(v); return; }
@@ -1039,7 +1080,7 @@ load();setInterval(load,60000);
         Array.prototype.forEach.call(grid.querySelectorAll('a.card'), function (c) {
           var m = /[?&]asset=([^&]+)/.exec(c.getAttribute('href') || ''); if (!m) return; var a = decodeURIComponent(m[1]).toUpperCase();
           var old = c.querySelector('.att-chip'); if (old) old.remove();
-          var it = byAsset[a]; if (!it) return;
+          var it = byAsset[a]; if (!it || it.prox.approx) return;   // approx (unconfirmed-anchor) items: ticker only, see render()
           var p = it.prox, html = '';
           if (p.state === 'APPROACHING' || p.state === 'INSIDE') html = '<div class="att-chip tier-' + A.tier(p) + '"><b>' + A.fmtPct(p.distance_pct) + '%</b><span>to trigger</span><small>live $' + A.fmtPrice(it.price) + '</small></div>';
           else if (p.state === 'PASSED') html = '<div class="att-chip passed"><span>price past trigger zone</span><small>live $' + A.fmtPrice(it.price) + '</small></div>';
@@ -1087,6 +1128,9 @@ load();setInterval(load,60000);
     function loadPrices() {
       if (!setups) return Promise.resolve();
       var assets = Object.keys(setups).filter(function (a) { return A.applicable(setups[a], opts) && A.triggerProximity(setups[a], 1, opts).state !== 'NA'; });
+      // also fetch for the entry-zone-anchored conditional triggers approxTriggerProximity() can use (see view()
+      // above) - A.triggerProximity() alone would never admit them, since it only measures 'present' triggers.
+      Object.keys(setups).forEach(function (a) { if (assets.indexOf(a) < 0 && isWatchingLike(setups[a]) && approxTriggerProximity(setups[a], 1).state !== 'NA') assets.push(a); });
       A.activeNow(setups).forEach(function (it) { if (assets.indexOf(it.asset) < 0) assets.push(it.asset); });   // active assets: price is context only
       if (!assets.length) { render(); return Promise.resolve(); }
       return A.fetchPrices(assets).then(function (r) { if (Object.keys(r.prices).length) ps = r; render(); renderActive(); }).catch(function () { render(); renderActive(); });
