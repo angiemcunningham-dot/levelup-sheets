@@ -915,6 +915,28 @@ load();setInterval(load,60000);
     if (todayHead && todayHead.parentNode) todayHead.parentNode.insertBefore(sec, todayHead);
     else afterToday.parentNode.insertBefore(sec, afterToday);   // fail-safe fallback - never breaks the page
 
+    // 2026-10-02 (Angela, explicit): three SEPARATE tickers instead of one shared one - each section (Live
+    // Attention, Today's Setups, Previous Calls/History) gets its own, scoped to the assets actually shown in
+    // that section. Membership is read straight off the live DOM (#grid / #grid-history, built independently by
+    // the page's own earlier <script>) rather than re-deriving "is this today's batch" here a second time -
+    // guarantees the ticker always matches exactly what that section is actually showing, never drifts from it.
+    var secTodayTick = document.createElement('div');
+    secTodayTick.id = 'today-tape'; secTodayTick.hidden = true;
+    if (todayHead && todayHead.parentNode) todayHead.parentNode.insertBefore(secTodayTick, todayHead.nextSibling);
+    var histWrapEl = document.getElementById('hist-wrap');
+    var secHistTick = document.createElement('div');
+    secHistTick.id = 'hist-tape'; secHistTick.hidden = true;
+    if (histWrapEl && histWrapEl.parentNode) histWrapEl.parentNode.insertBefore(secHistTick, histWrapEl);
+    function assetsInGrid(id) {
+      var out = [], el = document.getElementById(id);
+      if (!el) return out;
+      Array.prototype.forEach.call(el.querySelectorAll('a.card[href*="asset="]'), function (c) {
+        var m = /[?&]asset=([^&]+)/.exec(c.getAttribute('href') || ''); if (!m) return;
+        out.push(decodeURIComponent(m[1]).toUpperCase());
+      });
+      return out;
+    }
+
     // Ticker membership only - bypasses ONLY A.applicable()'s resolved-direction requirement (a setup like
     // "Liquidity Sweep & Reclaim of 200 MA" may never resolve one because it only gets one direction vote).
     // It still defers to A.applicable() whenever a direction IS resolved, because that's the (mechanically
@@ -961,7 +983,7 @@ load();setInterval(load,60000);
     function pastHtml(it) {
       return '<a class="att-past-chip" href="sheet.html?asset=' + encodeURIComponent(it.asset) + '" data-asset="' + esc(it.asset) + '"><b>' + esc(it.asset) + '</b> price past Chelsea’s trigger zone · live $' + A.fmtPrice(it.price) + ' · zone $' + A.zoneText(it.prox.zone) + '</a>';
     }
-    function tapeHtml(list) {
+    function tapeHtml(list, ariaLabel) {
       var one = list.map(function (it) {
         var p = it.prox, isLive = (p.state === 'APPROACHING' || p.state === 'INSIDE');
         var label = isLive ? '<span class="p">' + A.fmtPct(p.distance_pct) + '%</span> to trigger'
@@ -972,15 +994,28 @@ load();setInterval(load,60000);
         return '<a class="' + cls + '" href="sheet.html?asset=' + encodeURIComponent(it.asset) + '"><b>' + esc(it.asset) + '</b>' + label + '</a>';
       }).join('');
       var dur = Math.max(24, list.length * 4.5);
-      return '<div class="att-tape" role="marquee" aria-label="Watching setups, not yet triggered"><div class="att-tape-track" style="animation-duration:' + dur + 's">' + one + '<span aria-hidden="true" style="display:contents">' + one + '</span></div></div>';
+      return '<div class="att-tape" role="marquee" aria-label="' + esc(ariaLabel || 'Watching setups, not yet triggered') + '"><div class="att-tape-track" style="animation-duration:' + dur + 's">' + one + '<span aria-hidden="true" style="display:contents">' + one + '</span></div></div>';
+    }
+    // Today's Setups / Previous Calls-History tickers: same tape, scoped to whatever that section's OWN grid is
+    // actually showing right now (see assetsInGrid above) - never a second, independently-derived "today"/
+    // "history" rule that could drift from what the cards themselves display.
+    function renderScopedTapes(watch) {
+      var byAsset = {}; watch.forEach(function (i) { byAsset[i.asset] = i; });
+      var todayItems = assetsInGrid('grid').map(function (a) { return byAsset[a]; }).filter(Boolean);
+      secTodayTick.hidden = !todayItems.length;
+      secTodayTick.innerHTML = todayItems.length ? tapeHtml(todayItems, "Today's watching setups") : '';
+      var histItems = assetsInGrid('grid-history').map(function (a) { return byAsset[a]; }).filter(Boolean);
+      secHistTick.hidden = !histItems.length;
+      secHistTick.innerHTML = histItems.length ? tapeHtml(histItems, 'Previous calls still watching, not closed or stopped') : '';
     }
 
     function render() {
       var v = view();
-      if (!v) { sec.hidden = true; return; }
+      if (!v) { sec.hidden = true; secTodayTick.hidden = true; secHistTick.hidden = true; return; }
       var near = v.items.filter(function (i) { return i.prox.state === 'APPROACHING' || i.prox.state === 'INSIDE'; });
       var past = v.items.filter(function (i) { return i.prox.state === 'PASSED'; });
       var noPx = v.items.filter(function (i) { return i.prox.state === 'NOPRICE'; });
+      renderScopedTapes(v.watch);
       if (!v.watch.length) { sec.hidden = true; decorate(v); return; }
       sec.hidden = false;
       var head = '<div class="att-head"><div class="att-title">Live <em>attention</em></div><div class="att-live" aria-live="polite"><span class="att-dot' + (v.fresh ? '' : ' off') + '"></span>' + (v.fresh ? 'prices updated ' + etTime(ps.at) : 'live prices unavailable — distances hidden') + '</div></div>' +
