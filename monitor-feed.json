@@ -1,10 +1,10 @@
 {
  "schema_version": 1,
  "kind": "levelup-public-feed",
- "generated_at": "2026-10-02T04:47:17.611Z",
+ "generated_at": "2026-10-02T04:52:20.415Z",
  "notice": "Mechanical observations of Chelsea's published levels. Not a Sheet status, not a signal, and not a record of anyone's entry or exit.",
  "monitor": {
-  "last_successful_check_at": "2026-10-02T04:47:17.611Z"
+  "last_successful_check_at": "2026-10-02T04:52:20.415Z"
  },
  "assets": {
   "AAVE": {
@@ -2248,10 +2248,17 @@
     "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "WAITING_FOR_TRIGGER",
-    "state_since": "2026-09-28T13:18:16.115Z",
+    "state": "TRIGGERED",
+    "state_since": "2026-10-02T04:52:20.415Z",
     "published_at": "2026-09-28T11:42:47.000Z",
-    "trigger": null,
+    "trigger": {
+     "level_id": "TRIGGER_1",
+     "zone": {
+      "low": 123.35,
+      "high": 123.35
+     },
+     "reached_at": "2026-10-02T04:00:00.000Z"
+    },
     "targets": [
      {
       "level_id": "TP1",
