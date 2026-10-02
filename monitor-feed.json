@@ -1,10 +1,10 @@
 {
  "schema_version": 1,
  "kind": "levelup-public-feed",
- "generated_at": "2026-10-02T17:22:23.515Z",
+ "generated_at": "2026-10-02T17:27:20.145Z",
  "notice": "Mechanical observations of Chelsea's published levels. Not a Sheet status, not a signal, and not a record of anyone's entry or exit.",
  "monitor": {
-  "last_successful_check_at": "2026-10-02T17:22:23.515Z"
+  "last_successful_check_at": "2026-10-02T17:27:20.145Z"
  },
  "assets": {
   "AAVE": {
@@ -786,7 +786,22 @@
      },
      "reached_at": null
     },
-    "stop_boundary": null,
+    "stop_boundary": {
+     "level_id": "STOP",
+     "kind": "stop",
+     "zone": {
+      "low": 84470,
+      "high": 84500
+     },
+     "reached_at": "2026-10-02T17:24:00.000Z",
+     "in_trade": true,
+     "relation_to_final_tp": "AFTER",
+     "tps_reached_before_stop": [
+      "TP1",
+      "TP2",
+      "TP3"
+     ]
+    },
     "evidence_grade": "CLOSE_CONFIRMED",
     "confirm": {
      "at": "2026-10-02T04:21:00.000Z",
@@ -3014,7 +3029,22 @@
      },
      "reached_at": null
     },
-    "stop_boundary": null,
+    "stop_boundary": {
+     "level_id": "STOP",
+     "kind": "stop",
+     "zone": {
+      "low": 84470,
+      "high": 84500
+     },
+     "reached_at": "2026-10-02T17:24:00.000Z",
+     "in_trade": true,
+     "relation_to_final_tp": "AFTER",
+     "tps_reached_before_stop": [
+      "TP1",
+      "TP2",
+      "TP3"
+     ]
+    },
     "evidence_grade": "CLOSE_CONFIRMED",
     "confirm": {
      "at": "2026-10-02T04:21:00.000Z",
