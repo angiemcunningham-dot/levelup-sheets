@@ -1,10 +1,10 @@
 {
  "schema_version": 1,
  "kind": "levelup-public-feed",
- "generated_at": "2026-10-02T04:17:20.231Z",
+ "generated_at": "2026-10-02T04:22:18.315Z",
  "notice": "Mechanical observations of Chelsea's published levels. Not a Sheet status, not a signal, and not a record of anyone's entry or exit.",
  "monitor": {
-  "last_successful_check_at": "2026-10-02T04:17:20.231Z"
+  "last_successful_check_at": "2026-10-02T04:22:18.315Z"
  },
  "assets": {
   "AAVE": {
@@ -789,8 +789,8 @@
     "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "TARGETS_IN_PROGRESS",
-    "state_since": "2026-10-02T02:12:18.284Z",
+    "state": "OBJECTIVES_EXHAUSTED",
+    "state_since": "2026-10-02T04:22:18.315Z",
     "published_at": "2026-10-01T23:25:47.000Z",
     "trigger": {
      "level_id": "TRIGGER_1",
@@ -823,15 +823,15 @@
        "low": 86200,
        "high": 86200
       },
-      "reached_at": null
+      "reached_at": "2026-10-02T04:20:00.000Z"
      }
     ],
     "objectives": {
      "defined": 3,
-     "reached": 2,
-     "all_reached": false,
+     "reached": 3,
+     "all_reached": true,
      "ladder_problems": [],
-     "completed_at": null
+     "completed_at": "2026-10-02T04:20:00.000Z"
     },
     "extended": {
      "level_id": "EXTENDED",
@@ -842,16 +842,20 @@
      "reached_at": null
     },
     "stop_boundary": null,
-    "evidence_grade": null,
-    "confirm": null,
-    "terminal_at": null,
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-10-02T04:21:00.000Z",
+     "close": 86333.74,
+     "level_id": "TP3"
+    },
+    "terminal_at": "2026-10-02T04:20:00.000Z",
     "later_evidence": null,
     "public_display": {
-     "kind": null,
-     "ready": false,
-     "evidence_grade": null,
+     "kind": "TRADE_COMPLETE",
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
      "blockers": [],
-     "outcome": null,
+     "outcome": "COMPLETED",
      "tps_reached_before_stop": []
     }
    }
@@ -2971,6 +2975,171 @@
   }
  },
  "receipts": [
+  {
+   "receipt_id": "rcpt_1593fcd16f7ab90dd47eb738baed",
+   "asset": "BTC",
+   "setup_instance_key": "BTC|1790897147000|0caaa1ca2dcd4c0d6f80c0abae4b",
+   "setup_fingerprint": "0caaa1ca2dcd4c0d6f80c0abae4b",
+   "outcome": "OBJECTIVES_EXHAUSTED",
+   "opened_at": "2026-10-02T04:22:18.315Z",
+   "superseded": false,
+   "superseded_at": null,
+   "snapshot": {
+    "setup_published_at": "2026-10-01T23:24:40.000Z",
+    "setup_timestamp_text": "10/1/2026 19:25:47",
+    "direction": "long",
+    "sheet_status_at_open": {
+     "text": "Watching",
+     "class": "WATCHING"
+    },
+    "levels": [
+     {
+      "id": "TRIGGER_1",
+      "kind": "trigger",
+      "label": "Trigger 1",
+      "zone": {
+       "low": 84519,
+       "high": 84519
+      },
+      "raw": "Next 1H open and hold above EMA10 (84,519) and SMA10 (84,542), then confirmed by holding 84,520–84,540 on the next 1H open. Entry Zone: $84,640–$84,720"
+     },
+     {
+      "id": "TP1",
+      "kind": "tp",
+      "label": "TP1",
+      "zone": {
+       "low": 85090,
+       "high": 85090
+      },
+      "raw": "TP1: $85,090 | TP2: $85,490 | TP3: $86,200 | Extended: $87,600"
+     },
+     {
+      "id": "TP2",
+      "kind": "tp",
+      "label": "TP2",
+      "zone": {
+       "low": 85490,
+       "high": 85490
+      },
+      "raw": "TP1: $85,090 | TP2: $85,490 | TP3: $86,200 | Extended: $87,600"
+     },
+     {
+      "id": "TP3",
+      "kind": "tp",
+      "label": "TP3",
+      "zone": {
+       "low": 86200,
+       "high": 86200
+      },
+      "raw": "TP1: $85,090 | TP2: $85,490 | TP3: $86,200 | Extended: $87,600"
+     },
+     {
+      "id": "EXTENDED",
+      "kind": "extended",
+      "label": "Extended",
+      "zone": {
+       "low": 87600,
+       "high": 87600
+      },
+      "raw": "TP1: $85,090 | TP2: $85,490 | TP3: $86,200 | Extended: $87,600"
+     },
+     {
+      "id": "STOP",
+      "kind": "stop",
+      "label": "Stop",
+      "zone": {
+       "low": 84470,
+       "high": 84500
+      },
+      "raw": "Stop Range: $84,470–$84,500 (under EMA10 84,519)"
+     }
+    ],
+    "published_text": {
+     "headline": "BTC — Long Watch — 1H Hold Above 10-Period Bundle",
+     "why": "Current Price: $84,694\nSetup/Pattern: 1H grind on the 10s after a soft daily bounce. Long only if the next hour holds above both 10s.\nWhat I'm Watching: Hold of 84,520–84,540 on the next 1H open. Lose that and the sit is gone.\nWhy I like it: 1H price is just above the 10-period pair. EMA10 84,519, SMA10 84,542, Hull 84,688. SMA20 is 84,214, so this bundle is a little wider than BNB and ETH. RSI(14) 60.1, Stoch %K 68.7, MACD positive, ADX 19. Acceptable sit, not the tightest.\nRisk/Reward: About 1:4 to TP2 off an 84,690 entry and 84,490 stop",
+     "warning": "Invalidation: 1H close under 84,519, or a push through 85,500 that leaves the bundle behind.\nMISSED IT?: If price has already moved well beyond the 84,640–84,720 entry zone without the hold confirming, this setup may no longer be valid as described.",
+     "triggers": [
+      "Next 1H open and hold above EMA10 (84,519) and SMA10 (84,542), then confirmed by holding 84,520–84,540 on the next 1H open. Entry Zone: $84,640–$84,720",
+      "",
+      ""
+     ],
+     "targets": "TP1: $85,090 | TP2: $85,490 | TP3: $86,200 | Extended: $87,600",
+     "stop": "Stop Range: $84,470–$84,500 (under EMA10 84,519)",
+     "safety": ""
+    }
+   },
+   "lifecycle": {
+    "state": "OBJECTIVES_EXHAUSTED",
+    "state_since": "2026-10-02T04:22:18.315Z",
+    "published_at": "2026-10-01T23:25:47.000Z",
+    "trigger": {
+     "level_id": "TRIGGER_1",
+     "zone": {
+      "low": 84519,
+      "high": 84519
+     },
+     "reached_at": "2026-10-01T23:00:00.000Z"
+    },
+    "targets": [
+     {
+      "level_id": "TP1",
+      "zone": {
+       "low": 85090,
+       "high": 85090
+      },
+      "reached_at": "2026-10-02T02:09:00.000Z"
+     },
+     {
+      "level_id": "TP2",
+      "zone": {
+       "low": 85490,
+       "high": 85490
+      },
+      "reached_at": "2026-10-02T03:02:00.000Z"
+     },
+     {
+      "level_id": "TP3",
+      "zone": {
+       "low": 86200,
+       "high": 86200
+      },
+      "reached_at": "2026-10-02T04:20:00.000Z"
+     }
+    ],
+    "objectives": {
+     "defined": 3,
+     "reached": 3,
+     "all_reached": true,
+     "ladder_problems": [],
+     "completed_at": "2026-10-02T04:20:00.000Z"
+    },
+    "extended": {
+     "level_id": "EXTENDED",
+     "zone": {
+      "low": 87600,
+      "high": 87600
+     },
+     "reached_at": null
+    },
+    "stop_boundary": null,
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-10-02T04:21:00.000Z",
+     "close": 86333.74,
+     "level_id": "TP3"
+    },
+    "terminal_at": "2026-10-02T04:20:00.000Z",
+    "later_evidence": null,
+    "public_display": {
+     "kind": "TRADE_COMPLETE",
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
+     "blockers": [],
+     "outcome": "COMPLETED",
+     "tps_reached_before_stop": []
+    }
+   }
+  },
   {
    "receipt_id": "rcpt_0caf3d4058a60a0af6a9374f8a89",
    "asset": "BNB",
