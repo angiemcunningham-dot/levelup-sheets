@@ -247,10 +247,8 @@ const srcType=r=>{const s=(get(r,"source type")||"").toLowerCase();
   return(hasLevels(r)||get(r,"why"))?"CHELSEA SETUP":"ADMIN STATUS";};
 const SRC_CLS={"CHELSEA SETUP":"s-ch","ADMIN STATUS":"s-ad","PRICE CHECK":"s-pc","OTHER / UNKNOWN":"s-ot"};
 const srcBadge=t=>`<span class="src ${SRC_CLS[t]}">${t}</span>`;
-const cut=(s,n)=>{s=String(s||"");return s.length>n?s.slice(0,n-1)+"…":s;};
 const tpTxt=r=>[1,2,3].map(k=>get(r,"tp"+k)||"—").join(" / ");
 const tpRaw=r=>{const k=Object.keys(r).find(h=>h.includes("tp1")&&h.includes("tp2"));return(k&&r[k])||"";};
-const cleanPC=r=>get(r,"headline").replace(/^\s*price[- ]?check(ed)?(\s+update)?\s*[-–—:]*\s*/i,"").trim();
 function diffLevels(a,b){if(!b)return[];const out=[];
   [["TARGETS",tpRaw],["STOP",r=>get(r,"stop")],["SAFETY",r=>get(r,"safety")],["TRIGGER 1",r=>get(r,"trigger 1")],["TRIGGER 2",r=>get(r,"trigger 2")],["TRIGGER 3",r=>get(r,"trigger 3")]]
    .forEach(([k,f])=>{if(f(a)!==f(b))out.push(k.toLowerCase());});return out;}
@@ -268,10 +266,6 @@ async function load(){
   const setupRows=upto.filter(r=>!isPC(r));
   const S=setupRows.find(r=>srcType(r)==="CHELSEA SETUP"&&(hasLevels(r)||get(r,"why")))||setupRows.find(hasLevels)||setupRows.find(r=>get(r,"why"))||cur;
   const carried=S!==cur;
-  // 2026-09-29 fix: scope to the CURRENT setup instance only - a price-check row from an OLD, superseded instance
-  // (e.g. LINK/TAO's real case, ~9 days stale) must never surface on a brand-new one. See core/levelup-core.js's
-  // selectRows() for the canonical version of this same fix.
-  const sTs=rowTs(S).getTime();const lastPC=[...rows].reverse().find(r=>isPC(r)&&!isNaN(rowTs(r).getTime())&&!isNaN(sTs)&&rowTs(r).getTime()>=sTs)||null;
   const [bcls,btxt]=STATUS(get(cur,"status"));const closed=/closed|invalid/i.test(get(cur,"status"));const paused=/watch|no trade/i.test(get(cur,"status"));
   const L=levels(S);const img=chartImg(get(S,"chart image"),get(S,"chart link"));const vm=driveId(get(S,"voice"));
   const P=rows.filter(r=>!isPC(r)&&hasLevels(r)&&rowTs(r)<rowTs(S)).pop();
@@ -288,8 +282,7 @@ async function load(){
     h+=`<div class="tl"><div><b>Current status</b><span>${esc(btxt)} · set ${stamp(get(cur,"timestamp"))} ${srcBadge(srcType(cur))}</span></div>${rawHl?`<div><b>Status note</b><span>${esc(rawHl)}</span></div>`:""}</div>`;
   }else{
     h+=`<div class="tl"><div><b>Current status</b><span>${esc(btxt)} · set ${stamp(get(cur,"timestamp"))} ${srcBadge(srcType(cur))}</span></div>`
-    +`<div><b>Published setup</b><span>${hasSetup?`${stamp(get(S,"timestamp"))} ${srcBadge(srcType(S))}${carried?` <i>· history, not a current call</i>`:""}`:"none on file"}</span></div>`
-    +`<div><b>Last price check</b><span>${lastPC?`${stamp(get(lastPC,"timestamp"))} · ${esc(cut(cleanPC(lastPC),140))}`:"none recorded in the sheet"}</span></div></div>`;
+    +`<div><b>Published setup</b><span>${hasSetup?`${stamp(get(S,"timestamp"))} ${srcBadge(srcType(S))}${carried?` <i>· history, not a current call</i>`:""}`:"none on file"}</span></div></div>`;
   }
   if(prevAuth&&get(prevAuth,"status")!==get(cur,"status"))h+=`<div class="diff">Status changed: ${esc(get(prevAuth,"status"))} → ${esc(get(cur,"status"))} (${esc(stamp(get(cur,"timestamp")))})</div>`;
   if(ld.length)h+=`<div class="diff">This published setup differs from the one before it (${esc(stamp(get(P,"timestamp")))}) in: ${esc(ld.join(", "))}. Both are kept in the history below.</div>`;
@@ -321,7 +314,6 @@ async function load(){
     }else{
       h+=`<div class="sect"><div class="bar"></div><h2>Published setup</h2></div><div class="histnote">No published setup on file for ${esc(ASSET)}.</div>`+media();
     }
-    h+=`<div class="sect"><div class="bar"></div><h2>Last price check</h2></div><div class="card soft"><p>${lastPC?`${esc(stamp(get(lastPC,"timestamp")))} — ${esc(cleanPC(lastPC))}`:"None recorded in the sheet."}</p></div>`;
   }else{
     if(carried){
       h+=`<div class="sect"><div class="bar"></div><h2>Most recent published setup</h2><div class="hint">published · ${esc(stamp(get(S,"timestamp")))}</div></div>`;
