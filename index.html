@@ -1031,7 +1031,11 @@ load();setInterval(load,60000);
       var head = '<div class="att-head"><div class="att-title">Live <em>attention</em></div><div class="att-live" aria-live="polite"><span class="att-dot' + (v.fresh ? '' : ' off') + '"></span>' + (v.fresh ? 'prices updated ' + etTime(ps.at) : 'live prices unavailable — distances hidden') + '</div></div>' +
         '<div class="att-note">Watching setups, closest to Chelsea’s published trigger first. <b>% to trigger</b> is the gap between the live price and the nearest edge of the published trigger zone — the same calculation and 3% / 2% / 1% / 0.5% bands the price monitor uses. It is a distance to a price level only: not a signal, not trade quality or probability. Chelsea’s confirmation rules still decide.</div>';
       var body = '';
-      if (v.watch.length) body += tapeHtml(v.watch);
+      // 2026-10-02 (Angela, explicit): the ticker only shows setups with a real numeric trigger/zone to measure a
+      // distance against - v.items, not v.watch. v.watch also includes pure MA/structure calls with no numeric
+      // level at all (prox.state 'NA'), which previously rendered as a dead "no numeric trigger yet" chip; those
+      // are dropped from the ticker entirely now rather than shown as an un-trackable entry.
+      if (v.items.length) body += tapeHtml(v.items);
       if (near.length) body += '<div class="att-grid">' + near.map(cardHtml).join('') + '</div>';
       else if (v.fresh) body += '<div class="att-empty">No watching setup is currently below its trigger zone.</div>';
       if (past.length) body += '<details class="hist-toggle att-past-toggle"><summary>Price past trigger zone<span> (' + past.length + ')</span></summary><div class="att-past">' + past.map(pastHtml).join('') + '</div></details>';
