@@ -212,9 +212,22 @@ const isResetWatch=r=>{const s=get(r,"source type");return /reset/i.test(s);};
 /* Same hasLevels definition already used by sheet.html / core/levelup-core.js - not a new interpretation. */
 const LEVEL_KEYS=["trigger 1","trigger 2","trigger 3","tp1","tp2","tp3","stop","safety"];
 const hasLevels=r=>LEVEL_KEYS.some(k=>get(r,k));
+/* 2026-10-03 (Angela, explicit): Chelsea's own pattern jargon ("Above The Pile", "Fast Line Hold", admin-update
+   boilerplate like "ADMIN UPDATE — Trigger Confirmed, Trade Live") is noise to the group, not signal - nobody
+   outside Chelsea reliably knows what it means. The card headline for a Watching or Active/Active-admin-update
+   row collapses to just the direction word now (Watch-status keeps "Long/Short Watch"; Active-status drops even
+   that, matching Angela's "ARB long" example). No Trade/Invalidated/Closed rows are untouched - those headlines
+   are usually a real human note ("lost structure on the 4H"), not Chelsea's pattern-name jargon, and status class
+   alone can't carry direction for a Watching row (the Sheet's own "status" column just says "Watching"), so this
+   still has to read the headline text for that one case. Display-only: the Sheet's real headline is never
+   altered, just not rendered verbatim here. A separate, deliberately curated list of pattern names Angela DOES
+   want shown (breakout of a bear flag, head and shoulders, inside the channel, etc.) is a later follow-up. */
+const watchLabel=h=>{const m=/\b(Long|Short)\s+Watch\b/i.exec(h||"");return m?m[1][0].toUpperCase()+m[1].slice(1).toLowerCase()+" Watch":null;};
 function cardHtml(a,r,c,t,pc){
   const isLive=c==="b-active"||c==="b-short";const cardCls=isLive?` is-live${c==="b-short"?" is-short":""}`:"";const pillCls=isLive?" pill-flash":"";const chk=pc[a]?` · last price check ${stamp(get(pc[a],"timestamp"))}`:"";
-  return `<a class="card${cardCls}" href="${DETAIL}?asset=${encodeURIComponent(a)}"><div class="asset">${esc(a)}</div><span class="pill ${c}${pillCls}">${t}</span><div class="hl">${/no trade|closed|invalid/i.test(get(r,"status"))?`<small style="font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6B7280;font-size:10px">Status note · </small>`:""}${esc(get(r,"headline")||"")}</div><div class="meta">status set ${stamp(get(r,"timestamp"))}${chk}</div></a>`;
+  const rawHl=get(r,"headline")||"";
+  const hl=c==="b-active"?"Long":c==="b-short"?"Short":c==="b-watch"?(watchLabel(rawHl)||rawHl):rawHl;
+  return `<a class="card${cardCls}" href="${DETAIL}?asset=${encodeURIComponent(a)}"><div class="asset">${esc(a)}</div><span class="pill ${c}${pillCls}">${t}</span><div class="hl">${/no trade|closed|invalid/i.test(get(r,"status"))?`<small style="font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6B7280;font-size:10px">Status note · </small>`:""}${esc(hl)}</div><div class="meta">status set ${stamp(get(r,"timestamp"))}${chk}</div></a>`;
 }
 function resetCardHtml(a,r){
   return `<a class="rw-card" href="${DETAIL}?asset=${encodeURIComponent(a)}"><div class="asset">${esc(a)}</div><span class="rw-tag">Potential setup · retest/reset required</span><div class="rw-headline">${esc(get(r,"headline")||get(r,"why")||"")}</div><div class="rw-foot">No trigger = no trade · set ${stamp(get(r,"timestamp"))}</div></a>`;
