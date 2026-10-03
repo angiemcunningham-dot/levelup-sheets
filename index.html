@@ -434,11 +434,16 @@ load();setInterval(load,60000);
         { notes: [has ? 'advisory text with an embedded number - not a level definition' : 'text only - no numeric level'], advisory: true });
       return out;
     }
-    // "open-and-hold above/below <price>" (number must be close behind the direction word)
+    // "open-and-hold above/below <price>" (number must be close behind the direction word). 200 chars,
+    // not 40: real text like "...hold above both Simple and Smooth. Entry Zone: $0.804-$0.810" puts over
+    // 40 characters of MA-bundle wording between the direction word and the real number - a 40-char window
+    // was truncating "$0.804" down to a bare "$0" mid-decimal, producing a degenerate {low:0,high:0} zone
+    // that then read as a real, already-passed trigger to every mechanical consumer. Verified live
+    // 2026-10-03 on APT (and the same phrasing across the rest of that day's batch).
     const hm = text.match(/(?:open[\s-]+and[\s-]+hold|open[\s-]*&[\s-]*hold|\bhold)\s+(above|below)\b/i);
     if (hm) {
       out.dirHint = hm[1].toLowerCase() === 'above' ? 'long' : 'short';
-      const after = text.slice(hm.index + hm[0].length); const nums = scanNumbers(after.slice(0, 40));
+      const after = text.slice(hm.index + hm[0].length); const nums = scanNumbers(after.slice(0, 200));
       if (nums.length) {
         const z = zoneAt(nums, 0, after);
         out.trigger = mkLevel(id, 'trigger', 'Trigger ' + n, z, 'Trigger ' + n, text, 'present', { hold: hm[1].toLowerCase() });

@@ -539,11 +539,17 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
         { notes: [has ? 'advisory text with an embedded number - not a level definition' : 'text only - no numeric level'], advisory: true });
       return out;
     }
-    // "open-and-hold above/below <price>" (number must be close behind the direction word)
+    // "open-and-hold above/below <price>" (number must be close behind the direction word). 200 chars,
+    // not 40: real text like "...hold above both Simple and Smooth. Entry Zone: $0.804-$0.810" puts over
+    // 40 characters of MA-bundle wording between the direction word and the real number - a 40-char window
+    // was truncating "$0.804" down to a bare "$0" mid-decimal, producing a degenerate {low:0,high:0} zone
+    // that then read as a real, already-passed trigger to every mechanical consumer. Verified live
+    // 2026-10-03 on APT (and the same phrasing across the rest of that day's batch). Keep in sync with the
+    // same fix in index.html's own embedded copy of this parser.
     const hm = text.match(/(?:open[\s-]+and[\s-]+hold|open[\s-]*&[\s-]*hold|\bhold)\s+(above|below)\b/i);
     if (hm) {
       out.dirHint = hm[1].toLowerCase() === 'above' ? 'long' : 'short';
-      const after = text.slice(hm.index + hm[0].length); const nums = scanNumbers(after.slice(0, 40));
+      const after = text.slice(hm.index + hm[0].length); const nums = scanNumbers(after.slice(0, 200));
       if (nums.length) {
         const z = zoneAt(nums, 0, after);
         out.trigger = mkLevel(id, 'trigger', 'Trigger ' + n, z, 'Trigger ' + n, text, 'present', { hold: hm[1].toLowerCase() });
@@ -1010,7 +1016,11 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
         var t = A.tier(p), lab = p.state === 'INSIDE' ? 'TRIGGER ZONE' : (p.band_ord >= 1 ? 'ATTENTION LEVEL: ' + p.band : '');
         return '<div class="att-chip tier-' + t + '" id="att-chip" data-tier="' + t + '"><b>' + A.fmtPct(p.distance_pct) + '%</b><span>to trigger</span><small>' + esc(lab) + live + lvl + '</small></div>';
       }
-      if (p.state === 'PASSED') return '<div class="att-chip passed" id="att-chip"><span>price past trigger zone</span><small>mechanical observation' + live + lvl + '</small></div>';
+      // 2026-10-03 (Angela, explicit): removed. This repeated the same live-price-vs-level comparison the
+      // ladder below already shows plainly, and when the trigger zone was mis-parsed (see the scanNumbers
+      // window fix above) it rendered as a flatly wrong "price past trigger zone / Chelsea trigger $0.00" -
+      // actively misleading instead of merely redundant. Falls through to the same empty state as NA.
+      if (p.state === 'PASSED') return '';
       return '<div class="att-chip" id="att-chip"><span>live price unavailable</span><small>distance to trigger hidden' + lvl + '</small></div>';
     }
     function ensure() {
