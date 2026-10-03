@@ -174,7 +174,7 @@ a.act-card.side-short:hover{box-shadow:0 10px 26px rgba(185,28,28,.18)}
 <body><div class="sheet"><div class="inner">
 <div class="kicker">LEVEL UP CRYPTO</div><h1>LIVE <em>SETUPS</em></h1><div class="rule"></div>
 <div class="sub">One link per asset. Every read Chelsea makes lands here, with the history and the lesson when it's done.<br>Levels are structure, not instructions. Not financial advice.</div>
-<div class="section-head"><div class="section-title">Today's <em>Setups</em></div><div class="section-sub" id="today-sub"></div></div>
+<div class="section-head"><div class="section-title">Today's Untriggered <em>Setups</em></div><div class="section-sub" id="today-sub"></div></div>
 <div class="grid" id="grid"><div class="empty">Loading…</div></div>
 <section class="reset-watch" id="reset-watch" hidden aria-label="Reset watch - potential setups requiring a retest or reset, not formal trade setups">
   <div class="section-head"><div class="section-title">Reset <em>Watch</em></div></div>
@@ -927,6 +927,15 @@ load();setInterval(load,60000);
     if (todayHead && todayHead.parentNode) todayHead.parentNode.insertBefore(sec, todayHead);
     else afterToday.parentNode.insertBefore(sec, afterToday);   // fail-safe fallback - never breaks the page
 
+    // 2026-10-03 (Angela, explicit): a today's-batch card that's also APPROACHING/INSIDE its trigger zone is
+    // redundant below Live Attention's own (richer) card for the same asset - decorate() now hides it from this
+    // grid entirely instead of just badging it, so each asset lives in exactly one section. Sibling to #grid
+    // (not inside it) because load()'s periodic refresh fully replaces #grid's innerHTML every cycle.
+    var todayAllNearMsg = document.createElement('div');
+    todayAllNearMsg.className = 'empty'; todayAllNearMsg.id = 'today-all-near'; todayAllNearMsg.hidden = true;
+    todayAllNearMsg.textContent = "All of today's setups are currently near trigger — see Live attention above.";
+    if (grid.parentNode) grid.parentNode.insertBefore(todayAllNearMsg, grid.nextSibling);
+
     // 2026-10-02 (Chelsea, mod meeting, explicit): back to ONE ticker. The three-way split (Live Attention /
     // Today's Setups / Previous Calls-History) tried the same day read as confusing/repetitive - "what if we
     // just had one ticker... these need to go." Live Attention's own ticker already covers every Watching
@@ -1049,23 +1058,31 @@ load();setInterval(load,60000);
       decorate(v);
     }
 
-    /* the same chip on the existing status cards (grid is re-rendered by the page every 60s, so we re-apply) */
+    /* grid is re-rendered by the page every 60s, so we re-apply every time: hide a card entirely once its asset
+       is APPROACHING/INSIDE its trigger zone (it already has a fuller card in Live Attention above - see the
+       todayAllNearMsg comment above for why), otherwise badge it (PASSED) or leave it alone. */
     var obs = new MutationObserver(function () { decorate(view()); });
     function decorate(v) {
       obs.disconnect();
       try {
         var byAsset = {}; if (v) v.items.forEach(function (i) { byAsset[i.asset] = i; });
+        var totalCards = 0, nearCards = 0;
         Array.prototype.forEach.call(grid.querySelectorAll('a.card'), function (c) {
+          totalCards++;
           var m = /[?&]asset=([^&]+)/.exec(c.getAttribute('href') || ''); if (!m) return; var a = decodeURIComponent(m[1]).toUpperCase();
           var old = c.querySelector('.att-chip'); if (old) old.remove();
-          var it = byAsset[a]; if (!it || it.prox.approx) return;   // approx (unconfirmed-anchor) items: ticker only, see render()
+          var it = byAsset[a];
+          var isNear = !!it && !it.prox.approx && (it.prox.state === 'APPROACHING' || it.prox.state === 'INSIDE');
+          c.style.display = isNear ? 'none' : '';
+          if (isNear) { nearCards++; return; }
+          if (!it || it.prox.approx) return;   // approx (unconfirmed-anchor) items: ticker only, see render()
           var p = it.prox, html = '';
-          if (p.state === 'APPROACHING' || p.state === 'INSIDE') html = '<div class="att-chip tier-' + A.tier(p) + '"><b>' + A.fmtPct(p.distance_pct) + '%</b><span>to trigger</span><small>live $' + A.fmtPrice(it.price) + '</small></div>';
-          else if (p.state === 'PASSED') html = '<div class="att-chip passed"><span>price past trigger zone</span><small>live $' + A.fmtPrice(it.price) + '</small></div>';
+          if (p.state === 'PASSED') html = '<div class="att-chip passed"><span>price past trigger zone</span><small>live $' + A.fmtPrice(it.price) + '</small></div>';
           if (!html) return;
           var pill = c.querySelector('.pill'); var d = document.createElement('div'); d.innerHTML = html;
           if (pill && pill.parentNode) pill.parentNode.insertBefore(d.firstChild, pill.nextSibling);
         });
+        if (todayAllNearMsg) todayAllNearMsg.hidden = !(totalCards > 0 && nearCards === totalCards);
       } catch (e) { /* never break the page */ }
       obs.observe(grid, { childList: true });
     }
