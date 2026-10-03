@@ -922,27 +922,10 @@ load();setInterval(load,60000);
     if (todayHead && todayHead.parentNode) todayHead.parentNode.insertBefore(sec, todayHead);
     else afterToday.parentNode.insertBefore(sec, afterToday);   // fail-safe fallback - never breaks the page
 
-    // 2026-10-02 (Angela, explicit): three SEPARATE tickers instead of one shared one - each section (Live
-    // Attention, Today's Setups, Previous Calls/History) gets its own, scoped to the assets actually shown in
-    // that section. Membership is read straight off the live DOM (#grid / #grid-history, built independently by
-    // the page's own earlier <script>) rather than re-deriving "is this today's batch" here a second time -
-    // guarantees the ticker always matches exactly what that section is actually showing, never drifts from it.
-    var secTodayTick = document.createElement('div');
-    secTodayTick.id = 'today-tape'; secTodayTick.hidden = true;
-    if (todayHead && todayHead.parentNode) todayHead.parentNode.insertBefore(secTodayTick, todayHead.nextSibling);
-    var histWrapEl = document.getElementById('hist-wrap');
-    var secHistTick = document.createElement('div');
-    secHistTick.id = 'hist-tape'; secHistTick.hidden = true;
-    if (histWrapEl && histWrapEl.parentNode) histWrapEl.parentNode.insertBefore(secHistTick, histWrapEl);
-    function assetsInGrid(id) {
-      var out = [], el = document.getElementById(id);
-      if (!el) return out;
-      Array.prototype.forEach.call(el.querySelectorAll('a.card[href*="asset="]'), function (c) {
-        var m = /[?&]asset=([^&]+)/.exec(c.getAttribute('href') || ''); if (!m) return;
-        out.push(decodeURIComponent(m[1]).toUpperCase());
-      });
-      return out;
-    }
+    // 2026-10-02 (Chelsea, mod meeting, explicit): back to ONE ticker. The three-way split (Live Attention /
+    // Today's Setups / Previous Calls-History) tried the same day read as confusing/repetitive - "what if we
+    // just had one ticker... these need to go." Live Attention's own ticker already covers every Watching
+    // asset system-wide (today's and history's are both strict subsets of it), so it's the one that stays.
 
     // Ticker membership only - bypasses ONLY A.applicable()'s resolved-direction requirement (a setup like
     // "Liquidity Sweep & Reclaim of 200 MA" may never resolve one because it only gets one direction vote).
@@ -1035,28 +1018,14 @@ load();setInterval(load,60000);
       var dur = Math.max(24, list.length * 4.5);
       return '<div class="att-tape" role="marquee" aria-label="' + esc(ariaLabel || 'Watching setups, not yet triggered') + '"><div class="att-tape-track" style="animation-duration:' + dur + 's">' + one + '<span aria-hidden="true" style="display:contents">' + one + '</span></div></div>';
     }
-    // Today's Setups / Previous Calls-History tickers: same tape, scoped to whatever that section's OWN grid is
-    // actually showing right now (see assetsInGrid above) - never a second, independently-derived "today"/
-    // "history" rule that could drift from what the cards themselves display.
-    function renderScopedTapes(watch) {
-      var byAsset = {}; watch.forEach(function (i) { byAsset[i.asset] = i; });
-      var todayItems = assetsInGrid('grid').map(function (a) { return byAsset[a]; }).filter(Boolean);
-      secTodayTick.hidden = !todayItems.length;
-      secTodayTick.innerHTML = todayItems.length ? tapeHtml(todayItems, "Today's watching setups") : '';
-      var histItems = assetsInGrid('grid-history').map(function (a) { return byAsset[a]; }).filter(Boolean);
-      secHistTick.hidden = !histItems.length;
-      secHistTick.innerHTML = histItems.length ? tapeHtml(histItems, 'Previous calls still watching, not closed or stopped') : '';
-    }
-
     function render() {
       var v = view();
-      if (!v) { sec.hidden = true; secTodayTick.hidden = true; secHistTick.hidden = true; return; }
+      if (!v) { sec.hidden = true; return; }
       // approx (unconfirmed-anchor) items stay in the ticker only, never the full detail card/chip - those make a
       // visual precision claim ("this is Chelsea's exact number") that an approximate anchor hasn't earned.
       var near = v.items.filter(function (i) { return (i.prox.state === 'APPROACHING' || i.prox.state === 'INSIDE') && !i.prox.approx; });
       var past = v.items.filter(function (i) { return i.prox.state === 'PASSED' && !i.prox.approx; });
       var noPx = v.items.filter(function (i) { return i.prox.state === 'NOPRICE'; });
-      renderScopedTapes(v.watch);
       if (!v.watch.length) { sec.hidden = true; decorate(v); return; }
       sec.hidden = false;
       var head = '<div class="att-head"><div class="att-title">Live <em>attention</em></div><div class="att-live" aria-live="polite"><span class="att-dot' + (v.fresh ? '' : ' off') + '"></span>' + (v.fresh ? 'prices updated ' + etTime(ps.at) : 'live prices unavailable — distances hidden') + '</div></div>' +
