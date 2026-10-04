@@ -18,6 +18,12 @@ body{display:flex;justify-content:center;padding:24px 20px}
 .kicker{font-size:13px;font-weight:700;letter-spacing:.22em;color:var(--pink);text-transform:uppercase}
 h1{font-family:Archivo;font-weight:900;font-size:clamp(34px,6vw,58px);line-height:.95;margin:10px 0 0;text-transform:uppercase}h1 em{font-style:normal;color:var(--pink)}
 .rule{height:8px;background:var(--pink);width:260px;margin:14px 0 12px;border-radius:2px}
+/* 2026-10-04 (Angela, explicit): brand mark, top-right, same asset/sizing family as sheet.html's .logo (that
+   file's slot also does double duty as a "completion coin" hero on individual setups - this one never needs to,
+   it's a distinct class on purpose). */
+.board-head{display:flex;justify-content:space-between;align-items:flex-start;gap:20px}
+.board-logo{flex:0 0 auto;width:96px;height:92px;filter:drop-shadow(0 0 12px rgba(250,3,152,.45))}.board-logo img{width:100%;height:100%;object-fit:contain}
+@media(max-width:640px){.board-head{flex-direction:column-reverse;align-items:flex-start}}
 .sub{font-family:"JetBrains Mono";font-size:12px;color:var(--gray);letter-spacing:.04em;line-height:1.7}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:30px}
 a.card{display:block;position:relative;text-decoration:none;color:inherit;border:2px solid var(--pink-line);border-radius:14px;padding:18px 20px;background:#fff;transition:.2s}
@@ -172,7 +178,7 @@ a.act-card.side-short:hover{box-shadow:0 10px 26px rgba(185,28,28,.18)}
 </style>
 </head>
 <body><div class="sheet"><div class="inner">
-<div class="kicker">LEVEL UP CRYPTO</div><h1>LIVE <em>SETUPS</em></h1><div class="rule"></div>
+<div class="board-head"><div><div class="kicker">LEVEL UP CRYPTO</div><h1>LIVE <em>SETUPS</em></h1></div><div class="board-logo"><img src="bb_logo_pink.png" alt="" onerror="this.parentNode.style.display='none'"></div></div><div class="rule"></div>
 <div class="sub">One link per asset. Every read Chelsea makes lands here, with the history and the lesson when it's done.<br>Levels are structure, not instructions. Not financial advice.</div>
 <div class="section-head"><div class="section-title">Today's Untriggered <em>Setups</em></div><div class="section-sub" id="today-sub"></div></div>
 <div class="grid" id="grid"><div class="empty">Loading…</div></div>
@@ -923,16 +929,20 @@ load();setInterval(load,60000);
     var CSV = (typeof SHEET_CSV !== 'undefined' && SHEET_CSV) || '';
     var grid = document.getElementById('grid');
     if (!CSV || !grid) return;
-    /* Anchor points (2026-09-29 reorder - Angela's explicit desired hierarchy):
-         LIVE ATTENTION -> TODAY'S SETUPS -> ACTIVE NOW -> OLDER ACTIVE/ADMINISTRATIVE -> RESET WATCH/HISTORY
-       Live Attention moves ABOVE "Today's Setups" entirely (members see what needs eyes immediately, before
-       today's calls) - anchored on the page's first .section-head, with a fail-safe fallback to the old
-       before-reset-watch anchor so a future markup change can never silently break the addon. Active Now and
-       the new Older Active/Administrative section keep the prior after-Today's-Setups anchor; insertion order
-       matters here - whichever is inserted SECOND lands closer to the anchor, so active-now first, then
-       older-active, produces grid -> active-now -> older-active -> reset-watch. */
+    /* Anchor points (2026-10-04 reorder - Angela, explicit: Active trades carry more weight for the group than
+       an untriggered one, so they read above it now):
+         LIVE ATTENTION -> ACTIVE NOW -> OLDER ACTIVE/ADMINISTRATIVE -> TODAY'S SETUPS -> RESET WATCH/HISTORY
+       All three att-only sections anchor on the same spot - the page's first .section-head ("Today's Untriggered
+       Setups"), with a fail-safe fallback to the old before-reset-watch anchor so a future markup change can
+       never silently break the addon. Insertion order matters here - whichever is inserted LAST lands closest to
+       todayHead (i.e. furthest down of the three) - so Live Attention is created/inserted first, then Active Now,
+       then Older Active/Administrative, producing grid -> attention -> active-now -> older-active -> today's. */
     var afterToday = document.getElementById('reset-watch') || grid.nextSibling || grid;
     var todayHead = document.querySelector('.section-head');
+    var insertBeforeToday = function (el) {
+      if (todayHead && todayHead.parentNode) todayHead.parentNode.insertBefore(el, todayHead);
+      else afterToday.parentNode.insertBefore(el, afterToday);   // fail-safe fallback - never breaks the page
+    };
     var PRICE_MS = 30000, SHEET_MS = 60000, STALE_MS = 150000;
     // 2026-09-29 (temporary policy pending Chelsea's confirmation - see secOld below): how long an Active
     // Long/Short Sheet status can stand unchanged before it reads as a forgotten administrative record rather
@@ -945,16 +955,15 @@ load();setInterval(load,60000);
     var etTime = function (ms) { return new Date(ms).toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: '2-digit', second: '2-digit' }) + ' ET'; };
     var srcName = { binance: 'Binance', coinbase: 'Coinbase' };
 
-    var secA = document.createElement('section');
-    secA.className = 'att act'; secA.id = 'active-now'; secA.hidden = true; secA.setAttribute('aria-label', 'Active now: setups whose current status is Active Long or Active Short');
-    afterToday.parentNode.insertBefore(secA, afterToday);
-    var secOld = document.createElement('section');
-    secOld.className = 'att act-old'; secOld.id = 'older-active'; secOld.hidden = true; secOld.setAttribute('aria-label', 'Older active/administrative: Active Long or Active Short records whose status has stood unchanged a long time');
-    afterToday.parentNode.insertBefore(secOld, afterToday);
     var sec = document.createElement('section');
     sec.className = 'att'; sec.id = 'attention'; sec.hidden = true; sec.setAttribute('aria-label', 'Live attention: setups ranked by distance to trigger');
-    if (todayHead && todayHead.parentNode) todayHead.parentNode.insertBefore(sec, todayHead);
-    else afterToday.parentNode.insertBefore(sec, afterToday);   // fail-safe fallback - never breaks the page
+    insertBeforeToday(sec);
+    var secA = document.createElement('section');
+    secA.className = 'att act'; secA.id = 'active-now'; secA.hidden = true; secA.setAttribute('aria-label', 'Active now: setups whose current status is Active Long or Active Short');
+    insertBeforeToday(secA);
+    var secOld = document.createElement('section');
+    secOld.className = 'att act-old'; secOld.id = 'older-active'; secOld.hidden = true; secOld.setAttribute('aria-label', 'Older active/administrative: Active Long or Active Short records whose status has stood unchanged a long time');
+    insertBeforeToday(secOld);
 
     // 2026-10-03 (Angela, explicit): a today's-batch card that's also APPROACHING/INSIDE its trigger zone is
     // redundant below Live Attention's own (richer) card for the same asset - decorate() now hides it from this
