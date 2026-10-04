@@ -222,6 +222,16 @@ const cleanHeadline=(a,h)=>{const esc_a=String(a).replace(/[.*+?^${}()|[\]\\]/g,
 /* 2026-10-03 (Angela, explicit): see index.html's copy of this comment for the full rationale - Chelsea's pattern
    jargon ("Above The Pile", admin-update boilerplate) isn't shown at the top of the detail page either now. */
 const watchLabel=h=>{const m=/\b(Long|Short)\s+Watch\b/i.exec(h||"");return m?m[1][0].toUpperCase()+m[1].slice(1).toLowerCase()+" Watch":null;};
+// 2026-10-04 (Angela, explicit, confirmed directly with Chelsea): "the pile" is not Chelsea's own term - it's
+// her LLM's paraphrase of "the Simple and Smooth moving averages bundling together, with RSI/Stochs pointed
+// up" (a real, specific technical condition, already stated in nearly every Why block right after the word
+// "pile"). "MA bundle" is the fix because it's not invented - it's the exact term already used correctly
+// elsewhere on this same board (ETH "Hold Above Short MA Bundle", BNB "Fast MA Bundle Hold"), so this makes
+// "pile" setups consistent with the rest of the board instead of introducing a second, unexplained term.
+// Display-only, word-boundary matched, applied to the Why block even though that block is otherwise verbatim
+// (see the 2026-10-04 "Why paragraph" decision) - this isn't stripping Chelsea's reasoning, it's correcting a
+// mistranslation layer that sat on top of it; the Sheet's real stored text is never altered.
+const clarifyPileLanguage=w=>String(w||"").replace(/\bpile\b/gi,m=>m[0]===m[0].toUpperCase()?"MA Bundle":"MA bundle");
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const CHART_LINK_HOSTS=["tradingview.com","drive.google.com"];
 const isAllowedChartHost=h=>CHART_LINK_HOSTS.some(d=>h===d||h.endsWith("."+d));
@@ -310,7 +320,7 @@ async function load(){
     if(vm)x+=`<div class="card soft"><h3>Chelsea's read — voice</h3><iframe class="audio" src="https://drive.google.com/file/d/${vm}/preview" allow="autoplay"></iframe></div>`;
     return x;};
   const setupHTML=()=>{let x="";
-    if(get(S,"why"))x+=`<div class="sect"><div class="bar"></div><h2>Why</h2></div><div class="card"><p>${esc(get(S,"why"))}</p></div>`;
+    if(get(S,"why"))x+=`<div class="sect"><div class="bar"></div><h2>Why</h2></div><div class="card"><p>${esc(clarifyPileLanguage(get(S,"why")))}</p></div>`;
     const T=[1,2,3].map(i=>get(S,"trigger "+i)).filter(Boolean);
     if(T.length){x+=`<div class="sect"><div class="bar"></div><h2>The Levels</h2></div>`;T.forEach((t,i)=>x+=`<div class="card soft"><h3>Trigger ${i+1}</h3><p>${esc(t)}</p></div>`);}
     if(L.length){x+=`<div class="sect"><div class="bar"></div><h2>The Ladder</h2><div class="hint">live price</div></div><div class="ladder" id="ladder">`;
