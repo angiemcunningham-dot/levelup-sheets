@@ -646,10 +646,15 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
         const conditionSource = text.slice(0, ezm.index).replace(/^[\s,.→+-]+|[\s,.→+-]+$/g, '');
         if (/\b(loss of|below|lower[\s-]?high)\b/i.test(conditionSource)) out.dirHint = 'short';
         else if (/\b(higher low|above)\b/i.test(conditionSource)) out.dirHint = 'long';
-        out.trigger = mkLevel(id, 'trigger', 'Trigger ' + n, z, 'Trigger ' + n, text, 'conditional', {
-          review: true,
-          conditions: [conditionSource, 'Entry Zone $' + z.low + (z.high !== z.low ? '–$' + z.high : '')],
-          notes: ['conditional/multi-step trigger: numeric anchor found only in the Entry Zone clause - no recognised condition-connector marker in the leading sentence'],
+        // 2026-10-04 (resync with LevelUp_Monitor_Rebuild/core/levelup-core.js, Angela-reported BNB TP1 badge
+        // missing): promoted from 'conditional' to 'present', matching the canonical core's 2026-10-04 fix. This
+        // board copy was the last one still classifying an explicit "Entry Zone: $X-$Y" clause as conditional,
+        // which gave this trigger a different fingerprint than the one the mechanical feed computes for the same
+        // setup - the board's own instance key could never match feed.assets[asset].setup_instance_key, so
+        // mechanicalFor() silently returned null and the reconciled TP-hit badge never rendered, even though the
+        // feed itself had the correct TARGETS_IN_PROGRESS/TP1-reached data all along.
+        out.trigger = mkLevel(id, 'trigger', 'Trigger ' + n, z, 'Trigger ' + n, text, 'present', {
+          notes: ['numeric anchor taken from an explicit "Entry Zone: $X-$Y" clause (promoted from conditional 2026-10-04 - see board\'s entryZoneAnchoredTrigger precedent)'],
         });
         return out;
       }
