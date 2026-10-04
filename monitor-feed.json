@@ -1,10 +1,10 @@
 {
  "schema_version": 1,
  "kind": "levelup-public-feed",
- "generated_at": "2026-10-04T21:59:28.854Z",
+ "generated_at": "2026-10-04T22:04:38.092Z",
  "notice": "Mechanical observations of Chelsea's published levels. Not a Sheet status, not a signal, and not a record of anyone's entry or exit.",
  "monitor": {
-  "last_successful_check_at": "2026-10-04T21:59:28.854Z"
+  "last_successful_check_at": "2026-10-04T22:04:38.092Z"
  },
  "assets": {
   "AAVE": {
@@ -2237,25 +2237,18 @@
    }
   },
   "SHIB": {
-   "setup_instance_key": "SHIB|1791043732000|199ed6a78ff3af055a0312aa794e",
-   "setup_fingerprint": "199ed6a78ff3af055a0312aa794e",
+   "setup_instance_key": "SHIB|1791043732000|10b378446682df0b9ed0a7f4e5c8",
+   "setup_fingerprint": "10b378446682df0b9ed0a7f4e5c8",
    "instance_published_at": "2026-10-03T16:08:52.000Z",
    "sheet_status": {
     "text": "Active Long",
     "class": "ACTIVE_LONG"
    },
    "lifecycle": {
-    "state": "TARGETS_IN_PROGRESS",
-    "state_since": "2026-10-04T18:32:36.043Z",
+    "state": "WAITING_FOR_TRIGGER",
+    "state_since": "2026-10-04T22:04:38.092Z",
     "published_at": "2026-10-03T16:08:52.000Z",
-    "trigger": {
-     "level_id": "TRIGGER_1",
-     "zone": {
-      "low": 0,
-      "high": 0
-     },
-     "reached_at": "2026-10-03T16:00:00.000Z"
-    },
+    "trigger": null,
     "targets": [
      {
       "level_id": "TP1",
@@ -2263,7 +2256,7 @@
        "low": 0.0000058,
        "high": 0.0000058
       },
-      "reached_at": "2026-10-04T18:32:00.000Z"
+      "reached_at": null
      },
      {
       "level_id": "TP2",
@@ -2271,7 +2264,7 @@
        "low": 0.00000595,
        "high": 0.00000595
       },
-      "reached_at": "2026-10-04T21:27:00.000Z"
+      "reached_at": null
      },
      {
       "level_id": "TP3",
@@ -2284,7 +2277,7 @@
     ],
     "objectives": {
      "defined": 3,
-     "reached": 2,
+     "reached": 0,
      "all_reached": false,
      "ladder_problems": [],
      "completed_at": null
