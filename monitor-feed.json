@@ -1,10 +1,10 @@
 {
  "schema_version": 1,
  "kind": "levelup-public-feed",
- "generated_at": "2026-10-04T19:41:05.224Z",
+ "generated_at": "2026-10-04T19:45:02.284Z",
  "notice": "Mechanical observations of Chelsea's published levels. Not a Sheet status, not a signal, and not a record of anyone's entry or exit.",
  "monitor": {
-  "last_successful_check_at": "2026-10-04T19:41:05.224Z"
+  "last_successful_check_at": "2026-10-04T19:45:02.284Z"
  },
  "assets": {
   "AAVE": {
@@ -533,8 +533,8 @@
    "setup_fingerprint": "04a8a29f2384da1bdaf0cac643c5",
    "instance_published_at": "2026-10-03T16:09:03.000Z",
    "sheet_status": {
-    "text": "Watching",
-    "class": "WATCHING"
+    "text": "Closed",
+    "class": "CLOSED"
    },
    "lifecycle": {
     "state": "STOP_BOUNDARY_REACHED",
@@ -871,8 +871,8 @@
    "setup_fingerprint": "16212ab2394a77074c1de5ec9a22",
    "instance_published_at": "2026-09-24T12:42:25.000Z",
    "sheet_status": {
-    "text": "Watching",
-    "class": "WATCHING"
+    "text": "Closed",
+    "class": "CLOSED"
    },
    "lifecycle": {
     "state": "STOP_BOUNDARY_REACHED",
@@ -2527,95 +2527,14 @@
    }
   },
   "TRX": {
-   "setup_instance_key": "TRX|1791043662000|0031b765bc2e200f312a868de36f",
-   "setup_fingerprint": "0031b765bc2e200f312a868de36f",
-   "instance_published_at": "2026-10-03T16:07:42.000Z",
+   "setup_instance_key": "TRX|1791142988000|1b9fdec65ffc0e1d4572ea1af3cf",
+   "setup_fingerprint": "1b9fdec65ffc0e1d4572ea1af3cf",
+   "instance_published_at": "2026-10-04T19:43:08.000Z",
    "sheet_status": {
-    "text": "Watching",
-    "class": "WATCHING"
+    "text": "Closed",
+    "class": "CLOSED"
    },
-   "lifecycle": {
-    "state": "STOP_BOUNDARY_REACHED",
-    "state_since": "2026-10-04T19:37:01.559Z",
-    "published_at": "2026-10-03T16:07:42.000Z",
-    "trigger": {
-     "level_id": "TRIGGER_1",
-     "zone": {
-      "low": 0.3356,
-      "high": 0.3369
-     },
-     "reached_at": "2026-10-03T17:00:00.000Z"
-    },
-    "targets": [
-     {
-      "level_id": "TP1",
-      "zone": {
-       "low": 0.3386,
-       "high": 0.3386
-      },
-      "reached_at": null
-     },
-     {
-      "level_id": "TP2",
-      "zone": {
-       "low": 0.3403,
-       "high": 0.3403
-      },
-      "reached_at": null
-     },
-     {
-      "level_id": "TP3",
-      "zone": {
-       "low": 0.3447,
-       "high": 0.3447
-      },
-      "reached_at": null
-     }
-    ],
-    "objectives": {
-     "defined": 3,
-     "reached": 0,
-     "all_reached": false,
-     "ladder_problems": [],
-     "completed_at": null
-    },
-    "extended": {
-     "level_id": "EXTENDED",
-     "zone": {
-      "low": 0.3489,
-      "high": 0.3489
-     },
-     "reached_at": null
-    },
-    "stop_boundary": {
-     "level_id": "STOP",
-     "kind": "stop",
-     "zone": {
-      "low": 0.3348,
-      "high": 0.3351
-     },
-     "reached_at": "2026-10-04T07:00:00.000Z",
-     "in_trade": true,
-     "relation_to_final_tp": null,
-     "tps_reached_before_stop": []
-    },
-    "evidence_grade": "CLOSE_CONFIRMED",
-    "confirm": {
-     "at": "2026-10-04T08:00:00.000Z",
-     "close": 0.335,
-     "level_id": "STOP"
-    },
-    "terminal_at": "2026-10-04T07:00:00.000Z",
-    "later_evidence": null,
-    "public_display": {
-     "kind": "STOP_BOUNDARY",
-     "ready": true,
-     "evidence_grade": "CLOSE_CONFIRMED",
-     "blockers": [],
-     "outcome": "STOPPED",
-     "tps_reached_before_stop": []
-    }
-   }
+   "lifecycle": null
   },
   "TURBO": {
    "setup_instance_key": "TURBO|1789932388000|1479d80b7d015d16b9dc90f9c116",
@@ -3470,8 +3389,8 @@
    "setup_fingerprint": "0031b765bc2e200f312a868de36f",
    "outcome": "STOP_BOUNDARY_REACHED",
    "opened_at": "2026-10-04T19:37:01.559Z",
-   "superseded": false,
-   "superseded_at": null,
+   "superseded": true,
+   "superseded_at": "2026-10-04T19:45:02.284Z",
    "snapshot": {
     "setup_published_at": "2026-10-03T16:07:42.000Z",
     "setup_timestamp_text": "10/3/2026 12:07:42",
