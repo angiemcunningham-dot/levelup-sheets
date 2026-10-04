@@ -223,10 +223,24 @@ const hasLevels=r=>LEVEL_KEYS.some(k=>get(r,k));
    altered, just not rendered verbatim here. A separate, deliberately curated list of pattern names Angela DOES
    want shown (breakout of a bear flag, head and shoulders, inside the channel, etc.) is a later follow-up. */
 const watchLabel=h=>{const m=/\b(Long|Short)\s+Watch\b/i.exec(h||"");return m?m[1][0].toUpperCase()+m[1].slice(1).toLowerCase()+" Watch":null;};
-function cardHtml(a,r,c,t,pc){
+// 2026-10-04: an admin correction's own headline ("...Reverted to Watching") never carries the "Long/Short
+// Watch" phrase a real Chelsea setup headline does. Without checking the asset's other rows, a Watching card
+// whose latest row happens to be a correction falls back to showing that correction's raw wording instead of
+// matching every other Watching card. Mirrors sheet.html's same-day S-selection fix (its own "2026-10-04"
+// comment) at card-display scope: look back through this asset's history for the most recent leveled row
+// (real Chelsea setup, never blank-levels admin update) at or before r, and try its headline too.
+const fallbackWatchLabel=(a,r,all)=>{
+  const rowsForAsset=(all[a]||[]).filter(o=>!isPC(o)&&hasLevels(o));
+  if(!rowsForAsset.length)return null;
+  const rMs=new Date(get(r,"timestamp")).getTime();
+  const candidates=rowsForAsset.filter(o=>{const ms=new Date(get(o,"timestamp")).getTime();return isNaN(rMs)||isNaN(ms)||ms<=rMs;}).sort((x,y)=>new Date(get(y,"timestamp"))-new Date(get(x,"timestamp")));
+  for(const o of candidates){const wl=watchLabel(get(o,"headline")||"");if(wl)return wl;}
+  return null;
+};
+function cardHtml(a,r,c,t,pc,all){
   const isLive=c==="b-active"||c==="b-short";const cardCls=isLive?` is-live${c==="b-short"?" is-short":""}`:"";const pillCls=isLive?" pill-flash":"";const chk=pc[a]?` · last price check ${stamp(get(pc[a],"timestamp"))}`:"";
   const rawHl=get(r,"headline")||"";
-  const hl=c==="b-active"?"Long":c==="b-short"?"Short":c==="b-watch"?(watchLabel(rawHl)||rawHl):rawHl;
+  const hl=c==="b-active"?"Long":c==="b-short"?"Short":c==="b-watch"?(watchLabel(rawHl)||fallbackWatchLabel(a,r,all||{})||rawHl):rawHl;
   return `<a class="card${cardCls}" href="${DETAIL}?asset=${encodeURIComponent(a)}"><div class="asset">${esc(a)}</div><span class="pill ${c}${pillCls}">${t}</span><div class="hl">${/no trade|closed|invalid/i.test(get(r,"status"))?`<small style="font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6B7280;font-size:10px">Status note · </small>`:""}${esc(hl)}</div><div class="meta">status set ${stamp(get(r,"timestamp"))}${chk}</div></a>`;
 }
 function resetCardHtml(a,r){
@@ -257,9 +271,9 @@ const cards=Object.entries(by).filter(([a])=>!CHELSEA_RECORD_EXCLUSIONS.includes
 const today=cards.filter(x=>x.today&&!x.isActive).sort((x,y)=>x.a.localeCompare(y.a));
 const rest=cards.filter(x=>!(x.today&&!x.isActive)).sort((x,y)=>ORDER.indexOf(x.c)-ORDER.indexOf(y.c)||x.a.localeCompare(y.a));
 document.getElementById("today-sub").textContent=latestDay?("published "+latestDay):"";
-document.getElementById("grid").innerHTML=today.map(({a,r,c,t})=>cardHtml(a,r,c,t,pc)).join("")||`<div class="empty">No current setups yet today — see history below, or Active Now above.</div>`;
+document.getElementById("grid").innerHTML=today.map(({a,r,c,t})=>cardHtml(a,r,c,t,pc,all)).join("")||`<div class="empty">No current setups yet today — see history below, or Active Now above.</div>`;
 const histEl=document.getElementById("grid-history");
-if(histEl){histEl.innerHTML=rest.map(({a,r,c,t})=>cardHtml(a,r,c,t,pc)).join("")||`<div class="empty">Nothing here yet.</div>`;}
+if(histEl){histEl.innerHTML=rest.map(({a,r,c,t})=>cardHtml(a,r,c,t,pc,all)).join("")||`<div class="empty">Nothing here yet.</div>`;}
 const hc=document.getElementById("hist-count");if(hc)hc.textContent=" ("+rest.length+")";
 const rwEntries=Object.entries(rw).sort((x,y)=>x[0].localeCompare(y[0]));
 const rwSec=document.getElementById("reset-watch"),rwGrid=document.getElementById("grid-reset");

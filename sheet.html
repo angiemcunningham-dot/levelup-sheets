@@ -267,7 +267,13 @@ async function load(){
   const cur=auth[auth.length-1]||rows[rows.length-1],prevAuth=auth[auth.length-2];
   const upto=rows.slice(0,rows.indexOf(cur)+1).reverse();
   const setupRows=upto.filter(r=>!isPC(r));
-  const S=setupRows.find(r=>srcType(r)==="CHELSEA SETUP"&&(hasLevels(r)||get(r,"why")))||setupRows.find(hasLevels)||setupRows.find(r=>get(r,"why"))||cur;
+  // 2026-10-04: this script's own S-selection had never picked up the T-07 fix already applied to the shared
+  // core copy below (see its "T-07" comment) - a levels-free admin-update row with its own WHY text (e.g. an
+  // "ADMIN UPDATE - Trigger Confirmed" or "...Reverted to Watching" correction) was outranking the real,
+  // level-bearing Chelsea setup row right behind it, so the ladder vanished and the H1/headline showed the
+  // correction's own wording instead of the real setup. Split into two clauses, same priority order as T-07:
+  // a leveled CHELSEA SETUP row always wins over a WHY-only one.
+  const S=setupRows.find(r=>srcType(r)==="CHELSEA SETUP"&&hasLevels(r))||setupRows.find(r=>srcType(r)==="CHELSEA SETUP"&&get(r,"why"))||setupRows.find(hasLevels)||setupRows.find(r=>get(r,"why"))||cur;
   const carried=S!==cur;
   const [bcls,btxt]=STATUS(get(cur,"status"));const closed=/closed|invalid/i.test(get(cur,"status"));const paused=/watch|no trade/i.test(get(cur,"status"));
   const L=levels(S);const img=chartImg(get(S,"chart image"),get(S,"chart link"));const vm=driveId(get(S,"voice"));
@@ -280,7 +286,11 @@ async function load(){
   const st0=get(cur,"status");const rawHl=get(cur,"headline");
   const statusWord=/invalid/i.test(st0)?"INVALIDATED":/closed/i.test(st0)?"CLOSED":/no trade/i.test(st0)?"NO TRADE RIGHT NOW":btxt;
   const hasSetup=!!(hasLevels(S)||get(S,"why"));
-  const dirHl=bcls==="b-active"?"Long":bcls==="b-short"?"Short":bcls==="b-watch"?watchLabel(rawHl):null;
+  // Prefer cur's own headline, but fall back to S's (the real underlying setup, now correctly resolved above) -
+  // an admin correction's headline ("...Reverted to Watching") never carries the "Long/Short Watch" phrase the
+  // way a real Chelsea setup headline does, so without this fallback a corrected asset's title would read the
+  // correction's own wording instead of matching every other Watching asset's "Long Watch"/"Short Watch".
+  const dirHl=bcls==="b-active"?"Long":bcls==="b-short"?"Short":bcls==="b-watch"?(watchLabel(rawHl)||watchLabel(get(S,"headline"))):null;
   h+=`<div class="head"><div><div class="kicker">LEVEL UP CRYPTO · ${noTradeLike?"CURRENT STATUS":"LIVE SETUP"}</div><h1>${esc(ASSET)} <em>${esc(noTradeLike?statusWord:(dirHl||cleanHeadline(ASSET,rawHl)||"SETUP"))}</em></h1><div class="rule"></div><div class="dateline" id="dateline">Status set ${stamp(get(cur,"timestamp"))}</div></div><div class="logo"><img src="${LOGO_SRC}" alt="" onerror="this.parentNode.style.display='none'"></div></div>`;
   if(noTradeLike){
     h+=`<div class="tl"><div><b>Current status</b><span>${esc(btxt)} · set ${stamp(get(cur,"timestamp"))} ${srcBadge(srcType(cur))}</span></div>${rawHl?`<div><b>Status note</b><span>${esc(rawHl)}</span></div>`:""}</div>`;
