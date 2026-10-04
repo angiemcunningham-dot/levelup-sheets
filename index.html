@@ -1030,7 +1030,15 @@ load();setInterval(load,60000);
         watch.push({ asset: a, setup: s, price: price, prox: prox });
       });
       watch = A.sortAttention(watch);
-      var items = watch.filter(function (i) { return i.prox.state !== 'NA'; });
+      // 2026-10-04 (Angela, explicit): PASSED ("price past trigger zone") is cut from items entirely, not just
+      // relabeled. It only ever meant "live price ticked above Chelsea's published zone text" - nothing to do
+      // with a real candle actually opening above the real moving-average floor (see the 2026-10-03/04 rule
+      // work). That zone text goes stale fast, so the badge was flagging assets as "past" that hadn't really
+      // confirmed (POL, ETC) same as it was flagging assets as "0.0% to trigger" that had (ETC/TRX "inside").
+      // Cutting it from items removes it from the ticker, the "Price past trigger zone" box, and the card chip
+      // in one place - PASSED assets just show as plain Watching cards until the real rule is wired into this
+      // board directly (the still-open follow-up), rather than showing a signal we can't stand behind.
+      var items = watch.filter(function (i) { return i.prox.state !== 'NA' && i.prox.state !== 'PASSED'; });
       return { fresh: fresh, items: items, watch: watch };
     }
 
@@ -1045,14 +1053,10 @@ load();setInterval(load,60000);
         '<div class="att-bar" aria-hidden="true"><i style="width:' + gauge.toFixed(0) + '%"></i></div>' +
         '<div class="att-meta">LIVE $' + A.fmtPrice(it.price) + ' <span title="market price, not a Chelsea level">(' + (srcName[ps.sources[it.asset]] || 'live') + ')</span><br>Chelsea trigger $' + A.zoneText(p.zone) + '</div></a>';
     }
-    function pastHtml(it) {
-      return '<a class="att-past-chip" href="sheet.html?asset=' + encodeURIComponent(it.asset) + '" data-asset="' + esc(it.asset) + '"><b>' + esc(it.asset) + '</b> price past Chelsea’s trigger zone · live $' + A.fmtPrice(it.price) + ' · zone $' + A.zoneText(it.prox.zone) + '</a>';
-    }
     function tapeHtml(list, ariaLabel) {
       var one = list.map(function (it) {
         var p = it.prox, isLive = (p.state === 'APPROACHING' || p.state === 'INSIDE'), approx = !!p.approx;
         var label = isLive ? '<span class="p">' + (approx ? '~' : '') + A.fmtPct(p.distance_pct) + '%</span> to ' + (approx ? 'zone (unconfirmed)' : 'trigger')
-          : p.state === 'PASSED' ? '<span class="p">' + (approx ? 'approx. ' : '') + 'past trigger zone</span>'
           : p.state === 'NOPRICE' ? '<span class="p">no live price</span>'
           : '<span class="p">no numeric trigger yet</span>';
         var cls = 'att-tape-item' + (approx && isLive ? ' is-approx' : isLive ? ' is-live tier-' + A.tier(p) : '');
@@ -1067,7 +1071,6 @@ load();setInterval(load,60000);
       // approx (unconfirmed-anchor) items stay in the ticker only, never the full detail card/chip - those make a
       // visual precision claim ("this is Chelsea's exact number") that an approximate anchor hasn't earned.
       var near = v.items.filter(function (i) { return (i.prox.state === 'APPROACHING' || i.prox.state === 'INSIDE') && !i.prox.approx; });
-      var past = v.items.filter(function (i) { return i.prox.state === 'PASSED' && !i.prox.approx; });
       var noPx = v.items.filter(function (i) { return i.prox.state === 'NOPRICE'; });
       if (!v.watch.length) { sec.hidden = true; decorate(v); return; }
       sec.hidden = false;
@@ -1081,7 +1084,6 @@ load();setInterval(load,60000);
       if (v.items.length) body += tapeHtml(v.items);
       if (near.length) body += '<div class="att-grid">' + near.map(cardHtml).join('') + '</div>';
       else if (v.fresh) body += '<div class="att-empty">No watching setup is currently below its trigger zone.</div>';
-      if (past.length) body += '<details class="hist-toggle att-past-toggle"><summary>Price past trigger zone<span> (' + past.length + ')</span></summary><div class="att-past">' + past.map(pastHtml).join('') + '</div></details>';
       if (noPx.length && !v.fresh) body += '<div class="att-empty">Waiting for live prices for: ' + noPx.map(function (i) { return esc(i.asset); }).join(', ') + '</div>';
       sec.innerHTML = head + body;
       decorate(v);
@@ -1089,7 +1091,8 @@ load();setInterval(load,60000);
 
     /* grid is re-rendered by the page every 60s, so we re-apply every time: hide a card entirely once its asset
        is APPROACHING/INSIDE its trigger zone (it already has a fuller card in Live Attention above - see the
-       todayAllNearMsg comment above for why), otherwise badge it (PASSED) or leave it alone. */
+       todayAllNearMsg comment above for why). PASSED no longer gets a chip here - see the 2026-10-04 comment on
+       items in view() for why that signal was cut entirely rather than kept as a badge. */
     var obs = new MutationObserver(function () { decorate(view()); });
     function decorate(v) {
       obs.disconnect();
@@ -1103,13 +1106,7 @@ load();setInterval(load,60000);
           var it = byAsset[a];
           var isNear = !!it && !it.prox.approx && (it.prox.state === 'APPROACHING' || it.prox.state === 'INSIDE');
           c.style.display = isNear ? 'none' : '';
-          if (isNear) { nearCards++; return; }
-          if (!it || it.prox.approx) return;   // approx (unconfirmed-anchor) items: ticker only, see render()
-          var p = it.prox, html = '';
-          if (p.state === 'PASSED') html = '<div class="att-chip passed"><span>price past trigger zone</span><small>live $' + A.fmtPrice(it.price) + '</small></div>';
-          if (!html) return;
-          var pill = c.querySelector('.pill'); var d = document.createElement('div'); d.innerHTML = html;
-          if (pill && pill.parentNode) pill.parentNode.insertBefore(d.firstChild, pill.nextSibling);
+          if (isNear) nearCards++;
         });
         if (todayAllNearMsg) todayAllNearMsg.hidden = !(totalCards > 0 && nearCards === totalCards);
       } catch (e) { /* never break the page */ }
