@@ -958,7 +958,32 @@ load();setInterval(load,60000);
     var setups = null, ps = { prices: {}, sources: {}, at: 0 }, sheetErr = false;
     var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
     var etTime = function (ms) { return new Date(ms).toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: '2-digit', second: '2-digit' }) + ' ET'; };
-    var srcName = { binance: 'Binance', coinbase: 'Coinbase' };
+    var srcName = { binance: 'Binance', coinbase: 'Coinbase', kraken: 'Kraken' };
+    /* 2026-10-04 (Angela, explicit: "Kas... no live price" on the Live Attention ticker): Kaspa (and any future
+       asset shaped like it) simply isn't listed on Binance spot or Coinbase at all - A.fetchPrices() (att-module,
+       untouched) can never find it there, not a bug in that fetch. Rather than touch the frozen att-module, this
+       is a client-side-only extra step here in att-ui: for whatever A.fetchPrices() still came back missing,
+       try Kraken's public ticker (no key, same "no CoinGecko" philosophy - CoinGecko's rate limiting is the
+       thing that was ruled out, not public exchange APIs generally) before giving up and showing "no live price".
+       Matching the monitor's own primary/fallback shape (Binance, then Coinbase) with one more rung. */
+    function krakenPair(a) { return a + 'USD'; }
+    function fetchKrakenFallback(missing) {
+      if (!missing.length) return Promise.resolve({});
+      return fetch('https://api.kraken.com/0/public/Ticker?pair=' + encodeURIComponent(missing.map(krakenPair).join(',')))
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (j) {
+          var out = {};
+          if (!j || j.error && j.error.length || !j.result) return out;
+          missing.forEach(function (a) {
+            var want = krakenPair(a);
+            var key = Object.keys(j.result).filter(function (k) { return k === want || k.indexOf(a) === 0; })[0];
+            var entry = key && j.result[key];
+            var px = entry && entry.c && parseFloat(entry.c[0]);
+            if (px > 0) out[a] = px;
+          });
+          return out;
+        }).catch(function () { return {}; });
+    }
 
     var sec = document.createElement('section');
     sec.className = 'att'; sec.id = 'attention'; sec.hidden = true; sec.setAttribute('aria-label', 'Live attention: setups ranked by distance to trigger');
@@ -1027,6 +1052,32 @@ load();setInterval(load,60000);
       var d = side === 'inside' ? 0 : A.distTo(price, ed.near), ord = A.bandOrd(d);
       return { state: side === 'inside' ? 'INSIDE' : 'APPROACHING', approx: true, distance_pct: d, band: A.BAND_NAMES[ord], band_ord: ord, level_id: level.id, near_edge: ed.near, far_edge: ed.far, zone: level.zone, direction: dir, inside: side === 'inside' };
     }
+    /* 2026-10-04 (Angela, explicit, after the ARB "0.0% to trigger" confusion): distance to Chelsea's PUBLISHED
+       ZONE is not the same thing as distance to the real mechanical trigger - a 1H candle open clearing all six
+       real moving averages (engine.js's sixLineReadiness(), published per asset as monitor-feed.json's
+       `trigger_readiness`). ARB's live price sat INSIDE the published zone while the real floor was well above
+       it, so the old metric read "0.0%" on a setup that hadn't mechanically triggered at all. Builds an
+       equivalent proximity object from the feed's trigger_readiness + this page's own live price (more current
+       than the feed's own price snapshot, which only refreshes once per monitor run) - same {state,
+       distance_pct, band, band_ord} shape A.triggerProximity() already returns, so every existing consumer
+       (sortAttention, tier, tagFor, tapeHtml) keeps working unmodified. Returns null whenever a real distance
+       can't be shown (feed not loaded yet, no resolved direction, indicators not warmed) - the caller then
+       falls back to the published-zone prox exactly as before, never a guess. Never modifies att-module/
+       att-core; reuses their own exported primitives (A.bandOrd, A.BAND_NAMES), same pattern as
+       approxTriggerProximity() above. */
+    function sixLineProxFor(asset, livePrice) {
+      // att-ui and mech-feed are separate <script> blocks/closures - window.__mechFeed.get() is mech-feed's own
+      // existing read-only bridge (same pattern mech-feed itself uses in reverse via window.__attention.state()).
+      var mf = window.__mechFeed, feed = mf && mf.get && mf.get();
+      var a = feed && feed.assets && feed.assets[asset];
+      var r = a && a.trigger_readiness;
+      if (!r || r.floor == null) return null;
+      if (livePrice == null || !isFinite(livePrice) || livePrice <= 0) return { state: 'NOPRICE', real: true, floor: r.floor, direction: r.direction };
+      var cleared = r.direction === 'short' ? livePrice < r.floor : livePrice > r.floor;
+      var distPct = Math.abs(livePrice - r.floor) / r.floor * 100;
+      var ord = A.bandOrd(distPct);
+      return { state: cleared ? 'INSIDE' : 'APPROACHING', real: true, distance_pct: distPct, band: A.BAND_NAMES[ord], band_ord: ord, direction: r.direction, floor: r.floor, inside: cleared };
+    }
     function view() {
       if (!setups) return null;
       var fresh = !!ps.at && (Date.now() - ps.at) < STALE_MS && Object.keys(ps.prices).length > 0;
@@ -1041,7 +1092,8 @@ load();setInterval(load,60000);
         var price = fresh ? ps.prices[a] : null;
         var prox = A.triggerProximity(s, price, opts);
         if (prox.state === 'NA') { var approx = approxTriggerProximity(s, price); if (approx.state !== 'NA') prox = approx; }
-        watch.push({ asset: a, setup: s, price: price, prox: prox });
+        var real = sixLineProxFor(a, price);
+        watch.push({ asset: a, setup: s, price: price, prox: real || prox, publishedProx: prox, real: !!real });
       });
       watch = A.sortAttention(watch);
       // 2026-10-04 (Angela, explicit): PASSED ("price past trigger zone") is cut from items entirely, not just
@@ -1060,6 +1112,20 @@ load();setInterval(load,60000);
     function cardHtml(it) {
       var p = it.prox, t = A.tier(p), dir = p.direction === 'short' ? '▼ SHORT' : '▲ LONG', gauge = Math.max(0, Math.min(100, 100 - p.distance_pct * 20));
       var tag = tagFor(p);
+      if (it.real) {
+        var realTag = p.state === 'INSIDE' ? 'Cleared the floor' : (p.band_ord >= 1 ? p.band : '');
+        var pubZone = it.publishedProx && it.publishedProx.zone ? A.zoneText(it.publishedProx.zone) : null;
+        var sideWord = p.direction === 'short' ? 'below' : 'above';
+        var body = p.inside
+          ? 'Price is currently ' + sideWord + ' the real floor ($' + A.fmtPrice(it.price) + ' vs $' + A.fmtPrice(p.floor) + ') — watching for a 1H candle to open there and confirm.'
+          : 'Price hasn’t opened ' + sideWord + ' SMA9/SMMA7/EMA9/EMA20/EMA50/EMA200 yet — floor $' + A.fmtPrice(p.floor) + ', live $' + A.fmtPrice(it.price) + '.';
+        return '<a class="att-card tier-' + t + '" href="sheet.html?asset=' + encodeURIComponent(it.asset) + '" data-asset="' + esc(it.asset) + '" data-tier="' + t + '" data-pct="' + p.distance_pct.toFixed(4) + '">' +
+          '<div class="att-top"><span class="att-asset">' + esc(it.asset) + '</span><span class="att-dir">Watching · ' + dir + '</span></div>' +
+          '<div class="att-pct"><b>' + A.fmtPct(p.distance_pct) + '%</b><span>' + (p.inside ? 'past the six-line floor' : 'below the six-line floor') + '</span></div>' +
+          (realTag ? '<span class="att-tag">' + esc(realTag) + '</span>' : '') +
+          '<div class="att-bar" aria-hidden="true"><i style="width:' + gauge.toFixed(0) + '%"></i></div>' +
+          '<div class="att-meta">' + body + (pubZone ? '<br><span style="opacity:.65">Chelsea’s published zone (reference only): $' + pubZone + '</span>' : '') + '</div></a>';
+      }
       return '<a class="att-card tier-' + t + '" href="sheet.html?asset=' + encodeURIComponent(it.asset) + '" data-asset="' + esc(it.asset) + '" data-tier="' + t + '" data-pct="' + p.distance_pct.toFixed(4) + '">' +
         '<div class="att-top"><span class="att-asset">' + esc(it.asset) + '</span><span class="att-dir">Watching · ' + dir + '</span></div>' +
         '<div class="att-pct"><b>' + A.fmtPct(p.distance_pct) + '%</b><span>to trigger</span></div>' +
@@ -1089,7 +1155,7 @@ load();setInterval(load,60000);
       if (!v.watch.length) { sec.hidden = true; decorate(v); return; }
       sec.hidden = false;
       var head = '<div class="att-head"><div class="att-title">Live <em>attention</em></div><div class="att-live" aria-live="polite"><span class="att-dot' + (v.fresh ? '' : ' off') + '"></span>' + (v.fresh ? 'prices updated ' + etTime(ps.at) : 'live prices unavailable — distances hidden') + '</div></div>' +
-        '<div class="att-note">Watching setups, closest to Chelsea’s published trigger first. <b>% to trigger</b> is the gap between the live price and the nearest edge of the published trigger zone — the same calculation and 3% / 2% / 1% / 0.5% bands the price monitor uses. It is a distance to a price level only: not a signal, not trade quality or probability. Chelsea’s confirmation rules still decide.</div>';
+        '<div class="att-note">Watching setups, closest to the real trigger first. <b>% to trigger</b> is now the gap to the real six-line floor — the highest/lowest of SMA9, SMMA7, EMA9, EMA20, EMA50 and EMA200, the same math the mechanical engine uses to confirm a trade — not Chelsea’s published zone text, which can sit on a different number than where the real moving averages are right now. Chelsea’s published zone still shows on each card, for reference only. It is a distance to a price level only: not a signal, not trade quality or probability. Chelsea’s confirmation rules still decide.</div>';
       var body = '';
       // 2026-10-02 (Angela, explicit): the ticker only shows setups with a real numeric trigger/zone to measure a
       // distance against - v.items, not v.watch. v.watch also includes pure MA/structure calls with no numeric
@@ -1168,7 +1234,16 @@ load();setInterval(load,60000);
       Object.keys(setups).forEach(function (a) { if (assets.indexOf(a) < 0 && isWatchingLike(setups[a]) && approxTriggerProximity(setups[a], 1).state !== 'NA') assets.push(a); });
       A.activeNow(setups).forEach(function (it) { if (assets.indexOf(it.asset) < 0) assets.push(it.asset); });   // active assets: price is context only
       if (!assets.length) { render(); return Promise.resolve(); }
-      return A.fetchPrices(assets).then(function (r) { if (Object.keys(r.prices).length) ps = r; render(); renderActive(); }).catch(function () { render(); renderActive(); });
+      return A.fetchPrices(assets).then(function (r) {
+        if (Object.keys(r.prices).length) ps = r;
+        var missing = assets.filter(function (a) { return !(ps.prices[a] > 0); });
+        if (!missing.length) { render(); renderActive(); return; }
+        return fetchKrakenFallback(missing).then(function (kp) {
+          Object.keys(kp).forEach(function (a) { ps.prices[a] = kp[a]; ps.sources[a] = 'kraken'; });
+          if (Object.keys(kp).length) ps.at = Date.now();
+          render(); renderActive();
+        });
+      }).catch(function () { render(); renderActive(); });
     }
     loadSheet().then(loadPrices);
     setInterval(function () { loadSheet().then(loadPrices); }, SHEET_MS);
