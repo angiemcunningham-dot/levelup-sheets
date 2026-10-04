@@ -1372,6 +1372,7 @@ load();setInterval(load,60000);
       var sec = document.getElementById('active-now'); if (!sec) return;
       Array.prototype.forEach.call(sec.querySelectorAll('a.act-card'), function (c) {
         var asset = (c.getAttribute('data-asset') || '').toUpperCase(); if (!asset) return;
+        var oldRow = c.querySelector('.mech-row'); if (oldRow) oldRow.remove();
         var resolved = resolveCurrentState(asset); if (!resolved) return;
         var statusEl = c.querySelector('.act-status');
         if (statusEl) {
@@ -1383,6 +1384,12 @@ load();setInterval(load,60000);
           }
         }
         var tagEl = c.querySelector('.act-tag'); if (tagEl) tagEl.style.display = 'none';
+        // 2026-10-04 (Angela, explicit): "we want to see it on the first tile next to the word triggered with a
+        // check mark - right now you have to click into it to see if it is hit or not". The per-TP checkmark row
+        // (same badgeHtml() the Today's Setups/History cards already get) was never wired to Active Now tiles -
+        // only the flat text swap above was. Same instance-safe mechanicalFor() lookup, no new logic.
+        var html = badgeHtml(mechanicalFor(asset, currentInstanceKeyFor(asset)));
+        if (html && statusEl) { var d = document.createElement('div'); d.innerHTML = html; statusEl.parentNode.insertBefore(d.firstChild, statusEl.nextSibling); }
       });
     }
     function decorate() {
