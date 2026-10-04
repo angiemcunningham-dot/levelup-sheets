@@ -1,10 +1,10 @@
 {
  "schema_version": 1,
  "kind": "levelup-public-feed",
- "generated_at": "2026-10-04T22:29:34.032Z",
+ "generated_at": "2026-10-04T22:33:40.021Z",
  "notice": "Mechanical observations of Chelsea's published levels. Not a Sheet status, not a signal, and not a record of anyone's entry or exit.",
  "monitor": {
-  "last_successful_check_at": "2026-10-04T22:29:34.032Z"
+  "last_successful_check_at": "2026-10-04T22:33:40.021Z"
  },
  "assets": {
   "AAVE": {
@@ -96,6 +96,21 @@
      "outcome": "STOPPED",
      "tps_reached_before_stop": []
     }
+   },
+   "trigger_readiness": {
+    "direction": "long",
+    "stack": {
+     "sma9": 179.63666666666666,
+     "smma7": 180.11915682043247,
+     "ema9": 179.93123012328044,
+     "ema20": 180.32846678341338,
+     "ema50": 179.5759016904569,
+     "ema200": 167.8924167242494
+    },
+    "floor": 180.32846678341338,
+    "price": 178.91,
+    "distance_pct": 0.7866016989525304,
+    "cleared": false
    }
   },
   "ADA": {
@@ -191,7 +206,8 @@
       "TP1"
      ]
     }
-   }
+   },
+   "trigger_readiness": null
   },
   "AERO": {
    "setup_instance_key": "AERO|1789413755000|002c7c73eac2791aedd7681b29ac",
@@ -287,7 +303,8 @@
      "outcome": "STOPPED",
      "tps_reached_before_stop": []
     }
-   }
+   },
+   "trigger_readiness": null
   },
   "ALGO": {
    "setup_instance_key": "ALGO|1790679883000|1b3dc97822369a16c1df98bffb01",
@@ -367,6 +384,21 @@
      "outcome": null,
      "tps_reached_before_stop": []
     }
+   },
+   "trigger_readiness": {
+    "direction": "long",
+    "stack": {
+     "sma9": 0.13157777777777777,
+     "smma7": 0.13167083733325696,
+     "ema9": 0.13167881785280103,
+     "ema20": 0.13171397166231225,
+     "ema50": 0.13150457557688638,
+     "ema200": 0.12705342111238047
+    },
+    "floor": 0.13171397166231225,
+    "price": 0.1316,
+    "distance_pct": 0.08652966794172086,
+    "cleared": false
    }
   },
   "APT": {
@@ -377,7 +409,8 @@
     "text": "Closed",
     "class": "CLOSED"
    },
-   "lifecycle": null
+   "lifecycle": null,
+   "trigger_readiness": null
   },
   "ARB": {
    "setup_instance_key": "ARB|1791043796000|0bfb1658bdcac319ef9ece412e15",
@@ -457,6 +490,21 @@
      "outcome": null,
      "tps_reached_before_stop": []
     }
+   },
+   "trigger_readiness": {
+    "direction": "long",
+    "stack": {
+     "sma9": 0.20308888888888887,
+     "smma7": 0.20320286777561733,
+     "ema9": 0.20316811894963005,
+     "ema20": 0.20322538204130092,
+     "ema50": 0.2028231471452238,
+     "ema200": 0.2059182265853757
+    },
+    "floor": 0.2059182265853757,
+    "price": 0.2033,
+    "distance_pct": 1.2714885072546753,
+    "cleared": false
    }
   },
   "ATOM": {
@@ -526,6 +574,21 @@
      "outcome": null,
      "tps_reached_before_stop": []
     }
+   },
+   "trigger_readiness": {
+    "direction": "short",
+    "stack": {
+     "sma9": 1.7504444444444447,
+     "smma7": 1.751192305067878,
+     "ema9": 1.7511185401584153,
+     "ema20": 1.7517498429887097,
+     "ema50": 1.7493340779816235,
+     "ema200": 1.7479088893973975
+    },
+    "floor": 1.7479088893973975,
+    "price": 1.752,
+    "distance_pct": 0.2340574287034442,
+    "cleared": false
    }
   },
   "AVAX": {
@@ -617,6 +680,21 @@
      "outcome": "STOPPED",
      "tps_reached_before_stop": []
     }
+   },
+   "trigger_readiness": {
+    "direction": "long",
+    "stack": {
+     "sma9": 11.100777777777777,
+     "smma7": 11.096836832965474,
+     "ema9": 11.098589773284797,
+     "ema20": 11.093401909489666,
+     "ema50": 11.0784770603195,
+     "ema200": 11.001870758591998
+    },
+    "floor": 11.100777777777777,
+    "price": 11.093,
+    "distance_pct": 0.07006516059935235,
+    "cleared": false
    }
   },
   "BCH": {
@@ -693,6 +771,21 @@
      "outcome": null,
      "tps_reached_before_stop": []
     }
+   },
+   "trigger_readiness": {
+    "direction": "long",
+    "stack": {
+     "sma9": 318.24444444444435,
+     "smma7": 318.27100428714175,
+     "ema9": 318.2355626357521,
+     "ema20": 318.2319368396418,
+     "ema50": 317.7453528917646,
+     "ema200": 316.69515543010885
+    },
+    "floor": 318.27100428714175,
+    "price": 318.1,
+    "distance_pct": 0.053729144294730795,
+    "cleared": false
    }
   },
   "BNB": {
@@ -769,6 +862,21 @@
      "outcome": null,
      "tps_reached_before_stop": []
     }
+   },
+   "trigger_readiness": {
+    "direction": "long",
+    "stack": {
+     "sma9": 795.6788888888891,
+     "smma7": 795.6165651837922,
+     "ema9": 795.5699840674293,
+     "ema20": 795.5912831154669,
+     "ema50": 795.0825042154809,
+     "ema200": 791.8007623062418
+    },
+    "floor": 795.6788888888891,
+    "price": 795.3,
+    "distance_pct": 0.04761831615493066,
+    "cleared": false
    }
   },
   "BTC": {
@@ -864,6 +972,21 @@
      "outcome": "COMPLETED",
      "tps_reached_before_stop": []
     }
+   },
+   "trigger_readiness": {
+    "direction": "long",
+    "stack": {
+     "sma9": 86335.38666666666,
+     "smma7": 86374.19283617764,
+     "ema9": 86359.72702757212,
+     "ema20": 86378.66401430353,
+     "ema50": 86284.19213162275,
+     "ema200": 85847.52537943538
+    },
+    "floor": 86378.66401430353,
+    "price": 86414.85,
+    "distance_pct": 0.04189227294657029,
+    "cleared": true
    }
   },
   "CAKE": {
@@ -961,6 +1084,21 @@
       "TP2"
      ]
     }
+   },
+   "trigger_readiness": {
+    "direction": "long",
+    "stack": {
+     "sma9": 2.499,
+     "smma7": 2.499585778967607,
+     "ema9": 2.4986824417273676,
+     "ema20": 2.5012976740140016,
+     "ema50": 2.510947827650272,
+     "ema200": 2.576729790664647
+    },
+    "floor": 2.576729790664647,
+    "price": 2.509,
+    "distance_pct": 2.6285173909203983,
+    "cleared": false
    }
   },
   "DASH": {
@@ -1030,7 +1168,8 @@
      "outcome": null,
      "tps_reached_before_stop": []
     }
-   }
+   },
+   "trigger_readiness": null
   },
   "DOGE": {
    "setup_instance_key": "DOGE|1790336186000|18f93dd9b4dc721f42f9b54aeb99",
@@ -1127,6 +1266,21 @@
       "TP2"
      ]
     }
+   },
+   "trigger_readiness": {
+    "direction": "long",
+    "stack": {
+     "sma9": 0.0954811111111111,
+     "smma7": 0.09537724341830275,
+     "ema9": 0.09546099908046143,
+     "ema20": 0.09516128250282603,
+     "ema50": 0.09452348615011362,
+     "ema200": 0.09485224652992673
+    },
+    "floor": 0.0954811111111111,
+    "price": 0.09669,
+    "distance_pct": 1.266102661375733,
+    "cleared": true
    }
   },
   "ENA": {
@@ -1216,7 +1370,8 @@
      "evidence_grade": "CLOSE_CONFIRMED",
      "blockers": []
     }
-   }
+   },
+   "trigger_readiness": null
   },
   "ETC": {
    "setup_instance_key": "ETC|1791043690000|17771895f163101630ec911721bb",
@@ -1296,6 +1451,21 @@
      "outcome": null,
      "tps_reached_before_stop": []
     }
+   },
+   "trigger_readiness": {
+    "direction": "long",
+    "stack": {
+     "sma9": 8.957777777777778,
+     "smma7": 8.95740643985564,
+     "ema9": 8.962790077294787,
+     "ema20": 8.94923586443469,
+     "ema50": 8.92366593046381,
+     "ema200": 8.979112700112632
+    },
+    "floor": 8.979112700112632,
+    "price": 8.97,
+    "distance_pct": 0.10148775738739399,
+    "cleared": false
    }
   },
   "ETH": {
@@ -1306,7 +1476,8 @@
     "text": "Watching",
     "class": "WATCHING"
    },
-   "lifecycle": null
+   "lifecycle": null,
+   "trigger_readiness": null
   },
   "FET": {
    "setup_instance_key": "FET|1790679340000|107fc2c8c756b50b68f60a894c63",
@@ -1404,7 +1575,8 @@
      "outcome": "STOPPED",
      "tps_reached_before_stop": []
     }
-   }
+   },
+   "trigger_readiness": null
   },
   "FIL": {
    "setup_instance_key": "FIL|1790254368000|0c74ff97948c83119235b9330d24",
@@ -1489,7 +1661,8 @@
      "evidence_grade": null,
      "blockers": []
     }
-   }
+   },
+   "trigger_readiness": null
   },
   "HBAR": {
    "setup_instance_key": "HBAR|1791043673000|076be98f40d61f11e77c2d04b6be",
@@ -1499,7 +1672,8 @@
     "text": "Closed",
     "class": "CLOSED"
    },
-   "lifecycle": null
+   "lifecycle": null,
+   "trigger_readiness": null
   },
   "INJ": {
    "setup_instance_key": "INJ|1791043739000|00a3d24095b2490daa3dc7e56f3e",
@@ -1579,7 +1753,8 @@
      "outcome": null,
      "tps_reached_before_stop": []
     }
-   }
+   },
+   "trigger_readiness": null
   },
   "KAS": {
    "setup_instance_key": "KAS|1791043686000|0350eb80e6d6491688fc1c228751",
@@ -1589,7 +1764,8 @@
     "text": "Watching",
     "class": "WATCHING"
    },
-   "lifecycle": null
+   "lifecycle": null,
+   "trigger_readiness": null
   },
   "LINK": {
    "setup_instance_key": "LINK|1791043695000|1d9404546ab1970a60f0a774aba9",
@@ -1669,6 +1845,21 @@
      "outcome": null,
      "tps_reached_before_stop": []
     }
+   },
+   "trigger_readiness": {
+    "direction": "long",
+    "stack": {
+     "sma9": 14.250333333333336,
+     "smma7": 14.237212357847543,
+     "ema9": 14.244565866038311,
+     "ema20": 14.223131448729994,
+     "ema50": 14.179085467088111,
+     "ema200": 14.067811138900279
+    },
+    "floor": 14.250333333333336,
+    "price": 14.229,
+    "distance_pct": 0.14970410048889835,
+    "cleared": false
    }
   },
   "LTC": {
@@ -1745,6 +1936,21 @@
      "outcome": null,
      "tps_reached_before_stop": []
     }
+   },
+   "trigger_readiness": {
+    "direction": "long",
+    "stack": {
+     "sma9": 70.5788888888889,
+     "smma7": 70.61993900289413,
+     "ema9": 70.6015356845174,
+     "ema20": 70.63732208824733,
+     "ema50": 70.62912566787152,
+     "ema200": 70.5733944657892
+    },
+    "floor": 70.63732208824733,
+    "price": 70.61,
+    "distance_pct": 0.03867939417804873,
+    "cleared": false
    }
   },
   "MORPHO": {
@@ -1842,6 +2048,21 @@
       "TP2"
      ]
     }
+   },
+   "trigger_readiness": {
+    "direction": "long",
+    "stack": {
+     "sma9": 2.7230000000000003,
+     "smma7": 2.7234458500239347,
+     "ema9": 2.7228873663907107,
+     "ema20": 2.723626550426672,
+     "ema50": 2.703910767171918,
+     "ema200": 2.6507964246590956
+    },
+    "floor": 2.723626550426672,
+    "price": 2.718,
+    "distance_pct": 0.20658303634875042,
+    "cleared": false
    }
   },
   "NEAR": {
@@ -1918,6 +2139,21 @@
      "outcome": null,
      "tps_reached_before_stop": []
     }
+   },
+   "trigger_readiness": {
+    "direction": "long",
+    "stack": {
+     "sma9": 4.955111111111111,
+     "smma7": 4.959716381766287,
+     "ema9": 4.956917393295681,
+     "ema20": 4.963581004980438,
+     "ema50": 4.963576496273406,
+     "ema200": 4.947170954459475
+    },
+    "floor": 4.963581004980438,
+    "price": 4.954,
+    "distance_pct": 0.19302606265163358,
+    "cleared": false
    }
   },
   "ONDO": {
@@ -1994,6 +2230,21 @@
      "outcome": null,
      "tps_reached_before_stop": []
     }
+   },
+   "trigger_readiness": {
+    "direction": "long",
+    "stack": {
+     "sma9": 0.49535555555555555,
+     "smma7": 0.4956645599343425,
+     "ema9": 0.4954452361718005,
+     "ema20": 0.49584905702617477,
+     "ema50": 0.49564940719915784,
+     "ema200": 0.49467561557653256
+    },
+    "floor": 0.49584905702617477,
+    "price": 0.495,
+    "distance_pct": 0.1712329617539136,
+    "cleared": false
    }
   },
   "POL": {
@@ -2063,6 +2314,21 @@
      "outcome": null,
      "tps_reached_before_stop": []
     }
+   },
+   "trigger_readiness": {
+    "direction": "long",
+    "stack": {
+     "sma9": 0.10997555555555556,
+     "smma7": 0.10995046073906309,
+     "ema9": 0.1099886900869573,
+     "ema20": 0.10988266903440289,
+     "ema50": 0.10966401628611162,
+     "ema200": 0.11048680952580447
+    },
+    "floor": 0.11048680952580447,
+    "price": 0.11001,
+    "distance_pct": 0.4315533481787415,
+    "cleared": false
    }
   },
   "QNT": {
@@ -2147,7 +2413,8 @@
      "outcome": "STOPPED",
      "tps_reached_before_stop": []
     }
-   }
+   },
+   "trigger_readiness": null
   },
   "SEI": {
    "setup_instance_key": "SEI|1791043727000|1c7e0d601b757d1517a0cbeeaf00",
@@ -2234,6 +2501,21 @@
      "outcome": null,
      "tps_reached_before_stop": []
     }
+   },
+   "trigger_readiness": {
+    "direction": "long",
+    "stack": {
+     "sma9": 0.07397888888888889,
+     "smma7": 0.0739900733437229,
+     "ema9": 0.07399337026817504,
+     "ema20": 0.07396723509557723,
+     "ema50": 0.0738117334962547,
+     "ema200": 0.07345535578705954
+    },
+    "floor": 0.07399337026817504,
+    "price": 0.07402,
+    "distance_pct": 0.0359893484084419,
+    "cleared": true
    }
   },
   "SHIB": {
@@ -2310,6 +2592,21 @@
      "outcome": null,
      "tps_reached_before_stop": []
     }
+   },
+   "trigger_readiness": {
+    "direction": "long",
+    "stack": {
+     "sma9": 0.000005958888888888888,
+     "smma7": 0.0000059602417318127,
+     "ema9": 0.000005959228146441494,
+     "ema20": 0.000005958341380787922,
+     "ema50": 0.000005918891441409157,
+     "ema200": 0.000005841683707216303
+    },
+    "floor": 0.0000059602417318127,
+    "price": 0.00000596,
+    "distance_pct": 0.004055738400847492,
+    "cleared": false
    }
   },
   "SOL": {
@@ -2386,6 +2683,21 @@
      "outcome": null,
      "tps_reached_before_stop": []
     }
+   },
+   "trigger_readiness": {
+    "direction": "long",
+    "stack": {
+     "sma9": 121.85777777777778,
+     "smma7": 121.90889693799235,
+     "ema9": 121.8726514729986,
+     "ema20": 121.93459077914204,
+     "ema50": 121.84883383433025,
+     "ema200": 121.36434162724586
+    },
+    "floor": 121.93459077914204,
+    "price": 121.83,
+    "distance_pct": 0.08577613495376936,
+    "cleared": false
    }
   },
   "SUI": {
@@ -2455,7 +2767,8 @@
      "outcome": null,
      "tps_reached_before_stop": []
     }
-   }
+   },
+   "trigger_readiness": null
   },
   "TAO": {
    "setup_instance_key": "TAO|1790679826000|15fdd031feaaa3033319726306eb",
@@ -2524,6 +2837,21 @@
      "outcome": null,
      "tps_reached_before_stop": []
     }
+   },
+   "trigger_readiness": {
+    "direction": "short",
+    "stack": {
+     "sma9": 303.94444444444446,
+     "smma7": 303.8081100134486,
+     "ema9": 304.03901157092884,
+     "ema20": 303.52255509205986,
+     "ema50": 302.7725259495147,
+     "ema200": 303.5561403726316
+    },
+    "floor": 302.7725259495147,
+    "price": 304.1,
+    "distance_pct": 0.43843940143586685,
+    "cleared": false
    }
   },
   "TRX": {
@@ -2534,7 +2862,8 @@
     "text": "Closed",
     "class": "CLOSED"
    },
-   "lifecycle": null
+   "lifecycle": null,
+   "trigger_readiness": null
   },
   "TURBO": {
    "setup_instance_key": "TURBO|1789932388000|1479d80b7d015d16b9dc90f9c116",
@@ -2603,6 +2932,21 @@
      "outcome": null,
      "tps_reached_before_stop": []
     }
+   },
+   "trigger_readiness": {
+    "direction": "long",
+    "stack": {
+     "sma9": 0.0010518888888888889,
+     "smma7": 0.0010526305255902529,
+     "ema9": 0.0010520119480704453,
+     "ema20": 0.0010532273337983647,
+     "ema50": 0.0010529587526469611,
+     "ema200": 0.0010498967671892965
+    },
+    "floor": 0.0010532273337983647,
+    "price": 0.001051,
+    "distance_pct": 0.2114770218061068,
+    "cleared": false
    }
   },
   "UNI": {
@@ -2681,7 +3025,8 @@
      "evidence_grade": "CLOSE_CONFIRMED",
      "blockers": []
     }
-   }
+   },
+   "trigger_readiness": null
   },
   "XLM": {
    "setup_instance_key": "XLM|1791074011000|0cd21be2ea0ee81bbd902b0cdc3c",
@@ -2768,6 +3113,21 @@
      "outcome": null,
      "tps_reached_before_stop": []
     }
+   },
+   "trigger_readiness": {
+    "direction": "long",
+    "stack": {
+     "sma9": 0.22248888888888885,
+     "smma7": 0.22262281599192785,
+     "ema9": 0.22255080770479954,
+     "ema20": 0.2226331737786027,
+     "ema50": 0.22216637101756626,
+     "ema200": 0.22068363549211448
+    },
+    "floor": 0.2226331737786027,
+    "price": 0.2225,
+    "distance_pct": 0.05981758079554265,
+    "cleared": false
    }
   },
   "XRP": {
@@ -2871,6 +3231,21 @@
      "outcome": "STOPPED",
      "tps_reached_before_stop": []
     }
+   },
+   "trigger_readiness": {
+    "direction": "short",
+    "stack": {
+     "sma9": 1.506022222222222,
+     "smma7": 1.5059406975382632,
+     "ema9": 1.506135946310262,
+     "ema20": 1.5052175795079394,
+     "ema50": 1.5017296238301687,
+     "ema200": 1.5075445705790689
+    },
+    "floor": 1.5017296238301687,
+    "price": 1.5177,
+    "distance_pct": 1.0634654811629007,
+    "cleared": false
    }
   },
   "ZEC": {
@@ -2951,6 +3326,21 @@
      "outcome": "COMPLETED",
      "tps_reached_before_stop": []
     }
+   },
+   "trigger_readiness": {
+    "direction": "short",
+    "stack": {
+     "sma9": 1331.7533333333333,
+     "smma7": 1330.0186627566657,
+     "ema9": 1331.898920617814,
+     "ema20": 1327.3146054605506,
+     "ema50": 1329.7405093769294,
+     "ema200": 1401.0294983169586
+    },
+    "floor": 1327.3146054605506,
+    "price": 1352.91,
+    "distance_pct": 1.9283592928270668,
+    "cleared": false
    }
   },
   "ZRO": {
@@ -3016,6 +3406,21 @@
      "outcome": null,
      "tps_reached_before_stop": []
     }
+   },
+   "trigger_readiness": {
+    "direction": "long",
+    "stack": {
+     "sma9": 1.981,
+     "smma7": 1.9820747972558854,
+     "ema9": 1.9808380799934655,
+     "ema20": 1.9839541333350292,
+     "ema50": 1.9804511807044947,
+     "ema200": 1.8377912843045567
+    },
+    "floor": 1.9839541333350292,
+    "price": 1.978,
+    "distance_pct": 0.30011446509705086,
+    "cleared": false
    }
   },
   "ZZTEST": {
@@ -3026,7 +3431,8 @@
     "text": "No Trade",
     "class": "NO_TRADE"
    },
-   "lifecycle": null
+   "lifecycle": null,
+   "trigger_readiness": null
   }
  },
  "receipts": [
