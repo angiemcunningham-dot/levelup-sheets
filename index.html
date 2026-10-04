@@ -265,11 +265,13 @@ const dayKey=iso=>{const d=new Date(iso);return isNaN(d)?null:d.toLocaleDateStri
 let latestDay=null,latestDayMs=-Infinity;
 rows.forEach(r=>{if(isPC(r)||!get(r,"status")||!hasLevels(r))return;const ms=new Date(get(r,"timestamp")).getTime();if(isNaN(ms))return;if(ms>latestDayMs){latestDayMs=ms;latestDay=dayKey(get(r,"timestamp"));}});
 const isTodayBatch=a=>latestDay&&(all[a]||[]).some(r=>!isPC(r)&&get(r,"status")&&hasLevels(r)&&dayKey(get(r,"timestamp"))===latestDay);
-const cards=Object.entries(by).filter(([a])=>!CHELSEA_RECORD_EXCLUSIONS.includes(a)).map(([a,r])=>{const [c,t]=STATUS(get(r,"status"));return {a,r,c,t,isActive:c==="b-active"||c==="b-short",today:isTodayBatch(a)};});
-/* Genuinely active/holding trades stay in the existing ACTIVE NOW section above (unchanged) rather than being
-   duplicated here as an unstriggered "current setup" card - a live trade is never shown as "no trigger yet". */
-const today=cards.filter(x=>x.today&&!x.isActive).sort((x,y)=>x.a.localeCompare(y.a));
-const rest=cards.filter(x=>!(x.today&&!x.isActive)).sort((x,y)=>ORDER.indexOf(x.c)-ORDER.indexOf(y.c)||x.a.localeCompare(y.a));
+const cards=Object.entries(by).filter(([a])=>!CHELSEA_RECORD_EXCLUSIONS.includes(a)).map(([a,r])=>{const [c,t]=STATUS(get(r,"status"));return {a,r,c,t,isResolved:c==="b-active"||c==="b-short"||c==="b-invalid"||c==="b-closed",today:isTodayBatch(a)};});
+/* 2026-10-04 (Angela, explicit - INJ invalidation case): broadened from "isActive" to "isResolved" - an
+   Invalidated or Closed setup is just as done as a live trade is, so it belongs in History, not sitting in
+   "Today's Untriggered Setups" looking like it's still waiting. Same comment/intent as before, just no longer
+   missing the other two terminal states. */
+const today=cards.filter(x=>x.today&&!x.isResolved).sort((x,y)=>x.a.localeCompare(y.a));
+const rest=cards.filter(x=>!(x.today&&!x.isResolved)).sort((x,y)=>ORDER.indexOf(x.c)-ORDER.indexOf(y.c)||x.a.localeCompare(y.a));
 document.getElementById("today-sub").textContent=latestDay?("published "+latestDay):"";
 document.getElementById("grid").innerHTML=today.map(({a,r,c,t})=>cardHtml(a,r,c,t,pc,all)).join("")||`<div class="empty">No current setups yet today — see history below, or Active Now above.</div>`;
 const histEl=document.getElementById("grid-history");
