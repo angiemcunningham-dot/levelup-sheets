@@ -1115,13 +1115,19 @@ load();setInterval(load,60000);
       if (it.real) {
         var realTag = p.state === 'INSIDE' ? 'Cleared the floor' : (p.band_ord >= 1 ? p.band : '');
         var pubZone = it.publishedProx && it.publishedProx.zone ? A.zoneText(it.publishedProx.zone) : null;
+        // sideWord: which side price must open on to CLEAR the floor ("needs to open above/below"). currentSideWord
+        // is the opposite - where price is SITTING right now relative to the floor (long not-cleared: below it;
+        // short not-cleared: above it) - the header label describes the latter, not the former. A short setup
+        // was showing "X% below the six-line floor" while price actually sat ABOVE the floor (COMP, 2026-10-05,
+        // Angela-reported) because this label was hardcoded to the long-only wording regardless of direction.
         var sideWord = p.direction === 'short' ? 'below' : 'above';
+        var currentSideWord = p.direction === 'short' ? 'above' : 'below';
         var body = p.inside
           ? 'Price is currently ' + sideWord + ' the real floor ($' + A.fmtPrice(it.price) + ' vs $' + A.fmtPrice(p.floor) + ') — watching for a 1H candle to open there and confirm.'
           : 'Price hasn’t opened ' + sideWord + ' SMA9/SMMA7/EMA9/EMA20/EMA50/EMA200 yet — floor $' + A.fmtPrice(p.floor) + ', live $' + A.fmtPrice(it.price) + '.';
         return '<a class="att-card tier-' + t + '" href="sheet.html?asset=' + encodeURIComponent(it.asset) + '" data-asset="' + esc(it.asset) + '" data-tier="' + t + '" data-pct="' + p.distance_pct.toFixed(4) + '">' +
           '<div class="att-top"><span class="att-asset">' + esc(it.asset) + '</span><span class="att-dir">Watching · ' + dir + '</span></div>' +
-          '<div class="att-pct"><b>' + A.fmtPct(p.distance_pct) + '%</b><span>' + (p.inside ? 'past the six-line floor' : 'below the six-line floor') + '</span></div>' +
+          '<div class="att-pct"><b>' + A.fmtPct(p.distance_pct) + '%</b><span>' + (p.inside ? 'past the six-line floor' : currentSideWord + ' the six-line floor') + '</span></div>' +
           (realTag ? '<span class="att-tag">' + esc(realTag) + '</span>' : '') +
           '<div class="att-bar" aria-hidden="true"><i style="width:' + gauge.toFixed(0) + '%"></i></div>' +
           '<div class="att-meta">' + body + (pubZone ? '<br><span style="opacity:.65">Chelsea’s published zone (reference only): $' + pubZone + '</span>' : '') + '</div></a>';
