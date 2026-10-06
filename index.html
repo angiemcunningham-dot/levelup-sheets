@@ -1244,6 +1244,17 @@ load();setInterval(load,60000);
           var dir = mf.directionFor(a); if (!dir) return;
           list.push({ asset: a, cls: dir === 'SHORT' ? 'ACTIVE_SHORT' : 'ACTIVE_LONG', side: dir === 'SHORT' ? 'short' : 'long', label: dir === 'SHORT' ? 'ACTIVE SHORT' : 'ACTIVE LONG', status_text: s.status && s.status.text, status_iso: null, setup: s });
         });
+        /* 2026-10-06 (Angela, explicit: "any trades that are also closed or all tp's have been hit needs to move
+           to previous call history"): once the mechanical feed confirms a terminal outcome (stopped, or every
+           published target hit) for a setup's CURRENT instance, it is no longer "active" - drop it from this
+           list regardless of what its Sheet status still literally says (Active Long/Short, or the Watching
+           backfill just above). It still has a real published record; grid-level decorate() (mech-feed, below)
+           is what makes sure that record actually surfaces in Previous Calls/History, including for a same-day
+           setup the Sheet-driven partition above wouldn't otherwise place there. */
+        list = list.filter(function (it) {
+          var m = mf.mechanicalFor(it.asset, mf.currentInstanceKeyFor(it.asset));
+          return !(m && (m.stopped || m.complete));
+        });
       }
       if (!list.length) { secA.hidden = true; secOld.hidden = true; return; }
       var fresh = !!ps.at && (Date.now() - ps.at) < STALE_MS;
@@ -1550,11 +1561,30 @@ load();setInterval(load,60000);
               pill.classList.remove('mech-demoted');
             }
           }
-          var html = badgeHtml(mechanicalFor(asset, currentInstanceKeyFor(asset))); if (!html) return;
-          var d = document.createElement('div'); d.innerHTML = html;
-          if (pill && pill.parentNode) pill.parentNode.insertBefore(d.firstChild, pill.nextSibling);
+          var html = badgeHtml(mechanicalFor(asset, currentInstanceKeyFor(asset)));
+          if (html) { var d = document.createElement('div'); d.innerHTML = html; if (pill && pill.parentNode) pill.parentNode.insertBefore(d.firstChild, pill.nextSibling); }
+          /* 2026-10-06 (Angela, explicit: "any trades that are also closed or all tp's have been hit needs to
+             move to previous call history"): a terminal (stopped/complete) card still sitting in "Today's
+             Untriggered Setups" - a same-day setup the Sheet-driven partition in load() wouldn't otherwise move,
+             since that partition only checks Chelsea's own (often stale) status text - gets physically relocated
+             into Previous Calls/History here instead. Never touches load()/cardHtml() themselves (same "additive
+             only" rule as the rest of this addon); re-applied on every decorate() pass, so it survives the next
+             Sheet-driven re-render re-creating the original (still-Watching-labeled) card in #grid. Active Now's
+             own list filters this same terminal case out in renderActive() above, so a card can't be live in both
+             places at once.
+          */
+          if (resolved && (resolved.kind === 'stopped' || resolved.kind === 'complete') && grid && c.parentNode === grid) {
+            var histGrid = document.getElementById('grid-history');
+            if (histGrid) {
+              var histEmpty = histGrid.querySelector('.empty'); if (histEmpty) histEmpty.remove();
+              c.style.display = ''; // clear any display:none a prior cycle set while this was still a near/triggered card in #grid
+              histGrid.insertBefore(c, histGrid.firstChild);
+            }
+          }
         });
         decorateActiveNow();
+        var hc = document.getElementById('hist-count'), histGridEl = document.getElementById('grid-history');
+        if (hc && histGridEl) hc.textContent = ' (' + histGridEl.querySelectorAll('a.card').length + ')';
         var note = feed ? ('Feed updated ' + fmtAgo(feed.generated_at) + ((Date.now() - Date.parse(feed.generated_at)) > STALE_MS ? ' (may be stale)' : '')) : '';
         var head = document.querySelector('.section-head');
         var n = document.getElementById('mech-note');
