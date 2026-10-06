@@ -139,6 +139,19 @@ a.att-past-chip b{font-family:Archivo,Inter,sans-serif;font-weight:900;color:var
 .att.act .att-title{color:var(--green-d)}
 .act-em{font-style:normal;color:var(--green-d)}
 .act-grid{grid-template-columns:repeat(auto-fill,minmax(236px,1fr))}
+/* 2026-10-06 (Angela, explicit, "Option A" mockup approved): Active Now splits into a Longs column and a Shorts
+   column side by side, divided by a vertical rule, instead of one mixed grid - never mixes the two groups. */
+.act-split{display:flex;align-items:stretch;gap:0}
+.act-col{flex:1 1 0;min-width:0}
+.act-divider{width:2px;background:var(--pink-line);margin:0 22px;flex:none;align-self:stretch}
+.act-col-head{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.act-col-label{font-family:Archivo,Inter,sans-serif;font-weight:900;font-size:14px;letter-spacing:.12em;text-transform:uppercase}
+.act-col-label.long{color:var(--green-d)}
+.act-col-label.short{color:var(--red-d)}
+.act-col-count{font-family:"JetBrains Mono",monospace;font-size:11px;font-weight:700;color:var(--gray);background:#fff;border:1.5px solid;border-radius:999px;padding:1px 8px}
+.act-col-count.long{border-color:#D1FAE1}
+.act-col-count.short{border-color:#FBD5D5}
+@media(max-width:640px){.act-split{flex-direction:column}.act-divider{width:auto;height:2px;margin:18px 0}}
 a.act-card{--ac:#22C55E;--ad:#15803D;position:relative;display:block;text-decoration:none;color:inherit;border:2px solid var(--ac);border-left-width:10px;border-radius:14px;padding:14px 16px 13px;background:#F0FDF4;transition:transform .2s,box-shadow .2s}
 a.act-card.side-short{--ac:#EF4444;--ad:#B91C1C;background:#FEF2F2}
 a.act-card:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(21,128,61,.18)}
@@ -1271,14 +1284,29 @@ load();setInterval(load,60000);
           '<div class="act-status">' + esc(it.label) + '</div><span class="act-tag">Triggered</span>' +
           '<div class="att-meta">' + (px ? 'LIVE $' + A.fmtPrice(px) + ' (' + (srcName[ps.sources[it.asset]] || 'live') + ')<br>' : '') + (it.status_iso ? 'status set ' + esc(etStamp(it.status_iso)) : '') + '</div></a>';
       };
+      // 2026-10-06 (Angela, explicit, "Option A" mockup approved): longs and shorts in their own column, divided
+      // by a vertical rule - never mixed in one grid. A side with nothing in it contributes no column/divider at
+      // all (never an empty "0" column), so a one-sided moment still reads as a single clean grid.
+      var splitCardHtml = function (items) {
+        var longs = items.filter(function (it) { return it.side === 'long'; });
+        var shorts = items.filter(function (it) { return it.side === 'short'; });
+        var colHtml = function (arr, side, label) {
+          if (!arr.length) return '';
+          return '<div class="act-col"><div class="act-col-head"><span class="act-col-label ' + side + '">' + label + '</span><span class="act-col-count ' + side + '">' + arr.length + '</span></div><div class="att-grid act-grid">' + arr.map(cardHtmlActive).join('') + '</div></div>';
+        };
+        var longHtml = colHtml(longs, 'long', '▲ Longs');
+        var shortHtml = colHtml(shorts, 'short', '▼ Shorts');
+        var divider = (longs.length && shorts.length) ? '<div class="act-divider"></div>' : '';
+        return '<div class="act-split">' + longHtml + divider + shortHtml + '</div>';
+      };
       secA.hidden = !freshList.length;
       if (freshList.length) secA.innerHTML = '<div class="att-head"><div class="att-title">Active <em class="act-em">now</em></div></div>' +
         '<div class="att-note">Setups whose current status in the Sheet is <b>Active Long</b> or <b>Active Short</b>. This is a status label from the published record — not a recommendation and not a new entry.</div>' +
-        '<div class="att-grid act-grid">' + freshList.map(cardHtmlActive).join('') + '</div>';
+        splitCardHtml(freshList);
       secOld.hidden = !staleList.length;
       if (staleList.length) secOld.innerHTML = '<details class="hist-toggle"><summary>Older active / administrative<span> (' + staleList.length + ')</span></summary>' +
         '<div class="att-note">Active Long/Short records whose Sheet status has stood unchanged a long time. Still real published history — nothing is deleted, just moved out of the current view so it does not read as a fresh call.</div>' +
-        '<div class="att-grid act-grid">' + staleList.map(cardHtmlActive).join('') + '</div></details>';
+        splitCardHtml(staleList) + '</details>';
     }
 
     function loadSheet() {
