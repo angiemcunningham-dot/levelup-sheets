@@ -38,6 +38,10 @@ a.card.is-live.is-short{border-color:var(--red)}
 @keyframes flashGreen{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.55)}50%{box-shadow:0 0 0 6px rgba(34,197,94,0)}}
 @keyframes flashRed{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.55)}50%{box-shadow:0 0 0 6px rgba(239,68,68,0)}}
 .hl{font-size:14px;font-weight:600;line-height:1.45}.meta{font-family:"JetBrains Mono";font-size:11px;color:var(--gray);margin-top:10px}
+/* 2026-10-06 (Angela, explicit: real invalidation misses found on KAS/LINK/AAVE - price already closed past the
+   stop level before ever triggering, with nothing surfacing it): a pre-trigger stop-breach flag, additive only,
+   never changes a status or hides a card. */
+.stop-breach-flag{font-family:Archivo,sans-serif;font-weight:800;font-size:11.5px;letter-spacing:.02em;color:var(--red-d);background:rgba(239,68,68,.08);border:2px solid var(--red);border-radius:10px;padding:8px 11px;margin-top:8px;line-height:1.5}
 .foot{margin-top:34px;padding-top:18px;border-top:2px solid var(--pink-line);text-align:center}.f1{font-family:Archivo;font-weight:800;font-size:13px;letter-spacing:.18em;color:var(--pink);text-transform:uppercase}.f2{font-size:11.5px;color:var(--gray);margin-top:8px;line-height:1.6}
 .empty{padding:40px;text-align:center;color:var(--gray)}
 @media(max-width:640px){.inner{padding:30px 18px 24px}}
@@ -1368,8 +1372,95 @@ load();setInterval(load,60000);
         splitCardHtml(staleList) + '</details>';
     }
 
+    /* PRE-TRIGGER STOP BREACH (2026-10-06, Angela, explicit): "check the invalidation warnings on all watching" -
+       real audit found KAS/LINK/AAVE had already closed past their published stop/invalidation level, in KAS/
+       LINK's case BEFORE the setup ever mechanically triggered, with nothing on the board surfacing it. Chelsea's
+       own "Invalidation:" sentence is free text - never reliably parseable as a number the way a trigger/TP/stop
+       already is (same fragility class that's bitten the trigger parser repeatedly this week). This instead
+       reuses the SAME stop level already reliably parsed for post-trigger use (parseStop(), byte-for-byte shared
+       with the monitor), checked against real historical 1H candles since publication - Binance primary, Kraken
+       fallback (same fallback chain this page already uses for live prices). Flags only - never auto-changes a
+       status, hides a card, or moves it to History; that stays a human (Chelsea/Angela) decision, same "surface
+       facts, never invent a status" rule every other mechanical signal on this page follows. Client-side only -
+       never touches the frozen monitor engine or the Sheet. */
+    var stopBreachCache = {};   // key: asset|publishedMs|fingerprint -> {breached, threshold, checkedAt}
+    var STOP_BREACH_RECHECK_MS = 20 * 60000;
+    function stopBreachKeyFor(asset, s) {
+      if (!s || !s.fingerprint) return null;
+      var sr = s.setup_row || {};
+      var itsPart = (sr.utcMs !== null && sr.utcMs !== undefined) ? String(sr.utcMs) : 'raw:' + String(sr.ts_text || '').trim().replace(/\s+/g, ' ').toLowerCase();
+      return asset + '|' + itsPart + '|' + s.fingerprint;
+    }
+    function fetchKlinesCloses(symbol, sinceMs) {
+      var url = 'https://data-api.binance.vision/api/v3/klines?symbol=' + symbol + '&interval=1h&startTime=' + sinceMs + '&limit=1000';
+      return fetch(url).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(function (kl) { return kl.map(function (k) { return parseFloat(k[4]); }); });
+    }
+    function fetchKlinesKrakenCloses(asset, sinceMs) {
+      var url = 'https://api.kraken.com/0/public/OHLC?pair=' + asset + 'USD&interval=60&since=' + Math.floor(sinceMs / 1000);
+      return fetch(url).then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (j) {
+          if (!j || (j.error && j.error.length) || !j.result) return [];
+          var key = Object.keys(j.result).filter(function (k) { return k !== 'last'; })[0];
+          var candles = key ? j.result[key] : [];
+          return candles.map(function (c) { return parseFloat(c[4]); });
+        }).catch(function () { return []; });
+    }
+    function checkStopBreach(asset, s) {
+      var key = stopBreachKeyFor(asset, s);
+      if (!key) return Promise.resolve(null);
+      var cached = stopBreachCache[key];
+      if (cached && (Date.now() - cached.checkedAt) < STOP_BREACH_RECHECK_MS) return Promise.resolve(cached);
+      var dir = s.direction && s.direction.value; if (!dir) return Promise.resolve(null);
+      var stopLevel = (s.levels || []).filter(function (l) { return l.kind === 'stop' && l.state === 'present' && l.zone; })[0];
+      if (!stopLevel) return Promise.resolve(null);
+      var sr = s.setup_row || {};
+      var sinceMs = sr.utcMs; if (!sinceMs) return Promise.resolve(null);
+      var threshold = dir === 'short' ? stopLevel.zone.high : stopLevel.zone.low;
+      return fetchKlinesCloses(asset + 'USDT', sinceMs).catch(function () { return fetchKlinesKrakenCloses(asset, sinceMs); })
+        .then(function (closes) {
+          var breach = (closes || []).some(function (c) { return dir === 'short' ? c >= threshold : c <= threshold; });
+          var result = { breached: breach, threshold: threshold, checkedAt: Date.now() };
+          stopBreachCache[key] = result;
+          return result;
+        }).catch(function () { return null; });
+    }
+    function applyStopBreachFlags() {
+      if (!setups) return;
+      var mf = window.__mechFeed;
+      Object.keys(setups).forEach(function (asset) {
+        var s = setups[asset];
+        if (!s || !s.status || s.status.class !== 'WATCHING') return;
+        // only a pre-trigger check - once mechanically triggered, the real post-trigger stop/TP facts already
+        // cover this (resolveCurrentState()/mechanicalFor() above), so skip to avoid a redundant/confusing flag.
+        var mech = mf && mf.mechanicalFor(asset, mf.currentInstanceKeyFor(asset));
+        if (mech && mech.triggered) return;
+        checkStopBreach(asset, s).then(function (res) {
+          var shouldShow = !!(res && res.breached);
+          Array.prototype.forEach.call(document.querySelectorAll('a.card'), function (c) {
+            var m = /[?&]asset=([^&]+)/.exec(c.getAttribute('href') || '');
+            if (!m || decodeURIComponent(m[1]).toUpperCase() !== asset) return;
+            var old = c.querySelector('.stop-breach-flag');
+            // 2026-10-06: only touch the DOM when the shown state actually needs to change - a cache-served
+            // "still breached" result re-removing+re-inserting an identical node every call is itself a
+            // childList mutation, which (called from inside mech-feed's decorate(), re-triggered by exactly
+            // this kind of mutation) becomes a live MutationObserver feedback loop - the same class of bug
+            // caught and fixed earlier in this file for the Currently Watching section.
+            if (shouldShow && !old) {
+              var hl = c.querySelector('.hl');
+              var el = document.createElement('div');
+              el.className = 'stop-breach-flag';
+              el.textContent = '⚠ Price already closed past the stop level ($' + A.fmtPrice(res.threshold) + ') before this ever triggered — may already be invalidated, needs a human check.';
+              if (hl && hl.parentNode) hl.parentNode.insertBefore(el, hl.nextSibling); else c.appendChild(el);
+            } else if (!shouldShow && old) {
+              old.remove();
+            }
+          });
+        });
+      });
+    }
     function loadSheet() {
-      return fetch(CSV + (CSV.indexOf('?') > -1 ? '&' : '?') + 't=' + Date.now()).then(function (r) { return r.text(); }).then(function (t) { setups = C.buildAll(t); sheetErr = false; renderActive(); }).catch(function () { sheetErr = true; });
+      return fetch(CSV + (CSV.indexOf('?') > -1 ? '&' : '?') + 't=' + Date.now()).then(function (r) { return r.text(); }).then(function (t) { setups = C.buildAll(t); sheetErr = false; renderActive(); applyStopBreachFlags(); }).catch(function () { sheetErr = true; });
     }
     function loadPrices() {
       if (!setups) return Promise.resolve();
@@ -1397,7 +1488,7 @@ load();setInterval(load,60000);
     obs.observe(grid, { childList: true });
     var watchGridObsTarget0 = document.getElementById('grid-watching');
     if (watchGridObsTarget0) obs.observe(watchGridObsTarget0, { childList: true });
-    window.__attention = { render: render, view: view, state: function () { return { setups: setups, ps: ps }; } };   // test hook (read-only)
+    window.__attention = { render: render, view: view, state: function () { return { setups: setups, ps: ps }; }, applyStopBreachFlags: applyStopBreachFlags };   // test hook (read-only)
   } catch (e) { if (window.console) console.warn('attention addon disabled:', e); }
 })();
 
@@ -1684,6 +1775,12 @@ load();setInterval(load,60000);
           }
         });
         decorateActiveNow();
+        // 2026-10-06: re-apply the pre-trigger stop-breach flag (att-ui, same page - cross-script hook via
+        // window.__attention) every time this runs, since THIS function's own MutationObserver already reliably
+        // fires right after load()'s periodic #grid/#grid-watching rebuild wipes any card-level addition - relying
+        // on att-ui's own independent 60s fetch cycle alone left the flag flickering out between rebuilds.
+        // stopBreachCache (20-min TTL) keeps this cheap - almost always a cache hit, no extra network call.
+        if (window.__attention && window.__attention.applyStopBreachFlags) window.__attention.applyStopBreachFlags();
         var hc = document.getElementById('hist-count'), histGridEl = document.getElementById('grid-history');
         if (hc && histGridEl) hc.textContent = ' (' + Array.prototype.filter.call(histGridEl.querySelectorAll('a.card'), function (c) { return c.style.display !== 'none'; }).length + ')';
         var note = feed ? ('Feed updated ' + fmtAgo(feed.generated_at) + ((Date.now() - Date.parse(feed.generated_at)) > STALE_MS ? ' (may be stale)' : '')) : '';
