@@ -1184,17 +1184,31 @@ load();setInterval(load,60000);
       obs.disconnect();
       try {
         var byAsset = {}; if (v) v.items.forEach(function (i) { byAsset[i.asset] = i; });
-        var totalCards = 0, nearCards = 0;
+        var mf = window.__mechFeed;
+        var totalCards = 0, hiddenCards = 0, triggeredHidden = 0;
         Array.prototype.forEach.call(grid.querySelectorAll('a.card'), function (c) {
           totalCards++;
           var m = /[?&]asset=([^&]+)/.exec(c.getAttribute('href') || ''); if (!m) return; var a = decodeURIComponent(m[1]).toUpperCase();
           var old = c.querySelector('.att-chip'); if (old) old.remove();
           var it = byAsset[a];
           var isNear = !!it && !it.prox.approx && (it.prox.state === 'APPROACHING' || it.prox.state === 'INSIDE');
-          c.style.display = isNear ? 'none' : '';
-          if (isNear) nearCards++;
+          /* 2026-10-06 (Angela, explicit: "Chelsea should not have to manually update anything that is the
+             point"): a mechanically TRIGGERED setup is no longer untriggered, no matter what her Sheet status
+             column still says - hide it here the same as a near-trigger card instead of waiting on her to touch
+             the Sheet. mech-feed's own instance-safe mechanicalFor()/currentInstanceKeyFor() is the sole
+             authority (never a second trigger-detection system); it already excludes stale/superseded instances. */
+          var mech = mf && mf.mechanicalFor(a, mf.currentInstanceKeyFor(a));
+          var isTriggered = !!(mech && mech.triggered);
+          var hide = isNear || isTriggered;
+          c.style.display = hide ? 'none' : '';
+          if (hide) { hiddenCards++; if (isTriggered) triggeredHidden++; }
         });
-        if (todayAllNearMsg) todayAllNearMsg.hidden = !(totalCards > 0 && nearCards === totalCards);
+        if (todayAllNearMsg) {
+          todayAllNearMsg.hidden = !(totalCards > 0 && hiddenCards === totalCards);
+          todayAllNearMsg.textContent = triggeredHidden > 0
+            ? "All of today's setups have moved — see Active Now above."
+            : "All of today's setups are currently near trigger — see Live attention above.";
+        }
       } catch (e) { /* never break the page */ }
       obs.observe(grid, { childList: true });
     }
@@ -1204,6 +1218,33 @@ load();setInterval(load,60000);
     function renderActive() {
       if (!setups) { secA.hidden = true; secOld.hidden = true; return; }
       var list = A.activeNow(setups).filter(function (it) { return !CHELSEA_RECORD_EXCLUSIONS.includes(it.asset); });
+      /* 2026-10-06 (Angela, explicit: "Chelsea should not have to manually update anything that is the point"):
+         A.activeNow() (frozen att-module) only lists setups whose SHEET status is already "Active Long"/"Active
+         Short" - a mechanically triggered setup sits out of Active Now entirely until Chelsea flips that status
+         cell. This adds mechanically-triggered-but-not-yet-marked setups alongside the Sheet-driven ones (never
+         replacing/mutating A.activeNow's own output), using the same instance-safe mechanicalFor()/directionFor()
+         mech-feed already exposes elsewhere on this page - never a guessed direction. decorateActiveNow()
+         (mech-feed) then reconciles the label/ticks for these exactly like any other Active Now card. */
+      var activeAssets = {}; list.forEach(function (it) { activeAssets[it.asset] = true; });
+      var mf = window.__mechFeed;
+      if (mf) {
+        Object.keys(setups).sort().forEach(function (a) {
+          if (activeAssets[a] || CHELSEA_RECORD_EXCLUSIONS.includes(a)) return;
+          var s = setups[a];
+          // Only backfills the gap this is meant for: Chelsea's status hasn't caught up yet (still Watching/No
+          // Trade). A setup she's already resolved to Closed/Invalidated some other way belongs in History only,
+          // same as before this change - this never re-surfaces old, already-closed-out record-keeping as
+          // "active". Checks the RAW Sheet status class directly rather than isWatchingLike()/A.applicable() -
+          // mech-feed's own applicable() wrapper (above) deliberately returns false once a setup is mechanically
+          // triggered, which is exactly the case being detected here, so going through it would always skip it.
+          var statusCls = s.status && s.status.class;
+          if (statusCls !== 'WATCHING' && !(opts.includeNoTrade && statusCls === 'NO_TRADE')) return;
+          var m = mf.mechanicalFor(a, mf.currentInstanceKeyFor(a));
+          if (!m || !m.triggered) return;
+          var dir = mf.directionFor(a); if (!dir) return;
+          list.push({ asset: a, cls: dir === 'SHORT' ? 'ACTIVE_SHORT' : 'ACTIVE_LONG', side: dir === 'SHORT' ? 'short' : 'long', label: dir === 'SHORT' ? 'ACTIVE SHORT' : 'ACTIVE LONG', status_text: s.status && s.status.text, status_iso: null, setup: s });
+        });
+      }
       if (!list.length) { secA.hidden = true; secOld.hidden = true; return; }
       var fresh = !!ps.at && (Date.now() - ps.at) < STALE_MS;
       var now = Date.now();
