@@ -563,17 +563,22 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
         { notes: [has ? 'advisory text with an embedded number - not a level definition' : 'text only - no numeric level'], advisory: true });
       return out;
     }
-    // "open-and-hold above/below <price>" (number must be close behind the direction word). 200 chars,
-    // not 40: real text like "...hold above both Simple and Smooth. Entry Zone: $0.804-$0.810" puts over
-    // 40 characters of MA-bundle wording between the direction word and the real number - a 40-char window
-    // was truncating "$0.804" down to a bare "$0" mid-decimal, producing a degenerate {low:0,high:0} zone
-    // that then read as a real, already-passed trigger to every mechanical consumer. Verified live
-    // 2026-10-03 on APT (and the same phrasing across the rest of that day's batch). Keep in sync with the
-    // same fix in index.html's own embedded copy of this parser.
+    // "open-and-hold above/below <price>" (number must be close behind the direction word).
+    // 2026-10-06 resync with LevelUp_Monitor_Rebuild/core/levelup-core.js commit 78e5fab (Angela-reported
+    // ZRO/INJ "stuck" board state) and with index.html's own embedded copy of this parser - keep both in
+    // sync. Bounds the number search to the clause BEFORE any "Entry Zone:" text, and only trusts a number
+    // whose START is within 40 chars of "hold above/below" (never truncates a number's own digits, unlike
+    // the pre-2026-10-03 40-char version). A stray number sitting further out (e.g. ZRO: "...open-and-hold
+    // above both Simple and Smooth MAs, with acceptance above $1.80 followed by... Entry Zone: $1.77-$1.79")
+    // no longer gets wrongly grabbed as a confirmed 'present' trigger - it falls through to the
+    // conditional-trigger branch below instead, matching the canonical engine's fingerprint for the setup.
     const hm = text.match(/(?:open[\s-]+and[\s-]+hold|open[\s-]*&[\s-]*hold|\bhold)\s+(above|below)\b/i);
     if (hm) {
       out.dirHint = hm[1].toLowerCase() === 'above' ? 'long' : 'short';
-      const after = text.slice(hm.index + hm[0].length); const nums = scanNumbers(after.slice(0, 200));
+      const after = text.slice(hm.index + hm[0].length);
+      const entryIdx = after.search(/entry\s+zone/i);
+      const leadingClause = after.slice(0, entryIdx >= 0 ? entryIdx : after.length);
+      const nums = scanNumbers(leadingClause).filter((x) => x.idx < 40);
       if (nums.length) {
         const z = zoneAt(nums, 0, after);
         out.trigger = mkLevel(id, 'trigger', 'Trigger ' + n, z, 'Trigger ' + n, text, 'present', { hold: hm[1].toLowerCase() });
@@ -1142,6 +1147,17 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
 .mech-cond.unknown{border-style:dashed;color:#9CA3AF}
 .mech-readiness-count{font-family:"JetBrains Mono",monospace;font-size:11px;color:#6B7280;margin-bottom:4px}
 .mech-readiness-status{font-family:Archivo,sans-serif;font-weight:800;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#374151}
+/* 2026-10-06 (Angela, explicit): "when a trade is triggered based on the rules we have set, not price action,
+   it is conveyed clearly... have a flashing button next to the trigger line that says waiting on price to open
+   above the simple and smooth moving averages so it's not confusing." The six-line floor (SMA9/SMMA7/EMA9/
+   EMA20/EMA50/EMA200) is the real mechanical confirmation rule; this flag sits directly on the Ladder's own
+   TRIGGER 1 row (never replaces Chelsea's own trigger text next to it) rather than in a separate section
+   further down the page. Orange while price hasn't opened beyond the floor yet, pink once it has and is only
+   waiting on a 1H candle to confirm - same two-state language/colors the landing page's Live Attention card
+   already uses for this exact mechanical fact, so the two surfaces teach the same thing the same way. */
+.mech-sixline-flag{display:inline-flex;align-items:center;gap:7px;font-family:Archivo,sans-serif;font-weight:900;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--orange-d);background:#fff;border:2px solid var(--orange);border-radius:999px;padding:6px 12px;margin-top:8px;animation:attBlink 1.6s ease-in-out infinite;cursor:default}
+.mech-sixline-flag.is-close{color:var(--pink);border-color:var(--pink)}
+.mech-sixline-note{font-size:12px;color:#6B7280;line-height:1.55;margin-top:8px;max-width:640px}
 </style>
 <script id="mech-feed">
 /* MECHANICAL FEED (staging addon). Reads the published monitor feed - durable trigger/TP/stop facts computed from
@@ -1526,6 +1542,45 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
       var afterEl = mechPanel || chip || banner;
       if (old) old.replaceWith(panel); else afterEl.parentNode.insertBefore(panel, afterEl.nextSibling);
     }
+    /* MECHANICAL TRIGGER FLAG (2026-10-06, Angela, explicit: "when a trade is triggered based on the rules we
+       have set, not price action, it is conveyed clearly... a flashing button next to the trigger line that
+       says waiting on price to open above the simple and smooth moving averages"). The real six-line floor
+       (SMA9/SMMA7/EMA9/EMA20/EMA50/EMA200) is already computed and published per-asset as monitor-feed.json's
+       `trigger_readiness` - the SAME field index.html's Live Attention card already renders in this same
+       language. The gap being closed here is placement: that explanation never reached this per-asset page at
+       all, where a member looking at "The Ladder" has no way to know a level being touched isn't the same as a
+       confirmed trigger. Instance-gated the same way mechanicalFor() is (never attributes an old instance's
+       readiness data to a new setup); returns null once the real trigger has mechanically fired - that's what
+       resolveCurrentState()/panelHtml() already covers, this flag is for the "not yet" window only. */
+    function sixLineReadinessFor(asset, currentInstanceKey) {
+      if (!feed) return null;
+      var a = feed.assets[asset]; if (!a) return null;
+      if (currentInstanceKey && a.setup_instance_key !== currentInstanceKey) return null;
+      var r = a.trigger_readiness;
+      if (!r || r.floor == null || r.price == null) return null;
+      return r;
+    }
+    function ensureSixLineFlag() {
+      var ladder = document.getElementById('ladder'); if (!ladder) return;
+      var rows = ladder.querySelectorAll('.row'); var row = null;
+      for (var i = 0; i < rows.length; i++) { var rl = rows[i].querySelector('.rl'); if (rl && rl.textContent === 'TRIGGER 1') { row = rows[i]; break; } }
+      var old = document.getElementById('mech-sixline'); if (old) old.remove();
+      if (!row || resolveCurrentState(ASSET_)) return;   // already mechanically resolved - panelHtml() covers that case
+      var r = sixLineReadinessFor(ASSET_, directionAsset === ASSET_ ? currentInstanceKey : null);
+      if (!r) return;
+      var A = window.LevelUpAttention;
+      var sideWord = r.direction === 'short' ? 'below' : 'above';
+      var flagText = r.cleared ? 'Cleared the floor — waiting on a 1H candle to confirm' : 'Waiting on price to open ' + sideWord + ' the floor';
+      var note = r.cleared
+        ? 'Price is currently ' + sideWord + ' the real floor ($' + A.fmtPrice(r.price) + ' vs $' + A.fmtPrice(r.floor) + ') — not a confirmed trigger yet. It needs a full 1H candle to open there and hold.'
+        : 'Price hasn’t opened ' + sideWord + ' SMA9, SMMA7, EMA9, EMA20, EMA50 and EMA200 yet (the real floor is $' + A.fmtPrice(r.floor) + ', live price is $' + A.fmtPrice(r.price) + ') — touching the trigger level alone is not the same as a confirmed trigger.';
+      var wrap = document.createElement('div');
+      wrap.innerHTML = '<span class="mech-sixline-flag' + (r.cleared ? ' is-close' : '') + '" title="' + escH(note) + '">⚠ ' + escH(flagText) + '</span>'
+        + '<div class="mech-sixline-note">' + escH(note) + '</div>';
+      wrap.id = 'mech-sixline';
+      var holder = row.children[1]; if (!holder) return;
+      holder.appendChild(wrap);
+    }
     /* The client-side "% TO TRIGGER" chip (att-ui's own #att-chip, unconfirmed live-tick proximity to the ORIGINAL
        published trigger zone) predates this reconciliation layer and isn't aware of it. Root cause: att-ui's
        chipHtml() calls A.triggerProximity(setup, price) directly (att-ui:907) - a different code path than the
@@ -1560,7 +1615,7 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
        either of those async fetches has resolved would permanently no-op (attnTarget() null -> early return) and
        never get a second chance. applyAll() already reliably fires again once each of those resolves, and
        loadLivePrice()'s own freshness check above keeps this from re-fetching on every one of those cycles. */
-    function applyAll() { ensure(); ensureHeadline(); ensureReadiness(); suppressStaleChip(); ensureAttnChip(); loadLivePrice(); loadReadinessPrice(); }
+    function applyAll() { ensure(); ensureHeadline(); ensureReadiness(); ensureSixLineFlag(); suppressStaleChip(); ensureAttnChip(); loadLivePrice(); loadReadinessPrice(); }
     var obs = new MutationObserver(function () { obs.disconnect(); applyAll(); obs.observe(app, { childList: true }); });
     function load() { return fetchFeed().then(function (f) { feed = f; applyAll(); }); }
     load();
@@ -1569,7 +1624,7 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
     setInterval(function () { loadDirection().then(applyAll); }, 60000);
     setInterval(applyAll, 15000);
     obs.observe(app, { childList: true });
-    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, getCurrentInstanceKey: function () { return currentInstanceKey; }, resolveCurrentState: resolveCurrentState, directionFor: directionFor, ensure: ensure, ensureHeadline: ensureHeadline, suppressStaleChip: suppressStaleChip, attnTarget: attnTarget, attnChipHtml: attnChipHtml, ensureAttnChip: ensureAttnChip, loadLivePrice: loadLivePrice, coinEligible: coinEligible, coinBadgeHtml: coinBadgeHtml, ensureCoinHero: ensureCoinHero, triggerMarkerHtml: triggerMarkerHtml, conditionalTrigger: conditionalTrigger, readinessHtml: readinessHtml, ensureReadiness: ensureReadiness, loadReadinessPrice: loadReadinessPrice, panelHtml: panelHtml };   // test hook (read-only)
+    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, getCurrentInstanceKey: function () { return currentInstanceKey; }, resolveCurrentState: resolveCurrentState, directionFor: directionFor, ensure: ensure, ensureHeadline: ensureHeadline, suppressStaleChip: suppressStaleChip, attnTarget: attnTarget, attnChipHtml: attnChipHtml, ensureAttnChip: ensureAttnChip, loadLivePrice: loadLivePrice, coinEligible: coinEligible, coinBadgeHtml: coinBadgeHtml, ensureCoinHero: ensureCoinHero, triggerMarkerHtml: triggerMarkerHtml, conditionalTrigger: conditionalTrigger, readinessHtml: readinessHtml, ensureReadiness: ensureReadiness, loadReadinessPrice: loadReadinessPrice, panelHtml: panelHtml, sixLineReadinessFor: sixLineReadinessFor, ensureSixLineFlag: ensureSixLineFlag };   // test hook (read-only)
   } catch (e) { if (window.console) console.warn('mechanical feed addon disabled:', e); }
 })();
 </script>

@@ -482,16 +482,25 @@ load();setInterval(load,60000);
         { notes: [has ? 'advisory text with an embedded number - not a level definition' : 'text only - no numeric level'], advisory: true });
       return out;
     }
-    // "open-and-hold above/below <price>" (number must be close behind the direction word). 200 chars,
-    // not 40: real text like "...hold above both Simple and Smooth. Entry Zone: $0.804-$0.810" puts over
-    // 40 characters of MA-bundle wording between the direction word and the real number - a 40-char window
-    // was truncating "$0.804" down to a bare "$0" mid-decimal, producing a degenerate {low:0,high:0} zone
-    // that then read as a real, already-passed trigger to every mechanical consumer. Verified live
-    // 2026-10-03 on APT (and the same phrasing across the rest of that day's batch).
+    // "open-and-hold above/below <price>" (number must be close behind the direction word).
+    // 2026-10-06 resync with LevelUp_Monitor_Rebuild/core/levelup-core.js commit 78e5fab (Angela-reported
+    // ZRO/INJ "stuck" board state): this board copy was still on the 2026-10-03 APT fix (scan the first 200
+    // chars of `after` with no boundary), which this replaces entirely. The canonical fix bounds the number
+    // search to the clause BEFORE any "Entry Zone:" text, and only trusts a number whose START is within 40
+    // chars of "hold above/below" (never truncates a number's own digits, unlike the pre-2026-10-03 40-char
+    // version) - ZRO's text ("...open-and-hold above both Simple and Smooth MAs, with acceptance above $1.80
+    // followed by... Entry Zone: $1.77-$1.79") has a stray "$1.80" sitting well past char 40, which the old
+    // 200-char scan wrongly grabbed as a confirmed 'present' trigger. The canonical fix correctly finds no
+    // qualifying number here, falls through to the conditional-trigger branch below, and gets the SAME
+    // fingerprint (hence the same TP/stop facts) the published monitor feed already computes - this board
+    // copy's own instance key was silently never matching the feed's for ZRO/INJ until this fix.
     const hm = text.match(/(?:open[\s-]+and[\s-]+hold|open[\s-]*&[\s-]*hold|\bhold)\s+(above|below)\b/i);
     if (hm) {
       out.dirHint = hm[1].toLowerCase() === 'above' ? 'long' : 'short';
-      const after = text.slice(hm.index + hm[0].length); const nums = scanNumbers(after.slice(0, 200));
+      const after = text.slice(hm.index + hm[0].length);
+      const entryIdx = after.search(/entry\s+zone/i);
+      const leadingClause = after.slice(0, entryIdx >= 0 ? entryIdx : after.length);
+      const nums = scanNumbers(leadingClause).filter((x) => x.idx < 40);
       if (nums.length) {
         const z = zoneAt(nums, 0, after);
         out.trigger = mkLevel(id, 'trigger', 'Trigger ' + n, z, 'Trigger ' + n, text, 'present', { hold: hm[1].toLowerCase() });
