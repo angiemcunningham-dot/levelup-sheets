@@ -138,6 +138,8 @@ a.att-past-chip b{font-family:Archivo,Inter,sans-serif;font-weight:900;color:var
 .att.act{margin-top:26px;border:2px solid #BBF7D0;background:#F7FEF9;border-radius:16px;padding:18px 20px 16px}
 .att.act .att-title{color:var(--green-d)}
 .act-em{font-style:normal;color:var(--green-d)}
+.att.watch .att-title{color:var(--orange-d)}
+.watch-em{font-style:normal;color:var(--orange-d)}
 .act-grid{grid-template-columns:repeat(auto-fill,minmax(236px,1fr))}
 /* 2026-10-06 (Angela, explicit, "Option A" mockup approved): Active Now splits into a Longs column and a Shorts
    column side by side, divided by a vertical rule, instead of one mixed grid - never mixes the two groups. */
@@ -195,6 +197,11 @@ a.act-card.side-short:hover{box-shadow:0 10px 26px rgba(185,28,28,.18)}
 <div class="sub">One link per asset. Every read Chelsea makes lands here, with the history and the lesson when it's done.<br>Levels are structure, not instructions. Not financial advice.</div>
 <div class="section-head"><div class="section-title">Today's Untriggered <em>Setups</em></div><div class="section-sub" id="today-sub"></div></div>
 <div class="grid" id="grid"><div class="empty">Loading…</div></div>
+<section class="att watch" id="currently-watching" hidden aria-label="Currently watching: setups published on an earlier day that are still Watching, not yet triggered, not resolved">
+  <div class="att-head"><div class="att-title">Currently <em class="watch-em">watching</em></div></div>
+  <div class="att-note">Published on an earlier day and still Watching — not yet triggered, not resolved, and not part of today's fresh batch below. See Live Attention above for how close any of these are to their real trigger.</div>
+  <div class="grid" id="grid-watching"></div>
+</section>
 <section class="reset-watch" id="reset-watch" hidden aria-label="Reset watch - potential setups requiring a retest or reset, not formal trade setups">
   <div class="section-head"><div class="section-title">Reset <em>Watch</em></div></div>
   <div class="rw-note">Same setup family, requiring a retest/reset before anything is a live setup. <b>Potential setup — retest/reset required. No trigger = no trade.</b> Not a short signal, not an entry, not tracked as an active trade.</div>
@@ -290,9 +297,25 @@ const cards=Object.entries(by).filter(([a])=>!CHELSEA_RECORD_EXCLUSIONS.includes
    "Today's Untriggered Setups" looking like it's still waiting. Same comment/intent as before, just no longer
    missing the other two terminal states. */
 const today=cards.filter(x=>x.today&&!x.isResolved).sort((x,y)=>x.a.localeCompare(y.a));
-const rest=cards.filter(x=>!(x.today&&!x.isResolved)).sort((x,y)=>ORDER.indexOf(x.c)-ORDER.indexOf(y.c)||x.a.localeCompare(y.a));
+/* 2026-10-06 (Angela, explicit: "something that we are watching, if truly it has not triggered and still meets
+   the conditions of the trade, should [...] have its own section" - not lumped into Previous Calls/History just
+   because it wasn't published today). A Watching setup from an earlier day that hasn't triggered and hasn't
+   been resolved (Active/Short/Invalidated/Closed) is still a live, open consideration - it belongs in its own
+   "Currently Watching" section, never History. Previous Calls/History is now strictly isResolved, regardless of
+   today/not-today - the three buckets (today, watching, rest) are mutually exclusive and exhaustive over every
+   (today, isResolved) pair. The mechanical overlay (decorate(), below) further hides/relocates a Currently
+   Watching card once it mechanically triggers (to Active Now) or resolves (to History), same as it already does
+   for #grid. */
+// "No Trade" is Chelsea explicitly declining the setup - a decided/closed-out record, not an open one, so it
+// stays in History (matches the sitewide default of treating only WATCHING as actionable - see opts.includeNoTrade
+// elsewhere on this page). Currently Watching is scoped to literal b-watch status only, never b-none.
+const watching=cards.filter(x=>!x.today&&x.c==="b-watch").sort((x,y)=>x.a.localeCompare(y.a));
+const rest=cards.filter(x=>!(x.today&&!x.isResolved)&&!(!x.today&&x.c==="b-watch")).sort((x,y)=>ORDER.indexOf(x.c)-ORDER.indexOf(y.c)||x.a.localeCompare(y.a));
 document.getElementById("today-sub").textContent=latestDay?("published "+latestDay):"";
 document.getElementById("grid").innerHTML=today.map(({a,r,c,t})=>cardHtml(a,r,c,t,pc,all)).join("")||`<div class="empty">No current setups yet today — see history below, or Active Now above.</div>`;
+const watchSec=document.getElementById("currently-watching"),watchGrid=document.getElementById("grid-watching");
+if(watchGrid){watchGrid.innerHTML=watching.map(({a,r,c,t})=>cardHtml(a,r,c,t,pc,all)).join("");}
+if(watchSec)watchSec.hidden=!watching.length;
 const histEl=document.getElementById("grid-history");
 if(histEl){histEl.innerHTML=rest.map(({a,r,c,t})=>cardHtml(a,r,c,t,pc,all)).join("")||`<div class="empty">Nothing here yet.</div>`;}
 const hc=document.getElementById("hist-count");if(hc)hc.textContent=" ("+rest.length+")";
@@ -1016,6 +1039,11 @@ load();setInterval(load,60000);
     var secOld = document.createElement('section');
     secOld.className = 'att act-old'; secOld.id = 'older-active'; secOld.hidden = true; secOld.setAttribute('aria-label', 'Older active/administrative: Active Long or Active Short records whose status has stood unchanged a long time');
     insertBeforeToday(secOld);
+    // 2026-10-06: "Currently Watching" is static HTML (load() in the first script fills #grid-watching the same
+    // way it fills #grid/#grid-history) - relocated here, last, so it lands directly above Today's Untriggered
+    // Setups, below Older Active/Administrative, matching the rest of this stack's insertion order.
+    var secW = document.getElementById('currently-watching');
+    if (secW) insertBeforeToday(secW);
 
     // 2026-10-03 (Angela, explicit): a today's-batch card that's also APPROACHING/INSIDE its trigger zone is
     // redundant below Live Attention's own (richer) card for the same asset - decorate() now hides it from this
@@ -1207,32 +1235,54 @@ load();setInterval(load,60000);
       try {
         var byAsset = {}; if (v) v.items.forEach(function (i) { byAsset[i.asset] = i; });
         var mf = window.__mechFeed;
-        var totalCards = 0, hiddenCards = 0, triggeredHidden = 0;
-        Array.prototype.forEach.call(grid.querySelectorAll('a.card'), function (c) {
-          totalCards++;
-          var m = /[?&]asset=([^&]+)/.exec(c.getAttribute('href') || ''); if (!m) return; var a = decodeURIComponent(m[1]).toUpperCase();
-          var old = c.querySelector('.att-chip'); if (old) old.remove();
-          var it = byAsset[a];
-          var isNear = !!it && !it.prox.approx && (it.prox.state === 'APPROACHING' || it.prox.state === 'INSIDE');
-          /* 2026-10-06 (Angela, explicit: "Chelsea should not have to manually update anything that is the
-             point"): a mechanically TRIGGERED setup is no longer untriggered, no matter what her Sheet status
-             column still says - hide it here the same as a near-trigger card instead of waiting on her to touch
-             the Sheet. mech-feed's own instance-safe mechanicalFor()/currentInstanceKeyFor() is the sole
-             authority (never a second trigger-detection system); it already excludes stale/superseded instances. */
-          var mech = mf && mf.mechanicalFor(a, mf.currentInstanceKeyFor(a));
-          var isTriggered = !!(mech && mech.triggered);
-          var hide = isNear || isTriggered;
-          c.style.display = hide ? 'none' : '';
-          if (hide) { hiddenCards++; if (isTriggered) triggeredHidden++; }
-        });
+        function hidePass(container) {
+          var total = 0, hidden = 0, triggered = 0;
+          if (!container) return { total: total, hidden: hidden, triggered: triggered };
+          Array.prototype.forEach.call(container.querySelectorAll('a.card'), function (c) {
+            total++;
+            var m = /[?&]asset=([^&]+)/.exec(c.getAttribute('href') || ''); if (!m) return; var a = decodeURIComponent(m[1]).toUpperCase();
+            var old = c.querySelector('.att-chip'); if (old) old.remove();
+            var it = byAsset[a];
+            var isNear = !!it && !it.prox.approx && (it.prox.state === 'APPROACHING' || it.prox.state === 'INSIDE');
+            /* 2026-10-06 (Angela, explicit: "Chelsea should not have to manually update anything that is the
+               point"): a mechanically TRIGGERED setup is no longer untriggered, no matter what her Sheet status
+               column still says - hide it here the same as a near-trigger card instead of waiting on her to touch
+               the Sheet. mech-feed's own instance-safe mechanicalFor()/currentInstanceKeyFor() is the sole
+               authority (never a second trigger-detection system); it already excludes stale/superseded instances. */
+            var mech = mf && mf.mechanicalFor(a, mf.currentInstanceKeyFor(a));
+            var isTriggered = !!(mech && mech.triggered);
+            var hide = isNear || isTriggered;
+            c.style.display = hide ? 'none' : '';
+            if (hide) { hidden++; if (isTriggered) triggered++; }
+          });
+          return { total: total, hidden: hidden, triggered: triggered };
+        }
+        var todayStats = hidePass(grid);
         if (todayAllNearMsg) {
-          todayAllNearMsg.hidden = !(totalCards > 0 && hiddenCards === totalCards);
-          todayAllNearMsg.textContent = triggeredHidden > 0
+          todayAllNearMsg.hidden = !(todayStats.total > 0 && todayStats.hidden === todayStats.total);
+          todayAllNearMsg.textContent = todayStats.triggered > 0
             ? "All of today's setups have moved — see Active Now above."
             : "All of today's setups are currently near trigger — see Live attention above.";
         }
+        // Currently Watching (2026-10-06) gets the identical near/triggered hide treatment - once one of these
+        // moves close to its trigger or actually fires, it belongs in Live Attention/Active Now instead, same
+        // reasoning as Today's grid above. If that empties the section entirely, hide the whole box rather than
+        // show an empty "Currently Watching" shell.
+        var watchGridEl = document.getElementById('grid-watching'), watchSecEl = document.getElementById('currently-watching');
+        if (watchGridEl) {
+          var watchStats = hidePass(watchGridEl);
+          if (watchSecEl) watchSecEl.hidden = !(watchStats.total > watchStats.hidden);
+        }
       } catch (e) { /* never break the page */ }
+      // 2026-10-06: observe #grid-watching's own direct children too (same shallow, non-subtree watch as #grid)
+      // so its periodic Sheet rebuild re-triggers this decorate() the same way #grid's always has. Deliberately
+      // NOT grid.parentNode+subtree - mech-feed's own decorate() (separate observer, same parent, subtree:true)
+      // constantly mutates deep inside every card (headline/badge rebuilds every pass); watching that subtree
+      // here would make every mech-feed pass re-trigger this one and vice versa - a live, browser-freezing
+      // MutationObserver ping-pong caught testing this exact change.
       obs.observe(grid, { childList: true });
+      var watchGridObsTarget = document.getElementById('grid-watching');
+      if (watchGridObsTarget) obs.observe(watchGridObsTarget, { childList: true });
     }
 
     /* ACTIVE NOW — status-driven (the Sheet's current administrative status); prices are shown only as context and never decide anything */
@@ -1345,6 +1395,8 @@ load();setInterval(load,60000);
     setInterval(loadPrices, PRICE_MS);
     setInterval(function () { render(); renderActive(); }, 15000);      // re-evaluate staleness even if a fetch hangs
     obs.observe(grid, { childList: true });
+    var watchGridObsTarget0 = document.getElementById('grid-watching');
+    if (watchGridObsTarget0) obs.observe(watchGridObsTarget0, { childList: true });
     window.__attention = { render: render, view: view, state: function () { return { setups: setups, ps: ps }; } };   // test hook (read-only)
   } catch (e) { if (window.console) console.warn('attention addon disabled:', e); }
 })();
@@ -1610,8 +1662,8 @@ load();setInterval(load,60000);
              own list filters this same terminal case out in renderActive() above, so a card can't be live in both
              places at once.
           */
-          var histGrid = document.getElementById('grid-history');
-          if (resolved && (resolved.kind === 'stopped' || resolved.kind === 'complete') && grid && c.parentNode === grid) {
+          var histGrid = document.getElementById('grid-history'), watchGridForMove = document.getElementById('grid-watching');
+          if (resolved && (resolved.kind === 'stopped' || resolved.kind === 'complete') && (c.parentNode === grid || c.parentNode === watchGridForMove)) {
             if (histGrid) {
               var histEmpty = histGrid.querySelector('.empty'); if (histEmpty) histEmpty.remove();
               c.style.display = ''; // clear any display:none a prior cycle set while this was still a near/triggered card in #grid
