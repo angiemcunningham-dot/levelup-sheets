@@ -1,10 +1,10 @@
 {
  "schema_version": 1,
  "kind": "levelup-public-feed",
- "generated_at": "2026-10-09T08:34:03.625Z",
+ "generated_at": "2026-10-09T08:52:19.492Z",
  "notice": "Mechanical observations of Chelsea's published levels. Not a Sheet status, not a signal, and not a record of anyone's entry or exit.",
  "monitor": {
-  "last_successful_check_at": "2026-10-09T08:34:03.625Z"
+  "last_successful_check_at": "2026-10-09T08:52:19.492Z"
  },
  "assets": {
   "AAVE": {
@@ -113,8 +113,8 @@
      "ema200": 171.89675357744503
     },
     "floor": 165.52555555555557,
-    "price": 167.03,
-    "distance_pct": 0.9088895303175661,
+    "price": 167.25,
+    "distance_pct": 1.0417995207185105,
     "cleared": false
    }
   },
@@ -223,8 +223,8 @@
      "ema200": 0.2537928358995999
     },
     "floor": 0.2537928358995999,
-    "price": 0.2386,
-    "distance_pct": 5.986313934255476,
+    "price": 0.2397,
+    "distance_pct": 5.552889564296054,
     "cleared": false
    }
   },
@@ -488,136 +488,88 @@
    "trigger_readiness": {
     "direction": "short",
     "stack": {
-     "sma9": 0.17866666666666667,
-     "smma7": 0.17823984967843876,
-     "ema9": 0.1785821715958483,
-     "ema20": 0.17785820644140724,
-     "ema50": 0.17973749222630875,
-     "ema200": 0.19263767702787618
+     "sma9": 0.17878888888888889,
+     "smma7": 0.17840558543866178,
+     "ema9": 0.17874573727667864,
+     "ema20": 0.17800504392317798,
+     "ema50": 0.17972425723704175,
+     "ema200": 0.19250595884849434
     },
-    "floor": 0.17785820644140724,
-    "price": 0.1785,
-    "distance_pct": 0.36084562609383247,
+    "floor": 0.17800504392317798,
+    "price": 0.1794,
+    "distance_pct": 0.7836609829011632,
     "cleared": false
    }
   },
   "ATOM": {
-   "setup_instance_key": "ATOM|1791491862000|1f689f3bbd70c6194a158bb5824a",
-   "setup_fingerprint": "1f689f3bbd70c6194a158bb5824a",
-   "instance_published_at": "2026-10-08T20:37:42.000Z",
+   "setup_instance_key": "ATOM|1791535726000|0e2f12185951190f3584b1d25b7b",
+   "setup_fingerprint": "0e2f12185951190f3584b1d25b7b",
+   "instance_published_at": "2026-10-09T08:48:46.000Z",
    "sheet_status": {
     "text": "Watching",
     "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "STOP_BOUNDARY_REACHED",
-    "state_since": "2026-10-08T22:34:05.567Z",
-    "published_at": "2026-10-08T20:37:42.000Z",
-    "trigger": {
-     "level_id": "TRIGGER_1",
-     "zone": {
-      "low": 1.81,
-      "high": 1.81
-     },
-     "reached_at": "2026-10-08T22:00:00.000Z"
-    },
+    "state": "WAITING_FOR_TRIGGER",
+    "state_since": "2026-10-09T08:52:19.492Z",
+    "published_at": "2026-10-09T08:48:46.000Z",
+    "trigger": null,
     "targets": [
      {
       "level_id": "TP1",
       "zone": {
-       "low": 1.86,
-       "high": 1.86
+       "low": 1.99,
+       "high": 1.99
       },
-      "reached_at": "2026-10-09T04:10:00.000Z"
+      "reached_at": null
      },
      {
       "level_id": "TP2",
       "zone": {
-       "low": 1.92,
-       "high": 1.92
+       "low": 2.07,
+       "high": 2.07
       },
-      "reached_at": "2026-10-09T07:32:00.000Z"
+      "reached_at": null
      },
      {
       "level_id": "TP3",
       "zone": {
-       "low": 2,
-       "high": 2
+       "low": 2.16,
+       "high": 2.16
       },
-      "reached_at": "2026-10-09T07:32:00.000Z"
+      "reached_at": null
      }
     ],
     "objectives": {
      "defined": 3,
-     "reached": 3,
-     "all_reached": true,
+     "reached": 0,
+     "all_reached": false,
      "ladder_problems": [],
-     "completed_at": "2026-10-09T07:32:00.000Z"
+     "completed_at": null
     },
     "extended": {
      "level_id": "EXTENDED",
      "zone": {
-      "low": 2.1,
-      "high": 2.1
+      "low": 2.3,
+      "high": 2.3
      },
      "reached_at": null
     },
-    "stop_boundary": {
-     "level_id": "STOP",
-     "kind": "stop",
-     "zone": {
-      "low": 1.74,
-      "high": 1.77
-     },
-     "reached_at": "2026-10-08T22:00:00.000Z",
-     "in_trade": true,
-     "relation_to_final_tp": "BEFORE",
-     "tps_reached_before_stop": []
-    },
-    "evidence_grade": "CLOSE_CONFIRMED",
-    "confirm": {
-     "at": "2026-10-08T22:01:00.000Z",
-     "close": 1.764,
-     "level_id": "STOP"
-    },
-    "terminal_at": "2026-10-08T22:00:00.000Z",
-    "later_evidence": {
-     "historical_only": true,
-     "targets_after_stop": [
-      "TP1",
-      "TP2",
-      "TP3"
-     ],
-     "targets_same_candle_as_stop": [],
-     "note": "Later published TP levels were mechanically touched after the stop boundary."
-    },
+    "stop_boundary": null,
+    "evidence_grade": null,
+    "confirm": null,
+    "terminal_at": null,
+    "later_evidence": null,
     "public_display": {
-     "kind": "STOP_BOUNDARY",
+     "kind": null,
      "ready": false,
-     "evidence_grade": "CLOSE_CONFIRMED",
-     "blockers": [
-      "STOP_BOUNDARY_TOUCHED_BEFORE_FINAL_TP",
-      "CONFLICTING_EVIDENCE"
-     ],
-     "outcome": "STOPPED",
+     "evidence_grade": null,
+     "blockers": [],
+     "outcome": null,
      "tps_reached_before_stop": []
     }
    },
-   "trigger_readiness": {
-    "direction": "long",
-    "stack": {
-     "sma9": 1.7284444444444444,
-     "smma7": 1.7495134039094513,
-     "ema9": 1.7524131189521468,
-     "ema20": 1.7468844138372512,
-     "ema50": 1.744923937761628,
-     "ema200": 1.7538781221886313
-    },
-    "floor": 1.7538781221886313,
-    "price": 1.92,
-    "distance_pct": 9.471688808345949,
-    "cleared": true
-   }
+   "trigger_readiness": null
   },
   "AVAX": {
    "setup_instance_key": "AVAX|1791449866000|130da5d29676070a8c111e81b6eb",
@@ -709,8 +661,8 @@
      "ema200": 10.955445696725098
     },
     "floor": 10.050222222222223,
-    "price": 10.382,
-    "distance_pct": 3.301198425684334,
+    "price": 10.409,
+    "distance_pct": 3.569849201786586,
     "cleared": false
    }
   },
@@ -821,8 +773,8 @@
      "ema200": 307.8344065095793
     },
     "floor": 307.8344065095793,
-    "price": 279.3,
-    "distance_pct": 9.269401309983637,
+    "price": 279.5,
+    "distance_pct": 9.204431314502068,
     "cleared": false
    }
   },
@@ -1018,8 +970,8 @@
      "ema200": 770.4187384432538
     },
     "floor": 770.4187384432538,
-    "price": 742.4,
-    "distance_pct": 3.6368194392402597,
+    "price": 743.45,
+    "distance_pct": 3.5005299193199955,
     "cleared": false
    }
   },
@@ -1128,8 +1080,8 @@
      "ema200": 84140.10601987371
     },
     "floor": 84140.10601987371,
-    "price": 82522,
-    "distance_pct": 1.9231090812881997,
+    "price": 82629.01,
+    "distance_pct": 1.7959283525466416,
     "cleared": false
    }
   },
@@ -1314,8 +1266,103 @@
      "ema200": 24.10436511792792
     },
     "floor": 23.07111111111111,
-    "price": 23.64,
-    "distance_pct": 2.46580620304373,
+    "price": 23.67,
+    "distance_pct": 2.595838952032369,
+    "cleared": false
+   }
+  },
+  "CRV": {
+   "setup_instance_key": "CRV|1791535749000|0c6fae96dece4c1381b237eee9f4",
+   "setup_fingerprint": "0c6fae96dece4c1381b237eee9f4",
+   "instance_published_at": "2026-10-09T08:49:09.000Z",
+   "sheet_status": {
+    "text": "Watching",
+    "class": "WATCHING"
+   },
+   "lifecycle": {
+    "state": "WAITING_FOR_TRIGGER",
+    "state_since": "2026-10-09T08:52:19.492Z",
+    "published_at": "2026-10-09T08:49:09.000Z",
+    "trigger": null,
+    "targets": [
+     {
+      "level_id": "TP1",
+      "zone": {
+       "low": 0.402,
+       "high": 0.402
+      },
+      "reached_at": null
+     },
+     {
+      "level_id": "TP2",
+      "zone": {
+       "low": 0.418,
+       "high": 0.418
+      },
+      "reached_at": null
+     },
+     {
+      "level_id": "TP3",
+      "zone": {
+       "low": 0.438,
+       "high": 0.438
+      },
+      "reached_at": null
+     }
+    ],
+    "objectives": {
+     "defined": 3,
+     "reached": 0,
+     "all_reached": false,
+     "ladder_problems": [],
+     "completed_at": null
+    },
+    "extended": {
+     "level_id": "EXTENDED",
+     "zone": {
+      "low": 0.465,
+      "high": 0.465
+     },
+     "reached_at": null
+    },
+    "stop_boundary": {
+     "level_id": "STOP",
+     "kind": "stop",
+     "zone": {
+      "low": 0.374,
+      "high": 0.38
+     },
+     "reached_at": "2026-10-09T08:00:00.000Z",
+     "in_trade": false,
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
+    },
+    "evidence_grade": null,
+    "confirm": null,
+    "terminal_at": null,
+    "later_evidence": null,
+    "public_display": {
+     "kind": null,
+     "ready": false,
+     "evidence_grade": null,
+     "blockers": [],
+     "outcome": null,
+     "tps_reached_before_stop": []
+    }
+   },
+   "trigger_readiness": {
+    "direction": "long",
+    "stack": {
+     "sma9": 0.3411555555555556,
+     "smma7": 0.343089302820654,
+     "ema9": 0.3418379215998483,
+     "ema20": 0.3463346257372101,
+     "ema50": 0.35514540637781816,
+     "ema200": 0.3652635939527749
+    },
+    "floor": 0.3652635939527749,
+    "price": 0.3383,
+    "distance_pct": 7.381954949570216,
     "cleared": false
    }
   },
@@ -1390,99 +1437,74 @@
    "trigger_readiness": null
   },
   "DOGE": {
-   "setup_instance_key": "DOGE|1791371490000|0f8c068455d8b4164f0c14ae7a19",
-   "setup_fingerprint": "0f8c068455d8b4164f0c14ae7a19",
-   "instance_published_at": "2026-10-07T11:11:30.000Z",
+   "setup_instance_key": "DOGE|1791535795000|054fa9e0ee69db18b9227bda3448",
+   "setup_fingerprint": "054fa9e0ee69db18b9227bda3448",
+   "instance_published_at": "2026-10-09T08:49:55.000Z",
    "sheet_status": {
     "text": "Watching",
     "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "OBJECTIVES_EXHAUSTED",
-    "state_since": "2026-10-08T16:04:13.652Z",
-    "published_at": "2026-10-07T11:11:30.000Z",
-    "trigger": {
-     "level_id": "TRIGGER_1",
-     "zone": {
-      "low": 0.0915,
-      "high": 0.0915
-     },
-     "reached_at": "2026-10-07T11:00:00.000Z"
-    },
+    "state": "WAITING_FOR_TRIGGER",
+    "state_since": "2026-10-09T08:52:19.492Z",
+    "published_at": "2026-10-09T08:49:55.000Z",
+    "trigger": null,
     "targets": [
      {
       "level_id": "TP1",
       "zone": {
-       "low": 0.0885,
-       "high": 0.0885
+       "low": 0.082,
+       "high": 0.082
       },
-      "reached_at": "2026-10-07T13:00:00.000Z"
+      "reached_at": null
      },
      {
       "level_id": "TP2",
       "zone": {
-       "low": 0.0855,
-       "high": 0.0855
+       "low": 0.079,
+       "high": 0.079
       },
-      "reached_at": "2026-10-08T04:20:00.000Z"
+      "reached_at": null
      },
      {
       "level_id": "TP3",
       "zone": {
-       "low": 0.082,
-       "high": 0.082
+       "low": 0.0755,
+       "high": 0.0755
       },
-      "reached_at": "2026-10-08T15:35:00.000Z"
+      "reached_at": null
      }
     ],
     "objectives": {
      "defined": 3,
-     "reached": 3,
-     "all_reached": true,
+     "reached": 0,
+     "all_reached": false,
      "ladder_problems": [],
-     "completed_at": "2026-10-08T15:35:00.000Z"
+     "completed_at": null
     },
     "extended": {
      "level_id": "EXTENDED",
      "zone": {
-      "low": 0.078,
-      "high": 0.078
+      "low": 0.071,
+      "high": 0.071
      },
      "reached_at": null
     },
     "stop_boundary": null,
-    "evidence_grade": "CLOSE_CONFIRMED",
-    "confirm": {
-     "at": "2026-10-08T17:04:00.000Z",
-     "close": 0.08195,
-     "level_id": "TP3"
-    },
-    "terminal_at": "2026-10-08T15:35:00.000Z",
+    "evidence_grade": null,
+    "confirm": null,
+    "terminal_at": null,
     "later_evidence": null,
     "public_display": {
-     "kind": "TRADE_COMPLETE",
-     "ready": true,
-     "evidence_grade": "CLOSE_CONFIRMED",
+     "kind": null,
+     "ready": false,
+     "evidence_grade": null,
      "blockers": [],
-     "outcome": "COMPLETED",
+     "outcome": null,
      "tps_reached_before_stop": []
     }
    },
-   "trigger_readiness": {
-    "direction": "short",
-    "stack": {
-     "sma9": 0.08356111111111111,
-     "smma7": 0.08461831438220528,
-     "ema9": 0.08429009031512666,
-     "ema20": 0.08528289103282047,
-     "ema50": 0.08771134257304168,
-     "ema200": 0.09200240316835757
-    },
-    "floor": 0.08356111111111111,
-    "price": 0.08504,
-    "distance_pct": 1.7698291337012186,
-    "cleared": false
-   }
+   "trigger_readiness": null
   },
   "DOT": {
    "setup_instance_key": "DOT|1791491874000|15ac99ed21bbf71abe5d1aec2e36",
@@ -1585,8 +1607,8 @@
      "ema200": 1.1660400362210424
     },
     "floor": 1.1660400362210424,
-    "price": 1.179,
-    "distance_pct": 1.1114510116615686,
+    "price": 1.201,
+    "distance_pct": 2.9981786810903697,
     "cleared": true
    }
   },
@@ -1691,8 +1713,8 @@
      "ema200": 0.23850591778729316
     },
     "floor": 0.23850591778729316,
-    "price": 0.2153,
-    "distance_pct": 9.729703146396943,
+    "price": 0.216,
+    "distance_pct": 9.436209380500413,
     "cleared": false
    }
   },
@@ -1801,8 +1823,8 @@
      "ema200": 8.740778129629803
     },
     "floor": 8.740778129629803,
-    "price": 8.28,
-    "distance_pct": 5.2715916454605,
+    "price": 8.3,
+    "distance_pct": 5.042779064893964,
     "cleared": false
    }
   },
@@ -1900,8 +1922,8 @@
      "ema200": 2639.7417014712405
     },
     "floor": 2639.7417014712405,
-    "price": 2497.66,
-    "distance_pct": 5.382409248300789,
+    "price": 2502.67,
+    "distance_pct": 5.192617951780833,
     "cleared": false
    }
   },
@@ -2094,9 +2116,9 @@
      "ema200": 1.0813457444340209
     },
     "floor": 1.0813457444340209,
-    "price": 1.0756,
-    "distance_pct": 0.5313512781268973,
-    "cleared": false
+    "price": 1.082,
+    "distance_pct": 0.06050382769311581,
+    "cleared": true
    }
   },
   "HBAR": {
@@ -2181,16 +2203,16 @@
    "trigger_readiness": {
     "direction": "long",
     "stack": {
-     "sma9": 0.09221,
-     "smma7": 0.09202165708271538,
-     "ema9": 0.09205155392025871,
-     "ema20": 0.09198009513032693,
-     "ema50": 0.09269580476806366,
-     "ema200": 0.09778553045905913
+     "sma9": 0.09215888888888889,
+     "smma7": 0.09200427749947034,
+     "ema9": 0.09202124313620696,
+     "ema20": 0.09197246702267675,
+     "ema50": 0.09266459673794351,
+     "ema200": 0.0977269679669292
     },
-    "floor": 0.09778553045905913,
-    "price": 0.09155,
-    "distance_pct": 6.376741456313743,
+    "floor": 0.0977269679669292,
+    "price": 0.0919,
+    "distance_pct": 5.962497443797756,
     "cleared": false
    }
   },
@@ -2295,8 +2317,8 @@
      "ema200": 3.2549506707474496
     },
     "floor": 3.2549506707474496,
-    "price": 3.003,
-    "distance_pct": 7.740537299436028,
+    "price": 3.013,
+    "distance_pct": 7.433312981418839,
     "cleared": false
    }
   },
@@ -2474,16 +2496,16 @@
    "trigger_readiness": {
     "direction": "long",
     "stack": {
-     "sma9": 7.126222222222223,
-     "smma7": 7.094997673809886,
-     "ema9": 7.118091051452575,
-     "ema20": 7.070279815065943,
-     "ema50": 7.124436071774151,
-     "ema200": 7.3909856306457655
+     "sma9": 7.131,
+     "smma7": 7.105855148979903,
+     "ema9": 7.128672841162061,
+     "ema20": 7.079872213631091,
+     "ema50": 7.126262108175165,
+     "ema200": 7.388796718898047
     },
-    "floor": 7.3909856306457655,
-    "price": 7.144,
-    "distance_pct": 3.3417143935670968,
+    "floor": 7.388796718898047,
+    "price": 7.171,
+    "distance_pct": 2.9476615365665193,
     "cleared": false
    }
   },
@@ -2584,54 +2606,47 @@
    "trigger_readiness": null
   },
   "LINK": {
-   "setup_instance_key": "LINK|1791491853000|181f97956288df1c747c7768dd8c",
-   "setup_fingerprint": "181f97956288df1c747c7768dd8c",
-   "instance_published_at": "2026-10-08T20:37:33.000Z",
+   "setup_instance_key": "LINK|1791535771000|0c54ace68c11e01f2893f5e5735a",
+   "setup_fingerprint": "0c54ace68c11e01f2893f5e5735a",
+   "instance_published_at": "2026-10-09T08:49:31.000Z",
    "sheet_status": {
     "text": "Watching",
     "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "TARGETS_IN_PROGRESS",
-    "state_since": "2026-10-08T20:45:03.083Z",
-    "published_at": "2026-10-08T20:37:33.000Z",
-    "trigger": {
-     "level_id": "TRIGGER_1",
-     "zone": {
-      "low": 13.2,
-      "high": 13.2
-     },
-     "reached_at": "2026-10-08T20:00:00.000Z"
-    },
+    "state": "WAITING_FOR_TRIGGER",
+    "state_since": "2026-10-09T08:52:19.492Z",
+    "published_at": "2026-10-09T08:49:31.000Z",
+    "trigger": null,
     "targets": [
      {
       "level_id": "TP1",
       "zone": {
-       "low": 12.9,
-       "high": 12.9
+       "low": 12.5,
+       "high": 12.5
       },
-      "reached_at": "2026-10-08T20:00:00.000Z"
+      "reached_at": null
      },
      {
       "level_id": "TP2",
       "zone": {
-       "low": 12.55,
-       "high": 12.55
+       "low": 12.2,
+       "high": 12.2
       },
-      "reached_at": "2026-10-08T20:00:00.000Z"
+      "reached_at": null
      },
      {
       "level_id": "TP3",
       "zone": {
-       "low": 12.1,
-       "high": 12.1
+       "low": 11.85,
+       "high": 11.85
       },
       "reached_at": null
      }
     ],
     "objectives": {
      "defined": 3,
-     "reached": 2,
+     "reached": 0,
      "all_reached": false,
      "ladder_problems": [],
      "completed_at": null
@@ -2639,8 +2654,8 @@
     "extended": {
      "level_id": "EXTENDED",
      "zone": {
-      "low": 11.65,
-      "high": 11.65
+      "low": 11.4,
+      "high": 11.4
      },
      "reached_at": null
     },
@@ -2658,21 +2673,7 @@
      "tps_reached_before_stop": []
     }
    },
-   "trigger_readiness": {
-    "direction": "short",
-    "stack": {
-     "sma9": 12.560444444444446,
-     "smma7": 12.711295641729874,
-     "ema9": 12.679654049234768,
-     "ema20": 12.795957147921186,
-     "ema50": 13.127117807372173,
-     "ema200": 13.779359415235339
-    },
-    "floor": 12.560444444444446,
-    "price": 12.845,
-    "distance_pct": 2.2654895438944047,
-    "cleared": false
-   }
+   "trigger_readiness": null
   },
   "LTC": {
    "setup_instance_key": "LTC|1791074042000|05cdd792c85ba80aecc155bf02c3",
@@ -2781,8 +2782,8 @@
      "ema200": 67.89712202861942
     },
     "floor": 67.89712202861942,
-    "price": 64.21,
-    "distance_pct": 5.430454072950637,
+    "price": 64.44,
+    "distance_pct": 5.0917062834595646,
     "cleared": false
    }
   },
@@ -2989,60 +2990,53 @@
      "ema200": 5.032022905102577
     },
     "floor": 5.032022905102577,
-    "price": 4.806,
-    "distance_pct": 4.491690705012199,
+    "price": 4.835,
+    "distance_pct": 3.9153817225830188,
     "cleared": false
    }
   },
   "ONDO": {
-   "setup_instance_key": "ONDO|1791043712000|020a33dd9e3ff3147b445695f69e",
-   "setup_fingerprint": "020a33dd9e3ff3147b445695f69e",
-   "instance_published_at": "2026-10-03T16:08:32.000Z",
+   "setup_instance_key": "ONDO|1791535734000|15b1076545d1f60341aecf8a201f",
+   "setup_fingerprint": "15b1076545d1f60341aecf8a201f",
+   "instance_published_at": "2026-10-09T08:48:54.000Z",
    "sheet_status": {
-    "text": "Active Long",
-    "class": "ACTIVE_LONG"
+    "text": "Watching",
+    "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "STOP_BOUNDARY_REACHED",
-    "state_since": "2026-10-05T14:34:41.725Z",
-    "published_at": "2026-10-03T16:08:32.000Z",
-    "trigger": {
-     "level_id": "TRIGGER_1",
-     "zone": {
-      "low": 0.492,
-      "high": 0.494
-     },
-     "reached_at": "2026-10-04T00:00:00.000Z"
-    },
+    "state": "WAITING_FOR_TRIGGER",
+    "state_since": "2026-10-09T08:52:19.492Z",
+    "published_at": "2026-10-09T08:48:54.000Z",
+    "trigger": null,
     "targets": [
      {
       "level_id": "TP1",
       "zone": {
-       "low": 0.5,
-       "high": 0.5
+       "low": 0.51,
+       "high": 0.51
       },
-      "reached_at": "2026-10-05T00:58:00.000Z"
+      "reached_at": null
      },
      {
       "level_id": "TP2",
       "zone": {
-       "low": 0.51,
-       "high": 0.51
+       "low": 0.53,
+       "high": 0.53
       },
-      "reached_at": "2026-10-05T08:05:00.000Z"
+      "reached_at": null
      },
      {
       "level_id": "TP3",
       "zone": {
-       "low": 0.525,
-       "high": 0.525
+       "low": 0.555,
+       "high": 0.555
       },
       "reached_at": null
      }
     ],
     "objectives": {
      "defined": 3,
-     "reached": 2,
+     "reached": 0,
      "all_reached": false,
      "ladder_problems": [],
      "completed_at": null
@@ -3050,61 +3044,26 @@
     "extended": {
      "level_id": "EXTENDED",
      "zone": {
-      "low": 0.545,
-      "high": 0.545
+      "low": 0.59,
+      "high": 0.59
      },
      "reached_at": null
     },
-    "stop_boundary": {
-     "level_id": "STOP",
-     "kind": "stop",
-     "zone": {
-      "low": 0.487,
-      "high": 0.488
-     },
-     "reached_at": "2026-10-05T14:34:00.000Z",
-     "in_trade": true,
-     "relation_to_final_tp": null,
-     "tps_reached_before_stop": [
-      "TP1",
-      "TP2"
-     ]
-    },
-    "evidence_grade": "CLOSE_CONFIRMED",
-    "confirm": {
-     "at": "2026-10-05T14:56:00.000Z",
-     "close": 0.4879,
-     "level_id": "STOP"
-    },
-    "terminal_at": "2026-10-05T14:34:00.000Z",
+    "stop_boundary": null,
+    "evidence_grade": null,
+    "confirm": null,
+    "terminal_at": null,
     "later_evidence": null,
     "public_display": {
-     "kind": "STOP_BOUNDARY",
-     "ready": true,
-     "evidence_grade": "CLOSE_CONFIRMED",
+     "kind": null,
+     "ready": false,
+     "evidence_grade": null,
      "blockers": [],
-     "outcome": "CLOSED_WITH_PROGRESS",
-     "tps_reached_before_stop": [
-      "TP1",
-      "TP2"
-     ]
+     "outcome": null,
+     "tps_reached_before_stop": []
     }
    },
-   "trigger_readiness": {
-    "direction": "long",
-    "stack": {
-     "sma9": 0.47353333333333336,
-     "smma7": 0.47485349838199487,
-     "ema9": 0.47508231429848713,
-     "ema20": 0.4743245781413439,
-     "ema50": 0.47581807802241505,
-     "ema200": 0.4923775597524365
-    },
-    "floor": 0.4923775597524365,
-    "price": 0.4882,
-    "distance_pct": 0.8484464146857024,
-    "cleared": false
-   }
+   "trigger_readiness": null
   },
   "POL": {
    "setup_instance_key": "POL|1791043706000|19afb711597a6f0e41178c6b4414",
@@ -3211,8 +3170,8 @@
      "ema200": 0.1075241047920698
     },
     "floor": 0.1075241047920698,
-    "price": 0.1005,
-    "distance_pct": 6.53258616349609,
+    "price": 0.10074,
+    "distance_pct": 6.3093803991104185,
     "cleared": false
    }
   },
@@ -3383,16 +3342,16 @@
    "trigger_readiness": {
     "direction": "long",
     "stack": {
-     "sma9": 1.9230000000000003,
-     "smma7": 1.914757944718589,
-     "ema9": 1.9182294080431346,
-     "ema20": 1.9110385765412539,
-     "ema50": 1.9311282031161094,
-     "ema200": 1.9751619006320749
+     "sma9": 1.9207777777777777,
+     "smma7": 1.9139353811873618,
+     "ema9": 1.9163835264345077,
+     "ema20": 1.910844426394468,
+     "ema50": 1.9302604304448896,
+     "ema200": 1.9745035732626015
     },
-    "floor": 1.9751619006320749,
-    "price": 1.911,
-    "distance_pct": 3.2484375387932642,
+    "floor": 1.9745035732626015,
+    "price": 1.908,
+    "distance_pct": 3.3681161261568846,
     "cleared": false
    }
   },
@@ -3503,8 +3462,8 @@
      "ema200": 0.07144258280532591
     },
     "floor": 0.07144258280532591,
-    "price": 0.06711,
-    "distance_pct": 6.064426333985953,
+    "price": 0.06738,
+    "distance_pct": 5.686500467649743,
     "cleared": false
    }
   },
@@ -3615,53 +3574,46 @@
      "ema200": 0.000005656654505076906
     },
     "floor": 0.000005656654505076906,
-    "price": 0.00000538,
-    "distance_pct": 4.8907796088413376,
+    "price": 0.0000054,
+    "distance_pct": 4.537213733781272,
     "cleared": false
    }
   },
   "SOL": {
-   "setup_instance_key": "SOL|1791491878000|1cd463c59a3d5c17b88e6a534d1d",
-   "setup_fingerprint": "1cd463c59a3d5c17b88e6a534d1d",
-   "instance_published_at": "2026-10-08T20:37:58.000Z",
+   "setup_instance_key": "SOL|1791535791000|1b63fb08509ea30fed59c041d3d3",
+   "setup_fingerprint": "1b63fb08509ea30fed59c041d3d3",
+   "instance_published_at": "2026-10-09T08:49:51.000Z",
    "sheet_status": {
     "text": "Watching",
     "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "STOP_BOUNDARY_REACHED",
-    "state_since": "2026-10-08T22:04:05.043Z",
-    "published_at": "2026-10-08T20:37:58.000Z",
-    "trigger": {
-     "level_id": "TRIGGER_1",
-     "zone": {
-      "low": 105.6,
-      "high": 105.6
-     },
-     "reached_at": "2026-10-08T20:00:00.000Z"
-    },
+    "state": "WAITING_FOR_TRIGGER",
+    "state_since": "2026-10-09T08:52:19.492Z",
+    "published_at": "2026-10-09T08:49:51.000Z",
+    "trigger": null,
     "targets": [
      {
       "level_id": "TP1",
       "zone": {
-       "low": 102,
-       "high": 102
+       "low": 108,
+       "high": 108
       },
       "reached_at": null
      },
      {
       "level_id": "TP2",
       "zone": {
-       "low": 99,
-       "high": 99
+       "low": 105.5,
+       "high": 105.5
       },
       "reached_at": null
      },
      {
       "level_id": "TP3",
       "zone": {
-       "low": 95,
-       "high": 95
+       "low": 102,
+       "high": 102
       },
       "reached_at": null
      }
@@ -3676,55 +3628,26 @@
     "extended": {
      "level_id": "EXTENDED",
      "zone": {
-      "low": 90,
-      "high": 90
+      "low": 98,
+      "high": 98
      },
      "reached_at": null
     },
-    "stop_boundary": {
-     "level_id": "STOP",
-     "kind": "stop",
-     "zone": {
-      "low": 110.5,
-      "high": 112
-     },
-     "reached_at": "2026-10-08T21:51:00.000Z",
-     "in_trade": true,
-     "relation_to_final_tp": null,
-     "tps_reached_before_stop": []
-    },
-    "evidence_grade": "CLOSE_CONFIRMED",
-    "confirm": {
-     "at": "2026-10-08T21:52:00.000Z",
-     "close": 110.84,
-     "level_id": "STOP"
-    },
-    "terminal_at": "2026-10-08T21:51:00.000Z",
+    "stop_boundary": null,
+    "evidence_grade": null,
+    "confirm": null,
+    "terminal_at": null,
     "later_evidence": null,
     "public_display": {
-     "kind": "STOP_BOUNDARY",
-     "ready": true,
-     "evidence_grade": "CLOSE_CONFIRMED",
+     "kind": null,
+     "ready": false,
+     "evidence_grade": null,
      "blockers": [],
-     "outcome": "STOPPED",
+     "outcome": null,
      "tps_reached_before_stop": []
     }
    },
-   "trigger_readiness": {
-    "direction": "short",
-    "stack": {
-     "sma9": 109.01555555555557,
-     "smma7": 110.33303198655742,
-     "ema9": 109.87110409250074,
-     "ema20": 111.24191466956968,
-     "ema50": 114.11833989779689,
-     "ema200": 117.92220032566327
-    },
-    "floor": 109.01555555555557,
-    "price": 110.14,
-    "distance_pct": 1.0314532074933158,
-    "cleared": false
-   }
+   "trigger_readiness": null
   },
   "SSV": {
    "setup_instance_key": "SSV|1791192450000|15e79b4c4b62e11fcf1155b6cfd2",
@@ -3820,8 +3743,8 @@
      "ema200": 3.0347220608585226
     },
     "floor": 3.0347220608585226,
-    "price": 2.838,
-    "distance_pct": 6.482374890136391,
+    "price": 2.849,
+    "distance_pct": 6.119903474981879,
     "cleared": false
    }
   },
@@ -3977,16 +3900,16 @@
    "trigger_readiness": {
     "direction": "short",
     "stack": {
-     "sma9": 275.6555555555555,
-     "smma7": 275.1255030868362,
-     "ema9": 275.3371773886655,
-     "ema20": 274.94475680333943,
-     "ema50": 278.10878088140066,
-     "ema200": 292.69652515568094
+     "sma9": 275.59999999999997,
+     "smma7": 275.0932883601453,
+     "ema9": 275.2497419109324,
+     "ema20": 274.9404942506404,
+     "ema50": 277.982946337032,
+     "ema200": 292.5194453033856
     },
-    "floor": 274.94475680333943,
-    "price": 274.2,
-    "distance_pct": 0.2708750703226344,
+    "floor": 274.9404942506404,
+    "price": 274.9,
+    "distance_pct": 0.014728369042478802,
     "cleared": true
    }
   },
@@ -4106,8 +4029,8 @@
      "ema200": 0.4685345080582743
     },
     "floor": 0.49927923854040507,
-    "price": 0.5006,
-    "distance_pct": 0.2645336231997341,
+    "price": 0.5019,
+    "distance_pct": 0.5249089602156279,
     "cleared": true
    }
   },
@@ -4194,15 +4117,15 @@
     "direction": "long",
     "stack": {
      "sma9": 0.33226666666666665,
-     "smma7": 0.3322881648715902,
-     "ema9": 0.3322608545330664,
-     "ema20": 0.3324158115626017,
-     "ema50": 0.33316651324577623,
-     "ema200": 0.3345749544932302
+     "smma7": 0.3323041413185059,
+     "ema9": 0.33228868362645314,
+     "ema20": 0.3324143056994968,
+     "ema50": 0.3331364539028046,
+     "ema200": 0.33455331315498915
     },
-    "floor": 0.3345749544932302,
-    "price": 0.3323,
-    "distance_pct": 0.6799536135859391,
+    "floor": 0.33455331315498915,
+    "price": 0.3325,
+    "distance_pct": 0.6137476671880667,
     "cleared": false
    }
   },
@@ -4285,8 +4208,8 @@
      "ema200": 0.0010131521052138325
     },
     "floor": 0.0010131521052138325,
-    "price": 0.00095,
-    "distance_pct": 6.233230419089322,
+    "price": 0.000955,
+    "distance_pct": 5.739721105505581,
     "cleared": false
    }
   },
@@ -4474,8 +4397,8 @@
      "ema200": 0.21096448930041084
     },
     "floor": 0.21096448930041084,
-    "price": 0.1946,
-    "distance_pct": 7.756987611838319,
+    "price": 0.1951,
+    "distance_pct": 7.5199808996385205,
     "cleared": false
    }
   },
@@ -4565,8 +4488,8 @@
      "ema200": 1.4693046167050334
     },
     "floor": 1.367811111111111,
-    "price": 1.399,
-    "distance_pct": 2.280204381696631,
+    "price": 1.4036,
+    "distance_pct": 2.616508127340518,
     "cleared": false
    }
   },
@@ -5078,8 +5001,8 @@
    "setup_fingerprint": "1cd463c59a3d5c17b88e6a534d1d",
    "outcome": "STOP_BOUNDARY_REACHED",
    "opened_at": "2026-10-08T22:04:05.043Z",
-   "superseded": false,
-   "superseded_at": null,
+   "superseded": true,
+   "superseded_at": "2026-10-09T08:52:19.492Z",
    "snapshot": {
     "setup_published_at": "2026-10-08T20:37:58.000Z",
     "setup_timestamp_text": "10/8/2026 16:37:58",
@@ -5584,8 +5507,8 @@
    "setup_fingerprint": "0f8c068455d8b4164f0c14ae7a19",
    "outcome": "OBJECTIVES_EXHAUSTED",
    "opened_at": "2026-10-08T16:04:13.652Z",
-   "superseded": false,
-   "superseded_at": null,
+   "superseded": true,
+   "superseded_at": "2026-10-09T08:52:19.492Z",
    "snapshot": {
     "setup_published_at": "2026-10-07T11:11:30.000Z",
     "setup_timestamp_text": "10/7/2026 7:11:30",
@@ -8575,8 +8498,8 @@
    "setup_fingerprint": "020a33dd9e3ff3147b445695f69e",
    "outcome": "STOP_BOUNDARY_REACHED",
    "opened_at": "2026-10-05T14:34:41.725Z",
-   "superseded": false,
-   "superseded_at": null,
+   "superseded": true,
+   "superseded_at": "2026-10-09T08:52:19.492Z",
    "snapshot": {
     "setup_published_at": "2026-10-03T16:08:32.000Z",
     "setup_timestamp_text": "10/3/2026 12:08:32",
