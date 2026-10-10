@@ -1437,9 +1437,23 @@ load();setInterval(load,60000);
         if (mech && mech.triggered) return;
         checkStopBreach(asset, s).then(function (res) {
           var shouldShow = !!(res && res.breached);
-          Array.prototype.forEach.call(document.querySelectorAll('a.card'), function (c) {
-            var m = /[?&]asset=([^&]+)/.exec(c.getAttribute('href') || '');
-            if (!m || decodeURIComponent(m[1]).toUpperCase() !== asset) return;
+          // 2026-10-10 (Angela-reported, RENDER case): a Watching setup close to its real mechanical trigger
+          // is suppressed from #grid/#grid-watching (hidePass(), above) and shown ONLY as a Live Attention
+          // "a.att-card" tile instead - a completely different element (own class, own markup, matched by
+          // data-asset rather than the ?asset= href param this loop used to rely on exclusively). This flag was
+          // silently never reaching that card at all: querySelectorAll('a.card') never matches 'att-card' (CSS
+          // class matching is exact-token, not substring), so the exact setups most worth warning about - the
+          // ones already near trigger - were the ones guaranteed to never show it. RENDER proved this for real:
+          // invalidated per Chelsea's own rule for ~2 days while sitting in Live Attention with no warning
+          // visible anywhere, then mechanically triggered and stopped out within the hour once the six-line
+          // bundle caught down to it. Now checks both card types; still flags-only, still never auto-changes
+          // anything.
+          Array.prototype.forEach.call(document.querySelectorAll('a.card, a.att-card'), function (c) {
+            var cardAsset;
+            var da = c.getAttribute('data-asset');
+            if (da) { cardAsset = da.toUpperCase(); }
+            else { var m = /[?&]asset=([^&]+)/.exec(c.getAttribute('href') || ''); cardAsset = m ? decodeURIComponent(m[1]).toUpperCase() : null; }
+            if (!cardAsset || cardAsset !== asset) return;
             var old = c.querySelector('.stop-breach-flag');
             // 2026-10-06: only touch the DOM when the shown state actually needs to change - a cache-served
             // "still breached" result re-removing+re-inserting an identical node every call is itself a
@@ -1447,11 +1461,11 @@ load();setInterval(load,60000);
             // this kind of mutation) becomes a live MutationObserver feedback loop - the same class of bug
             // caught and fixed earlier in this file for the Currently Watching section.
             if (shouldShow && !old) {
-              var hl = c.querySelector('.hl');
+              var anchor = c.querySelector('.hl') || c.querySelector('.att-meta');
               var el = document.createElement('div');
               el.className = 'stop-breach-flag';
               el.textContent = '⚠ Price already closed past the stop level ($' + A.fmtPrice(res.threshold) + ') before this ever triggered — may already be invalidated, needs a human check.';
-              if (hl && hl.parentNode) hl.parentNode.insertBefore(el, hl.nextSibling); else c.appendChild(el);
+              if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(el, anchor.nextSibling); else c.appendChild(el);
             } else if (!shouldShow && old) {
               old.remove();
             }
