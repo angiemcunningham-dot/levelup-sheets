@@ -42,14 +42,19 @@ body{display:flex;justify-content:center;padding:24px 20px}
    narrower, guaranteed-safe box instead of overflowing past the diagonal the way a fixed-width logo did before.
    justify-content:flex-start left-biases it within that safe zone, per spec. */
 .hero-logo-wrap{position:absolute;z-index:2;top:0;bottom:0;left:calc(57% + 42px + 24px);right:40px;display:flex;align-items:center;justify-content:flex-start}
-.hero-logo-wrap img{height:88%;width:auto;max-width:100%;object-fit:contain}
+/* 2026-10-16 (Angela, explicit, testing): white card behind the logo, to see if separating it from the hot-pink
+   field (rather than sitting transparent directly on it) reads better - pale pink on hot pink is inherently low
+   contrast regardless of outline quality. Easy to remove again if it doesn't help. */
+.hero-logo-card{height:76%;background:#fff;border-radius:18px;padding:18px 22px;display:flex;align-items:center;box-shadow:0 8px 22px rgba(0,0,0,.18)}
+.hero-logo-wrap img{height:100%;width:auto;max-width:100%;object-fit:contain}
 @media(max-width:640px){
   .hero{height:auto;display:flex;flex-direction:column}
   .hero-green,.hero-pink{display:none}
   .hero-title{position:static;max-width:100%;padding:28px 20px 18px}
   .hero-title h1{white-space:normal;font-size:clamp(26px,9vw,38px)}
   .hero-logo-wrap{position:static;width:100%;background:var(--pink);border-top:6px solid var(--green);padding:26px 24px;justify-content:center}
-  .hero-logo-wrap img{width:auto;max-width:300px;max-height:none}
+  .hero-logo-card{height:auto;padding:14px 18px}
+  .hero-logo-wrap img{height:auto;width:auto;max-width:280px;max-height:none}
 }
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:30px}
 a.card{display:block;position:relative;text-decoration:none;color:inherit;border:2px solid var(--pink-line);border-radius:14px;padding:18px 20px;background:#fff;transition:.2s}
@@ -271,7 +276,7 @@ a.act-card.side-short:hover{box-shadow:0 10px 26px rgba(185,28,28,.18)}
     <h1>LIVE <em>SETUPS</em></h1>
     <div class="hero-underline"><span class="u-pink"></span><span class="u-green"></span></div>
   </div>
-  <div class="hero-logo-wrap"><img src="levelup_logo.png" alt="Level Up" onerror="this.parentNode.style.display='none'"></div>
+  <div class="hero-logo-wrap"><div class="hero-logo-card"><img src="levelup_logo.png" alt="Level Up" onerror="this.parentNode.parentNode.style.display='none'"></div></div>
 </section>
 <div class="inner">
 <section class="golden-rules" aria-label="Chelsea's mandatory pre-entry rules">
