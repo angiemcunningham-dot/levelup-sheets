@@ -109,9 +109,22 @@ a.rw-card:hover{border-style:solid;box-shadow:0 10px 24px rgba(255,149,0,.16)}
 .att-note b{color:#374151}
 
 /* ticker tape - every Watching/untriggered setup, not just ones close to trigger; bold+large; pulses while it's also in Live Attention below */
-.att-tape{margin-top:14px;overflow:hidden;border:3px solid var(--pink-line);border-radius:999px;background:#fff;position:relative}
+.att-tape{margin-top:14px;display:flex;align-items:stretch;overflow:hidden;border:3px solid var(--pink-line);border-radius:999px;background:#fff;position:relative}
+.att-tape-viewport{overflow:hidden;flex:1;min-width:0}
 .att-tape-track{display:flex;width:max-content;gap:0;animation-name:attTape;animation-timing-function:linear;animation-iteration-count:infinite}
 .att-tape:hover .att-tape-track{animation-play-state:paused}
+/* 2026-10-16 (Angela, explicit): BTC pinned at the front of the ticker, never scrolling away - "everything
+   follows BTC, we watch it all day every day." Colored like an exchange ticker (green up / red down), with an
+   arrow, deliberately bolder/bigger than a normal tape item so it reads as the lead item, not just another one. */
+.btc-pin{flex:0 0 auto;display:inline-flex;align-items:center;gap:9px;padding:12px 22px;font-family:"JetBrains Mono",monospace;border-right:3px solid var(--pink-line);background:#F3F4F6}
+.btc-pin .btc-label{font-family:Archivo,sans-serif;font-weight:900;font-size:14px;letter-spacing:.1em;color:var(--gray)}
+.btc-pin .btc-price{font-family:Archivo,sans-serif;font-weight:900;font-size:23px;letter-spacing:.01em}
+.btc-pin .btc-arrow{font-size:19px;line-height:1}
+.btc-pin .btc-chg{font-weight:800;font-size:14px}
+.btc-pin.btc-up{animation:btcPulseUp 1.7s ease-in-out infinite}
+.btc-pin.btc-up .btc-price,.btc-pin.btc-up .btc-arrow,.btc-pin.btc-up .btc-chg{color:var(--green-d)}
+.btc-pin.btc-down{animation:btcPulseDown 1.7s ease-in-out infinite}
+.btc-pin.btc-down .btc-price,.btc-pin.btc-down .btc-arrow,.btc-pin.btc-down .btc-chg{color:var(--red-d)}
 .att-tape-item{display:inline-flex;align-items:center;gap:10px;padding:12px 24px;font-family:"JetBrains Mono",monospace;font-size:15px;font-weight:700;white-space:nowrap;color:#374151;text-decoration:none;border-right:1px solid var(--pink-line)}
 .att-tape-item b{font-family:Archivo,Inter,sans-serif;font-weight:900;font-size:21px;color:var(--ink);letter-spacing:.02em}
 .att-tape-item .p{font-weight:800;font-size:14px;color:var(--tc,#374151)}
@@ -213,8 +226,10 @@ a.act-card.side-short:hover{box-shadow:0 10px 26px rgba(185,28,28,.18)}
 @keyframes attTape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 @keyframes attTapeLive{0%,100%{background:rgba(250,3,152,.07)}50%{background:rgba(250,3,152,.28)}}
 @keyframes attTapeApprox{0%,100%{background:rgba(217,164,4,.08)}50%{background:rgba(217,164,4,.26)}}
+@keyframes btcPulseUp{0%,100%{background:rgba(34,197,94,.14)}50%{background:rgba(34,197,94,.32)}}
+@keyframes btcPulseDown{0%,100%{background:rgba(239,68,68,.14)}50%{background:rgba(239,68,68,.32)}}
 @media (prefers-reduced-motion:reduce){
-  a.att-card,a.act-card,.att-chip,.att-dot,.att-tape-track,.att-tape-item.is-live,.att-tape-item.is-approx{animation:none!important;transition:none!important}
+  a.att-card,a.act-card,.att-chip,.att-dot,.att-tape-track,.att-tape-item.is-live,.att-tape-item.is-approx,.btc-pin.btc-up,.btc-pin.btc-down{animation:none!important;transition:none!important}
   .att-tape{overflow-x:auto}
   a.att-card.tier-3,a.att-card.tier-4,.att-chip.tier-3,.att-chip.tier-4{box-shadow:0 0 0 4px var(--tg)}
   .att-tape-item.is-live{background:rgba(250,3,152,.18)}
@@ -1076,6 +1091,35 @@ load();setInterval(load,60000);
     var STALE_ACTIVE_MS = 72 * 3600000;
     var opts = { includeNoTrade: !!window.LEVELUP_ATTENTION_INCLUDE_NO_TRADE };   // default: Watching only (No Trade is not actionable)
     var setups = null, ps = { prices: {}, sources: {}, at: 0 }, sheetErr = false;
+    // 2026-10-16 (Angela, explicit): BTC pinned ticker - "everything follows BTC, we watch it all day every day."
+    // Independent of setups/ps entirely (it's not a Chelsea setup), so it can render even when nothing is being
+    // watched. changePct is a 24h change, same figure/convention every major exchange shows.
+    var btc = { price: null, changePct: null, at: 0 };
+    function loadBtc() {
+      return fetch('https://data-api.binance.vision/api/v3/ticker/24hr?symbol=BTCUSDT').then(function (r) { return r.json(); }).then(function (j) {
+        var price = parseFloat(j.lastPrice), chg = parseFloat(j.priceChangePercent);
+        if (price > 0 && isFinite(chg)) { btc = { price: price, changePct: chg, at: Date.now() }; render(); return; }
+        throw new Error('bad binance payload');
+      }).catch(function () {
+        // Kraken fallback: 'o' is today's UTC open, not a rolling 24h open like Binance's stat - close enough for
+        // a glance-level up/down read, not presented as more precise than that.
+        return fetch('https://api.kraken.com/0/public/Ticker?pair=XBTUSD').then(function (r) { return r.json(); }).then(function (j) {
+          var t = j && j.result && j.result[Object.keys(j.result)[0]];
+          var price = t && parseFloat(t.c[0]), open = t && parseFloat(t.o);
+          if (price > 0 && open > 0) { btc = { price: price, changePct: (price - open) / open * 100, at: Date.now() }; render(); }
+        }).catch(function () { /* keep last known value on screen rather than clearing it */ });
+      });
+    }
+    function btcPinHtml() {
+      if (!btc.price) return '';
+      var up = btc.changePct > 0, down = btc.changePct < 0;
+      var dirCls = up ? ' btc-up' : down ? ' btc-down' : '';
+      var arrow = up ? '▲' : down ? '▼' : '—';
+      var chg = (up ? '+' : '') + btc.changePct.toFixed(2) + '%';
+      return '<div class="btc-pin' + dirCls + '" title="Bitcoin, 24h change - everything on this board follows BTC">' +
+        '<span class="btc-label">BTC</span><span class="btc-price">$' + A.fmtPrice(btc.price) + '</span>' +
+        '<span class="btc-arrow">' + arrow + '</span><span class="btc-chg">' + chg + '</span></div>';
+    }
     var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
     var etTime = function (ms) { return new Date(ms).toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: '2-digit', second: '2-digit' }) + ' ET'; };
     var srcName = { binance: 'Binance', coinbase: 'Coinbase', kraken: 'Kraken' };
@@ -1274,7 +1318,11 @@ load();setInterval(load,60000);
         return '<a class="' + cls + '" href="sheet.html?asset=' + encodeURIComponent(it.asset) + '"><b>' + esc(it.asset) + '</b>' + label + '</a>';
       }).join('');
       var dur = Math.max(24, list.length * 4.5);
-      return '<div class="att-tape" role="marquee" aria-label="' + esc(ariaLabel || 'Watching setups, not yet triggered') + '"><div class="att-tape-track" style="animation-duration:' + dur + 's">' + one + '<span aria-hidden="true" style="display:contents">' + one + '</span></div></div>';
+      // BTC is pinned outside .att-tape-track on purpose - "we watch it all day every day" means it never
+      // scrolls out of view like the rest of the ticker does.
+      var pin = btcPinHtml();
+      var track = one ? '<div class="att-tape-viewport"><div class="att-tape-track" style="animation-duration:' + dur + 's">' + one + '<span aria-hidden="true" style="display:contents">' + one + '</span></div></div>' : '';
+      return '<div class="att-tape" role="marquee" aria-label="' + esc(ariaLabel || 'Watching setups, not yet triggered') + '">' + pin + track + '</div>';
     }
     function render() {
       var v = view();
@@ -1283,7 +1331,18 @@ load();setInterval(load,60000);
       // visual precision claim ("this is Chelsea's exact number") that an approximate anchor hasn't earned.
       var near = v.items.filter(function (i) { return (i.prox.state === 'APPROACHING' || i.prox.state === 'INSIDE') && !i.prox.approx; });
       var noPx = v.items.filter(function (i) { return i.prox.state === 'NOPRICE'; });
-      if (!v.watch.length) { sec.hidden = true; decorate(v); return; }
+      // 2026-10-16 (Angela, explicit): BTC is pinned in this ticker regardless of whether anything is currently
+      // being watched - "everything follows BTC, we watch it all day every day." Only fully hide the section when
+      // there's truly nothing to show at all (no watch list AND no BTC price yet).
+      if (!v.watch.length) {
+        if (!btc.price) { sec.hidden = true; decorate(v); return; }
+        sec.hidden = false;
+        sec.innerHTML = '<div class="att-head"><div class="att-title">Live <em>attention</em></div></div>' +
+          '<div class="att-note">No setups are currently being watched. BTC stays pinned here regardless - everything on this board follows it.</div>' +
+          tapeHtml([]);
+        decorate(v);
+        return;
+      }
       sec.hidden = false;
       var head = '<div class="att-head"><div class="att-title">Live <em>attention</em></div><div class="att-live" aria-live="polite"><span class="att-dot' + (v.fresh ? '' : ' off') + '"></span>' + (v.fresh ? 'prices updated ' + etTime(ps.at) : 'live prices unavailable — distances hidden') + '</div></div>' +
         '<div class="att-note">Watching setups, closest to the real trigger first. <b>% to trigger</b> is now the gap to the real floor — the higher/lower of SMA9 and SMMA7 (Chelsea’s “simple and smooth”), the same math the mechanical engine uses to confirm a trade — not Chelsea’s published zone text, which can sit on a different number than where the real moving averages are right now. Chelsea’s published zone still shows on each card, for reference only. It is a distance to a price level only: not a signal, not trade quality or probability. Chelsea’s confirmation rules still decide.</div>';
@@ -1292,7 +1351,9 @@ load();setInterval(load,60000);
       // distance against - v.items, not v.watch. v.watch also includes pure MA/structure calls with no numeric
       // level at all (prox.state 'NA'), which previously rendered as a dead "no numeric trigger yet" chip; those
       // are dropped from the ticker entirely now rather than shown as an un-trackable entry.
-      if (v.items.length) body += tapeHtml(v.items);
+      // 2026-10-16: also render with an empty list whenever BTC has a price, so the pinned BTC ticker still shows
+      // even on a day where every watched setup lacks a numeric trigger.
+      if (v.items.length || btc.price) body += tapeHtml(v.items);
       if (near.length) body += '<div class="att-grid">' + near.map(cardHtml).join('') + '</div>';
       else if (v.fresh) body += '<div class="att-empty">No watching setup is currently below its trigger zone.</div>';
       if (noPx.length && !v.fresh) body += '<div class="att-empty">Waiting for live prices for: ' + noPx.map(function (i) { return esc(i.asset); }).join(', ') + '</div>';
@@ -1567,8 +1628,10 @@ load();setInterval(load,60000);
       }).catch(function () { render(); renderActive(); });
     }
     loadSheet().then(loadPrices);
+    loadBtc();
     setInterval(function () { loadSheet().then(loadPrices); }, SHEET_MS);
     setInterval(loadPrices, PRICE_MS);
+    setInterval(loadBtc, PRICE_MS);
     setInterval(function () { render(); renderActive(); }, 15000);      // re-evaluate staleness even if a fetch hangs
     obs.observe(grid, { childList: true });
     var watchGridObsTarget0 = document.getElementById('grid-watching');
