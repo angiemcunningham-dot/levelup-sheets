@@ -15,23 +15,33 @@ body{display:flex;justify-content:center;padding:24px 20px}
 .sheet{position:relative;width:100%;max-width:1600px;background:#fff;box-shadow:0 18px 60px rgba(13,13,15,.16);overflow:hidden}
 .sheet::before,.sheet::after{content:"";position:absolute;left:0;right:0;height:7px;background:linear-gradient(90deg,var(--orange),var(--pink))}.sheet::before{top:0}.sheet::after{bottom:0}
 .inner{padding:38px 48px 30px}
-.kicker{font-size:13px;font-weight:700;letter-spacing:.22em;color:var(--pink);text-transform:uppercase}
-/* 2026-10-16 (Angela, explicit, option 4 of 4): "LEVEL UP CRYPTO" kicker removed from above this h1 (markup
-   below), font size brought down, and pulled closer to the pink rule underneath it. */
-h1{font-family:Archivo;font-weight:900;font-size:clamp(26px,4.2vw,42px);line-height:.95;margin:0;text-transform:uppercase}h1 em{font-style:normal;color:var(--pink)}
-.rule{height:8px;background:var(--pink);width:260px;margin:8px 0 12px;border-radius:2px}
-/* 2026-10-16 (Angela, explicit, option 4 of 4): largest hero size, vertically centered against the text block,
-   nudged in from the card edge via margin-right. No drop-shadow/glow - she explicitly didn't want any pink
-   shading or highlighting behind it. Same asset/sizing family as sheet.html's .logo (that file's slot also does
-   double duty as a "completion coin" hero on individual setups - this one never needs to, it's a distinct class
-   on purpose). Source art: Brand/level-up-exact-bb-logo-v3.png, background removed, cropped tight, kept at full
-   crop resolution (not pre-shrunk) so the coin's "B" detail stays sharp at this larger display size. */
-.board-head{display:flex;justify-content:space-between;align-items:center;gap:20px}
-.board-logo{flex:0 0 auto;width:280px;height:210px;margin-right:36px}.board-logo img{width:100%;height:100%;object-fit:contain}
-@media(max-width:640px){.board-logo{width:170px;height:128px;margin-right:0}}
-@media(max-width:640px){.board-logo{width:136px;height:102px}}
-@media(max-width:640px){.board-head{flex-direction:column-reverse;align-items:flex-start}}
-.sub{font-family:"JetBrains Mono";font-size:12px;color:var(--gray);letter-spacing:.04em;line-height:1.7}
+/* 2026-10-16 (Angela, explicit - "Split Sweep" header, approved option 3, implementation handoff): full-width
+   hero sitting OUTSIDE .inner (a direct child of .sheet, before it) so it bleeds edge to edge instead of sitting
+   inside the card's side padding. Three stacked layers, back to front: black .hero background -> a thin green
+   diagonal stripe -> the pink field clipped to start just past the stripe, leaving a narrow strip of the black
+   background exposed between them (the "near-black edge" - no separate element needed for it, it's just the
+   base layer showing through the gap in the two clip-paths). Top/bottom X positions are percentages (so the
+   diagonal's proportion holds at any card width); stripe widths are fixed px (so the accent reads as a
+   consistent thin line rather than stretching). Values measured directly off the approved mockup. */
+.hero{position:relative;width:100%;height:340px;overflow:hidden;background:#111114}
+.hero-green{position:absolute;inset:0;background:var(--green);clip-path:polygon(57% 0, calc(57% + 18px) 0, calc(44.5% + 18px) 100%, 44.5% 100%)}
+.hero-pink{position:absolute;inset:0;background:var(--pink);clip-path:polygon(calc(57% + 42px) 0, 100% 0, 100% 100%, calc(44.5% + 42px) 100%)}
+.hero-title{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;justify-content:center;max-width:54%;padding-left:56px}
+.hero-title h1{font-family:Archivo;font-weight:900;font-size:clamp(28px,4.4vw,56px);line-height:.95;text-transform:uppercase;color:#fff;white-space:nowrap;margin:0}
+.hero-title h1 em{font-style:normal;color:var(--pink)}
+.hero-underline{display:flex;height:8px;width:260px;margin-top:16px;border-radius:2px;overflow:hidden}
+.hero-underline .u-pink{background:var(--pink);flex:0 0 72%}
+.hero-underline .u-green{background:var(--green);flex:1 1 auto}
+.hero-logo-wrap{position:absolute;z-index:2;top:0;right:0;bottom:0;width:46%;display:flex;align-items:center;justify-content:flex-start;padding-left:38px;padding-right:40px}
+.hero-logo-wrap img{width:100%;height:auto;max-height:82%;object-fit:contain}
+@media(max-width:640px){
+  .hero{height:auto;display:flex;flex-direction:column}
+  .hero-green,.hero-pink{display:none}
+  .hero-title{position:static;max-width:100%;padding:28px 20px 18px}
+  .hero-title h1{white-space:normal;font-size:clamp(26px,9vw,38px)}
+  .hero-logo-wrap{position:static;width:100%;background:var(--pink);border-top:6px solid var(--green);padding:26px 24px;justify-content:center}
+  .hero-logo-wrap img{max-width:260px;max-height:none}
+}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:30px}
 a.card{display:block;position:relative;text-decoration:none;color:inherit;border:2px solid var(--pink-line);border-radius:14px;padding:18px 20px;background:#fff;transition:.2s}
 a.card:hover{border-color:var(--pink);box-shadow:0 10px 28px rgba(250,3,152,.14);transform:translateY(-2px)}
@@ -239,9 +249,17 @@ a.act-card.side-short:hover{box-shadow:0 10px 26px rgba(185,28,28,.18)}
 #att-chip{margin:12px 0 18px}
 </style>
 </head>
-<body><div class="sheet"><div class="inner">
-<div class="board-head"><div><h1>LIVE <em>SETUPS</em></h1><div class="rule"></div></div><div class="board-logo"><img src="levelup_logo.png" alt="Level Up" onerror="this.parentNode.style.display='none'"></div></div>
-<div class="sub">One link per asset. Every read Chelsea makes lands here, with the history and the lesson when it's done.<br>Levels are structure, not instructions. Not financial advice.</div>
+<body><div class="sheet">
+<section class="hero">
+  <div class="hero-green" aria-hidden="true"></div>
+  <div class="hero-pink" aria-hidden="true"></div>
+  <div class="hero-title">
+    <h1>LIVE <em>SETUPS</em></h1>
+    <div class="hero-underline"><span class="u-pink"></span><span class="u-green"></span></div>
+  </div>
+  <div class="hero-logo-wrap"><img src="levelup_logo.png" alt="Level Up" onerror="this.parentNode.style.display='none'"></div>
+</section>
+<div class="inner">
 <section class="golden-rules" aria-label="Chelsea's mandatory pre-entry rules">
   <div class="gr-top">⭐ Level Up Crypto — Mandatory Rules Before Entering a Trade</div>
   <div class="gr-warn">⚠️ A triggered trade does not automatically mean enter.</div>
