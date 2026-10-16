@@ -309,7 +309,7 @@ async function load(){
     +`<div><b>Published setup</b><span>${hasSetup?`${stamp(get(S,"timestamp"))} ${srcBadge(srcType(S))}${carried?` <i>· history, not a current call</i>`:""}`:"none on file"}</span></div></div>`;
   }
   if(prevAuth&&get(prevAuth,"status")!==get(cur,"status"))h+=`<div class="diff">Status changed: ${esc(get(prevAuth,"status"))} → ${esc(get(cur,"status"))} (${esc(stamp(get(cur,"timestamp")))})</div>`;
-  if(ld.length)h+=`<div class="diff">This published setup differs from the one before it (${esc(stamp(get(P,"timestamp")))}) in: ${esc(ld.join(", "))}. Both are kept in the history below.</div>`;
+  if(ld.length)h+=`<div class="diff">This published setup differs from the one before it (${esc(stamp(get(P,"timestamp")))}) in: ${esc(ld.join(", "))}.</div>`;
   if(cur!==S&&srcType(cur)==="ADMIN STATUS"&&get(cur,"why"))h+=`<div class="histnote"><b>ADMIN NOTE — not Chelsea's words.</b> ${esc(get(cur,"why"))}</div>`;
   if(closed){h+=`<div class="sect"><div class="bar"></div><h2>What happened</h2></div><div class="lesson"><div class="wl">Outcome</div><h3>${esc(get(cur,"outcome")||"Setup closed")}</h3><div class="wl" style="margin-top:14px">The lesson</div><p>${esc(get(cur,"lesson")||"—")}</p></div>`;}
 
@@ -347,11 +347,10 @@ async function load(){
     h+=`<div class="${(closed||paused)?"faded":""}">${setupHTML()}</div>`;
   }
 
-  const hist=rows.filter(r=>r!==cur).reverse();
-  if(hist.length){h+=`<div class="sect"><div class="bar"></div><h2>History on ${esc(ASSET)}</h2><div class="hint">newest first · every row preserved</div></div>`;
-    hist.forEach(r=>{const [c,t]=STATUS(get(r,"status"));const st=srcType(r);
-      const lv=hasLevels(r)?`${[1,2,3].map(k=>get(r,"trigger "+k)).filter(Boolean).map(esc).join("  ·  ")}<br>${esc(`TP ${tpTxt(r)} · stop ${get(r,"stop")||"—"}`)}`:"";
-      h+=`<div class="hist${st==="PRICE CHECK"?" pcrow":""}"><div class="hh"><span class="hv">${srcBadge(st)} ${esc(get(r,"headline")||ASSET)}</span><span class="hd">${stamp(get(r,"timestamp"))}</span><span class="pill ${c}">${esc(t||"no status")}</span></div>${lv?`<div class="lv">${lv}</div>`:""}${(carried&&r===S)?`<div class="lv"><b>↑ shown above as the most recent published setup</b></div>`:""}${(get(r,"outcome")||get(r,"lesson"))?`<div class="out"><b>What happened:</b> ${esc(get(r,"outcome"))}${get(r,"lesson")?`<br><b>Lesson:</b> ${esc(get(r,"lesson"))}`:""}</div>`:""}</div>`;});}
+  // 2026-10-16 (Angela, explicit, per Chelsea): the per-asset History list below was removed from display -
+  // it made the page look messy/confusing. Every row is still preserved in the Sheet/feed for Chelsea's own
+  // record and future content use; this just stops rendering it on the public detail page. `rows` itself is
+  // untouched so nothing upstream of this view is affected.
   h+=`<div class="foot"><div class="f1">LEVEL UP ⚡ · NOT FINANCIAL ADVICE · DYOR</div><div class="f2">Not financial advice. For educational purposes only. Trading involves risk. Protect your capital. Always use a stop loss. Leverage is a personal choice based on your own risk tolerance. Don't compare trades or position sizes.</div></div>`;
   $("#app").innerHTML=h;
   livePrice(L);

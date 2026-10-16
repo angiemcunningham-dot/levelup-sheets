@@ -42,6 +42,23 @@ a.card.is-live.is-short{border-color:var(--red)}
    stop level before ever triggering, with nothing surfacing it): a pre-trigger stop-breach flag, additive only,
    never changes a status or hides a card. */
 .stop-breach-flag{font-family:Archivo,sans-serif;font-weight:800;font-size:11.5px;letter-spacing:.02em;color:var(--red-d);background:rgba(239,68,68,.08);border:2px solid var(--red);border-radius:10px;padding:8px 11px;margin-top:8px;line-height:1.5}
+/* 2026-10-16 (Chelsea, explicit, via Angela): mandatory pre-entry checklist / "golden rules," shown once at the
+   top of the board so every member reads it before treating a TRIGGERED card as an instruction to enter. */
+.golden-rules{margin:26px 0 0;border:2px solid var(--pink);border-radius:16px;overflow:hidden;background:#fff}
+.gr-top{background:linear-gradient(90deg,var(--orange),var(--pink));color:#fff;padding:14px 20px;font-family:Archivo;font-weight:900;font-size:13px;letter-spacing:.12em;text-transform:uppercase}
+.gr-warn{background:#FFF4E0;border-bottom:2px solid var(--orange);color:var(--orange-d);font-family:Archivo;font-weight:800;font-size:12.5px;padding:10px 20px;text-align:center;letter-spacing:.02em}
+.gr-body{padding:20px 22px 4px}
+.gr-rule{margin-bottom:18px}
+.gr-rule h3{font-family:Archivo;font-weight:900;font-size:14px;color:var(--pink);text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px}
+.gr-rule ul,.gr-golden ul{list-style:none;margin:0;padding:0}
+.gr-rule li{font-size:13px;line-height:1.6;padding-left:22px;position:relative;margin:5px 0}
+.gr-rule li::before{content:"\2713";position:absolute;left:0;color:var(--green-d);font-weight:800}
+.gr-golden{margin:4px 22px 20px;background:var(--ink);color:#fff;border-radius:12px;padding:18px 20px}
+.gr-golden h3{font-family:Archivo;font-weight:900;font-size:14px;color:var(--pink-line);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px}
+.gr-golden li{font-size:13px;line-height:1.7;padding-left:22px;position:relative;margin:5px 0;color:#F3F3F5}
+.gr-golden li::before{content:"\2713";position:absolute;left:0;color:#fff}
+.gr-tag{text-align:center;font-family:"JetBrains Mono";font-size:10.5px;color:var(--pink);letter-spacing:.04em;padding:14px 20px;border-top:2px solid var(--pink-line)}
+@media(max-width:640px){.gr-body{padding:16px 16px 4px}.gr-golden{margin:4px 16px 18px}}
 .foot{margin-top:34px;padding-top:18px;border-top:2px solid var(--pink-line);text-align:center}.f1{font-family:Archivo;font-weight:800;font-size:13px;letter-spacing:.18em;color:var(--pink);text-transform:uppercase}.f2{font-size:11.5px;color:var(--gray);margin-top:8px;line-height:1.6}
 .empty{padding:40px;text-align:center;color:var(--gray)}
 @media(max-width:640px){.inner{padding:30px 18px 24px}}
@@ -199,6 +216,47 @@ a.act-card.side-short:hover{box-shadow:0 10px 26px rgba(185,28,28,.18)}
 <body><div class="sheet"><div class="inner">
 <div class="board-head"><div><div class="kicker">LEVEL UP CRYPTO</div><h1>LIVE <em>SETUPS</em></h1></div><div class="board-logo"><img src="bb_logo_pink.png" alt="" onerror="this.parentNode.style.display='none'"></div></div><div class="rule"></div>
 <div class="sub">One link per asset. Every read Chelsea makes lands here, with the history and the lesson when it's done.<br>Levels are structure, not instructions. Not financial advice.</div>
+<section class="golden-rules" aria-label="Chelsea's mandatory pre-entry rules">
+  <div class="gr-top">⭐ Level Up Crypto — Mandatory Rules Before Entering a Trade</div>
+  <div class="gr-warn">⚠️ A triggered trade does not automatically mean enter.</div>
+  <div class="gr-body">
+    <div class="gr-rule">
+      <h3>1. One-Hour Candle Confirmation</h3>
+      <ul>
+        <li><b>Long:</b> a 1H candle must open and hold above both the Simple Moving Average (SMA) and Smooth Moving Average (SMMA).</li>
+        <li><b>Short:</b> a 1H candle must open and hold below both moving averages.</li>
+      </ul>
+    </div>
+    <div class="gr-rule">
+      <h3>2. Momentum Alignment</h3>
+      <ul>
+        <li>Momentum indicators must point in the direction of the trade on the majority of timeframes.</li>
+        <li>1H timeframe is absolute — non-negotiable.</li>
+        <li>The two timeframes below the 1H must align with the trade direction.</li>
+        <li>Higher timeframes must be curving, or beginning to curve, in the direction of the trade.</li>
+      </ul>
+    </div>
+    <div class="gr-rule">
+      <h3>3. Clear Path to Target</h3>
+      <ul>
+        <li><b>Long:</b> no major higher-timeframe resistance between entry and target.</li>
+        <li><b>Short:</b> no major higher-timeframe support between entry and target.</li>
+        <li>Check the 4H, 8H, 12H, and Daily timeframes.</li>
+        <li>No major higher-timeframe level should block the path to your target.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="gr-golden">
+    <h3>🚨 Golden Rule</h3>
+    <ul>
+      <li>All three conditions must be met before entering a trade.</li>
+      <li>Triggered does not mean confirmed.</li>
+      <li>Confirmation comes before execution.</li>
+      <li>If even one rule fails — no entry.</li>
+    </ul>
+  </div>
+  <div class="gr-tag">LEVEL UP CRYPTO — READ THE CHART. THEN READ BETWEEN THE CANDLES.</div>
+</section>
 <div class="section-head"><div class="section-title">Today's Untriggered <em>Setups</em></div><div class="section-sub" id="today-sub"></div></div>
 <div class="grid" id="grid"><div class="empty">Loading…</div></div>
 <section class="att watch" id="currently-watching" hidden aria-label="Currently watching: setups published on an earlier day that are still Watching, not yet triggered, not resolved">
