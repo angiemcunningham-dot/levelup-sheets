@@ -14,33 +14,42 @@ body{display:flex;justify-content:center;padding:24px 20px}
    card rows don't become absurdly wide, and the existing max-width:640px mobile query is untouched. */
 .sheet{position:relative;width:100%;max-width:1600px;background:#fff;box-shadow:0 18px 60px rgba(13,13,15,.16);overflow:hidden}
 .sheet::before,.sheet::after{content:"";position:absolute;left:0;right:0;height:7px;background:linear-gradient(90deg,var(--orange),var(--pink))}.sheet::before{top:0}.sheet::after{bottom:0}
-.inner{padding:38px 48px 30px}
-/* 2026-10-16 (Angela, explicit - "Split Sweep" header, approved option 3, implementation handoff): full-width
-   hero sitting OUTSIDE .inner (a direct child of .sheet, before it) so it bleeds edge to edge instead of sitting
-   inside the card's side padding. Three stacked layers, back to front: black .hero background -> a thin green
-   diagonal stripe -> the pink field clipped to start just past the stripe, leaving a narrow strip of the black
-   background exposed between them (the "near-black edge" - no separate element needed for it, it's just the
-   base layer showing through the gap in the two clip-paths). Top/bottom X positions are percentages (so the
-   diagonal's proportion holds at any card width); stripe widths are fixed px (so the accent reads as a
-   consistent thin line rather than stretching). Values measured directly off the approved mockup. */
-.hero{position:relative;width:100%;height:340px;overflow:hidden;background:#111114}
+/* 2026-10-16 (Angela, explicit, revision pass): top padding dropped to 0 here - this used to be the gap below
+   the old in-flow board-head text, but the hero now lives outside .inner entirely (see .hero above), so this was
+   just adding unwanted extra space on top of .golden-rules' own margin-top below. That margin-top is now the
+   single source of the hero-to-card gap (28px, in the requested 24-32px range). */
+.inner{padding:0 48px 30px}
+/* 2026-10-16 (Angela, explicit - "Split Sweep" header, approved option 3): full-width hero sitting OUTSIDE
+   .inner (a direct child of .sheet, before it) so it bleeds edge to edge. Three stacked layers, back to front:
+   black .hero background -> a thin green diagonal stripe -> the pink field clipped to start just past the
+   stripe, leaving a narrow strip of the black background exposed between them (the "near-black edge" - no
+   separate element needed, it's the base layer showing through the gap in the two clip-paths). Original diagonal
+   slope (57% top / 44.5% bottom), matching the approved mockup - kept as originally measured, not eased. */
+.hero{position:relative;width:100%;height:330px;overflow:hidden;background:#111114}
 .hero-green{position:absolute;inset:0;background:var(--green);clip-path:polygon(57% 0, calc(57% + 18px) 0, calc(44.5% + 18px) 100%, 44.5% 100%)}
 .hero-pink{position:absolute;inset:0;background:var(--pink);clip-path:polygon(calc(57% + 42px) 0, 100% 0, 100% 100%, calc(44.5% + 42px) 100%)}
 .hero-title{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;justify-content:center;max-width:54%;padding-left:56px}
 .hero-title h1{font-family:Archivo;font-weight:900;font-size:clamp(28px,4.4vw,56px);line-height:.95;text-transform:uppercase;color:#fff;white-space:nowrap;margin:0}
 .hero-title h1 em{font-style:normal;color:var(--pink)}
 .hero-underline{display:flex;height:8px;width:260px;margin-top:16px;border-radius:2px;overflow:hidden}
-.hero-underline .u-pink{background:var(--pink);flex:0 0 72%}
+.hero-underline .u-pink{background:var(--pink);flex:0 0 75%}
 .hero-underline .u-green{background:var(--green);flex:1 1 auto}
-.hero-logo-wrap{position:absolute;z-index:2;top:0;right:0;bottom:0;width:46%;display:flex;align-items:center;justify-content:flex-start;padding-left:38px;padding-right:40px}
-.hero-logo-wrap img{width:100%;height:auto;max-height:82%;object-fit:contain}
+/* 2026-10-16 (Angela, explicit, revision pass #2): wrap's left edge is anchored to the pink field's TOP boundary
+   (the NARROWEST point of the parallelogram, where the diagonal sits furthest left) plus a 24px clearance - this
+   is the one reference point that guarantees the logo clears the green/black edge at every height, not just at
+   the bottom where the field is widest. The logo is sized by HEIGHT (88% of the hero, object-fit:contain,
+   width:auto), not by a fixed % of wrap width - letting height drive the size is what keeps it safely inside this
+   narrower, guaranteed-safe box instead of overflowing past the diagonal the way a fixed-width logo did before.
+   justify-content:flex-start left-biases it within that safe zone, per spec. */
+.hero-logo-wrap{position:absolute;z-index:2;top:0;bottom:0;left:calc(57% + 42px + 24px);right:40px;display:flex;align-items:center;justify-content:flex-start}
+.hero-logo-wrap img{height:88%;width:auto;max-width:100%;object-fit:contain}
 @media(max-width:640px){
   .hero{height:auto;display:flex;flex-direction:column}
   .hero-green,.hero-pink{display:none}
   .hero-title{position:static;max-width:100%;padding:28px 20px 18px}
   .hero-title h1{white-space:normal;font-size:clamp(26px,9vw,38px)}
   .hero-logo-wrap{position:static;width:100%;background:var(--pink);border-top:6px solid var(--green);padding:26px 24px;justify-content:center}
-  .hero-logo-wrap img{max-width:260px;max-height:none}
+  .hero-logo-wrap img{width:auto;max-width:300px;max-height:none}
 }
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:30px}
 a.card{display:block;position:relative;text-decoration:none;color:inherit;border:2px solid var(--pink-line);border-radius:14px;padding:18px 20px;background:#fff;transition:.2s}
@@ -65,9 +74,14 @@ a.card.is-watch-short{border-color:var(--red)}
 .stop-breach-flag{font-family:Archivo,sans-serif;font-weight:800;font-size:11.5px;letter-spacing:.02em;color:var(--red-d);background:rgba(239,68,68,.08);border:2px solid var(--red);border-radius:10px;padding:8px 11px;margin-top:8px;line-height:1.5}
 /* 2026-10-16 (Chelsea, explicit, via Angela): mandatory pre-entry checklist / "golden rules," shown once at the
    top of the board so every member reads it before treating a TRIGGERED card as an instruction to enter. */
-.golden-rules{margin:26px 0 0;border:2px solid var(--pink);border-radius:16px;overflow:hidden;background:#fff}
-.gr-top{background:linear-gradient(90deg,var(--orange),var(--pink));color:#fff;padding:14px 20px;font-family:Archivo;font-weight:900;font-size:13px;letter-spacing:.12em;text-transform:uppercase}
-.gr-warn{background:#FFF4E0;border-bottom:2px solid var(--orange);color:var(--orange-d);font-family:Archivo;font-weight:800;font-size:12.5px;padding:10px 20px;text-align:center;letter-spacing:.02em}
+.golden-rules{margin:28px 0 0;border:2px solid var(--pink);border-radius:16px;overflow:hidden;background:#fff}
+/* 2026-10-16 (Angela, explicit, revision pass - approved "Split Sweep" treatment): orange removed from this
+   card. Header is solid brand pink (was an orange->pink gradient); the alert row is a pale pink/blush instead of
+   pale orange, bordered and worded in pink instead of orange-d. Green condition markers and the black Golden
+   Rule panel are untouched - this card's only other status-carrying colors stay tied to their existing meanings
+   elsewhere on the page. */
+.gr-top{background:var(--pink);color:#fff;padding:14px 20px;font-family:Archivo;font-weight:900;font-size:13px;letter-spacing:.12em;text-transform:uppercase}
+.gr-warn{background:#FDE7F5;border-bottom:2px solid var(--pink);color:var(--pink);font-family:Archivo;font-weight:800;font-size:12.5px;padding:10px 20px;text-align:center;letter-spacing:.02em}
 .gr-body{padding:20px 22px 4px}
 .gr-rule{margin-bottom:18px}
 .gr-rule h3{font-family:Archivo;font-weight:900;font-size:14px;color:var(--pink);text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px}
