@@ -22,7 +22,11 @@ h1{font-family:Archivo;font-weight:900;font-size:clamp(34px,6vw,58px);line-heigh
    file's slot also does double duty as a "completion coin" hero on individual setups - this one never needs to,
    it's a distinct class on purpose). */
 .board-head{display:flex;justify-content:space-between;align-items:flex-start;gap:20px}
-.board-logo{flex:0 0 auto;width:96px;height:92px;filter:drop-shadow(0 0 12px rgba(250,3,152,.45))}.board-logo img{width:100%;height:100%;object-fit:contain}
+/* 2026-10-16 (Angela, explicit): swapped the pink BB coin mark for the full Level Up wordmark
+   (levelup_logo.png, background removed, cropped tight to content - source: Brand/level-up-exact-bb-logo-v3.png).
+   Sized to its real ~4:3 aspect ratio rather than the old near-square box, so it reads at this size. */
+.board-logo{flex:0 0 auto;width:168px;height:126px;filter:drop-shadow(0 0 12px rgba(250,3,152,.35))}.board-logo img{width:100%;height:100%;object-fit:contain}
+@media(max-width:640px){.board-logo{width:136px;height:102px}}
 @media(max-width:640px){.board-head{flex-direction:column-reverse;align-items:flex-start}}
 .sub{font-family:"JetBrains Mono";font-size:12px;color:var(--gray);letter-spacing:.04em;line-height:1.7}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:30px}
@@ -218,7 +222,7 @@ a.act-card.side-short:hover{box-shadow:0 10px 26px rgba(185,28,28,.18)}
 </style>
 </head>
 <body><div class="sheet"><div class="inner">
-<div class="board-head"><div><div class="kicker">LEVEL UP CRYPTO</div><h1>LIVE <em>SETUPS</em></h1></div><div class="board-logo"><img src="bb_logo_pink.png" alt="" onerror="this.parentNode.style.display='none'"></div></div><div class="rule"></div>
+<div class="board-head"><div><div class="kicker">LEVEL UP CRYPTO</div><h1>LIVE <em>SETUPS</em></h1></div><div class="board-logo"><img src="levelup_logo.png" alt="Level Up" onerror="this.parentNode.style.display='none'"></div></div><div class="rule"></div>
 <div class="sub">One link per asset. Every read Chelsea makes lands here, with the history and the lesson when it's done.<br>Levels are structure, not instructions. Not financial advice.</div>
 <section class="golden-rules" aria-label="Chelsea's mandatory pre-entry rules">
   <div class="gr-top">⭐ Level Up Crypto — Mandatory Rules Before Entering a Trade</div>
