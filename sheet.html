@@ -1207,8 +1207,15 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
       var a = feed.assets[asset]; if (!a) return null;
       if (currentInstanceKey && a.setup_instance_key !== currentInstanceKey) return null;
       var lc = a.lifecycle;
+      /* RETROACTIVE VOID (2026-10-18): a terminal observation that was mechanically wrong has had its CLAIM
+         withdrawn (receipts.js VOIDED / LEVEL_UP_RETROACTIVE_VOID_SPEC_2026-10-18.md). Returning null here - rather
+         than inventing a "voided" display state - deliberately routes the card down the SAME path a feed outage
+         already takes: resolveCurrentState() returns null, coinEligible() is false, and the Sheet-driven display
+         renders exactly as it did before the mechanical layer existed. The receipt fallback below is held to the
+         same rule, since a voided receipt keeps the ready:true display frozen at the moment it opened. */
+      if (lc && lc.voided) return null;
       if (!lc) {
-        var r = (feed.receipts || []).filter(function (x) { return x.asset === asset && x.setup_instance_key === currentInstanceKey; })[0];
+        var r = (feed.receipts || []).filter(function (x) { return x.asset === asset && x.setup_instance_key === currentInstanceKey && !x.voided; })[0];
         lc = r ? r.lifecycle : null;
       }
       if (!lc) return null;
