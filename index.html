@@ -164,6 +164,14 @@ a.rw-card:hover{border-style:solid;box-shadow:0 10px 24px rgba(255,149,0,.16)}
 .att-live{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--gray);letter-spacing:.03em}
 .att-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:6px;vertical-align:middle;animation:attBlink 1.6s ease-in-out infinite}
 .att-dot.off{background:var(--gray2);animation:none}
+/* 2026-10-21 (Angela, 10:30): "the top of the board is very top heavy visually so much to read".
+   The explainer only needs reading once; the one-line summary stays, the rest folds. */
+.att-how{margin-top:5px}
+.att-how>summary{cursor:pointer;list-style:none;display:inline-block;font-weight:800;color:var(--pink);font-size:11px;letter-spacing:.04em;text-transform:uppercase}
+.att-how>summary::-webkit-details-marker{display:none}
+.att-how>summary::after{content:" ▾";font-size:9px}
+.att-how[open]>summary::after{content:" ▴"}
+.att-how[open]{margin-bottom:4px}
 .att-note{font-size:11.5px;color:var(--gray);line-height:1.55;margin-top:8px;max-width:820px}
 .att-note b{color:#374151}
 
@@ -357,7 +365,7 @@ a.act-card.side-short:hover{box-shadow:0 10px 26px rgba(185,28,28,.18)}
   </div>
   <div class="gr-tag">LEVEL UP CRYPTO — READ THE CHART. THEN READ BETWEEN THE CANDLES.</div>
 </section>
-<details class="whatsnew" open>
+<details class="whatsnew">
   <summary>What changed on this board — 21 October 2026</summary>
   <div class="wn-body">
     <ul>
@@ -1540,7 +1548,7 @@ load();setInterval(load,60000);
       }
       sec.hidden = false;
       var head = '<div class="att-head"><div class="att-title">Live <em>attention</em></div><div class="att-live" aria-live="polite"><span class="att-dot' + (v.fresh ? '' : ' off') + '"></span>' + (v.fresh ? 'prices updated ' + etTime(ps.at) : 'live prices unavailable — distances hidden') + '</div></div>' +
-        '<div class="att-note">Watching setups, closest to the real trigger first. <b>% to trigger</b> is now the gap to the real floor — the higher/lower of SMA9 and SMMA7 (Chelsea’s “simple and smooth”), the same math the mechanical engine uses to confirm a trade — not Chelsea’s published zone text, which can sit on a different number than where the real moving averages are right now. Chelsea’s published zone still shows on each card, for reference only. It is a distance to a price level only: not a signal, not trade quality or probability. Chelsea’s confirmation rules still decide.</div>';
+        '<div class="att-note">Watching setups, closest to the real trigger first.<details class="att-how"><summary>How this number works</summary><b>% to trigger</b> is now the gap to the real floor — the higher/lower of SMA9 and SMMA7 (Chelsea’s “simple and smooth”), the same math the mechanical engine uses to confirm a trade — not Chelsea’s published zone text, which can sit on a different number than where the real moving averages are right now. Chelsea’s published zone still shows on each card, for reference only. It is a distance to a price level only: not a signal, not trade quality or probability. Chelsea’s confirmation rules still decide.</details></div>';
       var body = '';
       // 2026-10-02 (Angela, explicit): the ticker only shows setups with a real numeric trigger/zone to measure a
       // distance against - v.items, not v.watch. v.watch also includes pure MA/structure calls with no numeric
