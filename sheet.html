@@ -58,6 +58,20 @@ h1 em{font-style:normal;color:var(--pink)}
 .btn{font-family:Inter;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:9px 16px;border-radius:999px;border:2px solid var(--pink);background:#fff;color:var(--pink);cursor:pointer;text-decoration:none}
 .btn.primary{background:var(--pink);color:#fff}
 .ladder{border:2px solid var(--pink);border-radius:14px;background:#fff;overflow:hidden;box-shadow:0 10px 28px rgba(13,13,15,.07)}
+/* TWO-SIDED SETUP (2026-10-21, density C): the quiet side of a pair folds into a disclosure. */
+.sideflip{margin-top:22px;border:1px solid var(--line);border-radius:14px;background:#fff;overflow:hidden}
+.sideflip>summary{cursor:pointer;list-style:none;padding:14px 18px;font-family:"Archivo",sans-serif;font-weight:700;
+  font-size:13px;letter-spacing:.06em;text-transform:uppercase;display:flex;align-items:center;gap:10px}
+.sideflip>summary::-webkit-details-marker{display:none}
+.sideflip>summary::after{content:"\25BE";margin-left:auto;font-size:11px;opacity:.55;transition:transform .15s}
+.sideflip[open]>summary::after{transform:rotate(180deg)}
+.sideflip>summary:focus-visible{outline:2px solid var(--pink);outline-offset:-2px}
+.sideflip .flipbody{padding:4px 18px 20px}
+.sideflip .flipbody.retired{opacity:.62}
+.dirtag{display:inline-block;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.06em}
+.dirtag.d-long{background:#e7f4ee;color:#0f7a52}
+.dirtag.d-short{background:#fcebe9;color:#a8231f}
+.sidenote{font-size:13px;color:#6c7488;margin:2px 0 0}
 .row{display:grid;grid-template-columns:54px 1fr auto;gap:14px;align-items:center;padding:15px 20px;border-bottom:1px solid #F0F0F4}
 .row:last-child{border-bottom:none}.row.now{background:var(--pink-soft);border-top:2px solid var(--pink);border-bottom:2px solid var(--pink)}
 .dot{width:14px;height:14px;border-radius:50%;margin:0 auto}
@@ -328,22 +342,71 @@ async function load(){
     if(clUrl)x+=`<div class="btnrow"><a class="btn" href="${esc(clUrl)}" target="_blank" rel="noopener noreferrer">Open interactive chart${carried?" (setup of "+esc(stamp(get(S,"timestamp")))+")":""}</a></div>`;
     if(vm)x+=`<div class="card soft"><h3>Chelsea's read — voice</h3><iframe class="audio" src="https://drive.google.com/file/d/${vm}/preview" allow="autoplay"></iframe></div>`;
     return x;};
-  const setupHTML=()=>{let x="";
-    if(get(S,"why"))x+=`<div class="sect"><div class="bar"></div><h2>Why</h2></div><div class="card"><p>${esc(clarifyPileLanguage(get(S,"why")))}</p></div>`;
-    const T=[1,2,3].map(i=>get(S,"trigger "+i)).filter(Boolean);
+  /* Takes the row to render, so the same function can draw BOTH sides of a two-sided setup (2026-10-21).
+     `primary` keeps id="ladder" and therefore the live NOW row on the main side only - see sideFlip() below. */
+  const setupHTML=(Srow,primary)=>{let x="";const Lrows=levels(Srow);
+    if(get(Srow,"why"))x+=`<div class="sect"><div class="bar"></div><h2>Why</h2></div><div class="card"><p>${esc(clarifyPileLanguage(get(Srow,"why")))}</p></div>`;
+    const T=[1,2,3].map(i=>get(Srow,"trigger "+i)).filter(Boolean);
     if(T.length){x+=`<div class="sect"><div class="bar"></div><h2>The Levels</h2></div>`;T.forEach((t,i)=>x+=`<div class="card soft"><h3>Trigger ${i+1}</h3><p>${esc(t)}</p></div>`);}
-    if(L.length){x+=`<div class="sect"><div class="bar"></div><h2>The Ladder</h2><div class="hint">live price</div></div><div class="ladder" id="ladder">`;
-      const rowsH=L.map(l=>`<div class="row" data-p="${l.price}"><div class="dot d-${l.kind}"></div><div><div class="rl">${esc(l.role)}</div><div class="rn">${esc(l.note)}</div></div><div class="rp">${fmt(l.price)}<small>${l.kind==="tp"?"target":l.kind==="stop"?"invalidation":"level"}</small></div></div>`);
+    if(Lrows.length){x+=`<div class="sect"><div class="bar"></div><h2>The Ladder</h2>${primary?`<div class="hint">live price</div>`:""}</div><div class="ladder"${primary?` id="ladder"`:""}>`;
+      const rowsH=Lrows.map(l=>`<div class="row" data-p="${l.price}"><div class="dot d-${l.kind}"></div><div><div class="rl">${esc(l.role)}</div><div class="rn">${esc(l.note)}</div></div><div class="rp">${fmt(l.price)}<small>${l.kind==="tp"?"target":l.kind==="stop"?"invalidation":"level"}</small></div></div>`);
       x+=rowsH.join("")+`</div><p class="rn" style="margin-top:10px"><b>Levels are structure, not instructions.</b> Price reaching a level is information. Whether it becomes an entry is your decision and your risk.</p>`;}
-    if(get(S,"warning"))x+=`<div class="sect"><div class="bar"></div><h2>Warning</h2></div><div class="warn"><div class="wh">Heads up</div><div class="wb">${esc(get(S,"warning"))}</div></div>`;
-    if(get(S,"confidence up")||get(S,"confidence down"))x+=`<div class="sect"><div class="bar"></div><h2>Confidence Check</h2></div><div class="grid2"><div class="inv up"><div class="ih">▲ Confidence up</div><div class="ib">${esc(get(S,"confidence up"))}</div></div><div class="inv dn"><div class="ih">▼ Confidence down</div><div class="ib">${esc(get(S,"confidence down"))}</div></div></div>`;
+    if(get(Srow,"warning"))x+=`<div class="sect"><div class="bar"></div><h2>Warning</h2></div><div class="warn"><div class="wh">Heads up</div><div class="wb">${esc(get(Srow,"warning"))}</div></div>`;
+    if(get(Srow,"confidence up")||get(Srow,"confidence down"))x+=`<div class="sect"><div class="bar"></div><h2>Confidence Check</h2></div><div class="grid2"><div class="inv up"><div class="ih">▲ Confidence up</div><div class="ib">${esc(get(Srow,"confidence up"))}</div></div><div class="inv dn"><div class="ih">▼ Confidence down</div><div class="ib">${esc(get(Srow,"confidence down"))}</div></div></div>`;
     return x;};
+
+  /* ----------------------------------------------------------------------------------------------------
+     TWO-SIDED SETUPS (2026-10-21). Chelsea published a LONG and a SHORT on AVAX and on UNI within seconds
+     of each other on 2026-10-20. This page used to show one of them: it picked a single row and the other
+     side's Why, levels, ladder and warning were simply absent, with nothing saying a second side existed.
+
+     Angela chose density C on 2026-10-20 - "the side price supports expanded, the quiet side folded into a
+     disclosure" - and one rule whether a side is quiet because price went the other way or because it was
+     retired when its sibling fired. So: ONE page, the primary side rendered exactly as it is today, and the
+     other side in a <details> underneath.
+
+     The pairing decision is NOT made here. It comes from LevelUpCore (this page's own att-core block, the
+     same parser the monitor uses), so there is exactly one implementation of the 2h window rule to keep
+     right. Sides are matched back to this script's own rows by published timestamp + trigger text, which
+     both parsers read from the same cells.
+
+     WHICH SIDE IS PRIMARY: the one this page would have shown anyway - the row S already selected. The
+     approved design says "order follows the meter", and the confirmation strength meter is not on the board
+     yet (monitor/confirmation.js computes it; nothing renders it). Until it is, the order is recency, which
+     is deterministic and is not the board judging which trade is better. Retirement-aware ordering belongs
+     with the meter wiring, since both need the feed.
+
+     Degrades safely: if LevelUpCore has not loaded yet, or the sides cannot be matched back to rows, this
+     returns null and the page renders exactly as it does today. */
+  const pairedSides=()=>{
+    try{
+      const Core=(typeof window!=="undefined"&&window.LevelUpCore)||(typeof LevelUpCore!=="undefined"&&LevelUpCore)||null;
+      if(!Core||!Core.buildAll)return null;
+      const entry=Core.buildAll(text)[ASSET];
+      if(!entry||!entry.sides)return null;
+      const rowFor=(side)=>{
+        const pt=side.published_text||{};const ts=pt.timestamp_text||"",t1=(pt.triggers||[])[0]||"";
+        if(!ts)return null;
+        return rows.find(r=>get(r,"timestamp")===ts&&get(r,"trigger 1")===t1)||rows.find(r=>get(r,"timestamp")===ts)||null;
+      };
+      const byDir={};Object.keys(entry.sides).forEach(d=>{const row=rowFor(entry.sides[d]);if(row)byDir[d]=row;});
+      const dirs=Object.keys(byDir);
+      if(dirs.length!==2)return null;
+      const pDir=dirs.find(d=>byDir[d]===S)||entry.primary_side||dirs[0];
+      const qDir=dirs.find(d=>d!==pDir);
+      return {primary:{dir:pDir,row:byDir[pDir]},quiet:{dir:qDir,row:byDir[qDir]}};
+    }catch(err){return null;}
+  };
+  const sides=pairedSides();
+  const sideFlip=(q)=>`<details class="sideflip"><summary><span class="dirtag d-${q.dir}">${q.dir.toUpperCase()}</span>The other side of this setup</summary><div class="flipbody"><p class="sidenote">Chelsea published this ${q.dir} alongside the ${sides.primary.dir} above, ${esc(stamp(get(q.row,"timestamp")))}. Both are real published levels. One firing does not confirm the other.</p>${setupHTML(q.row,false)}</div></details>`;
+  /* every existing call site renders the primary side exactly as before; the flip is additive */
+  const bodyHTML=()=>setupHTML(S,true)+(sides?sideFlip(sides.quiet):"");
   if(noTradeLike){
     if(hasSetup){
       h+=`<div class="sect"><div class="bar"></div><h2>Published setup</h2><div class="hint">${esc(stamp(get(S,"timestamp")))}</div></div>`;
       h+=`<div class="histnote"><b>HISTORICAL — NOT A CURRENT TRADE CALL.</b> The current status is <b>${esc(btxt)}</b>. This is Chelsea's most recent published setup for ${esc(ASSET)}, from ${esc(stamp(get(S,"timestamp")))} ${srcBadge(srcType(S))}${days?` (${days} day${days===1?"":"s"} before the current status)`:""}. It is shown so nothing is lost; its levels may no longer apply.</div>`;
       h+=media();
-      h+=`<div class="faded">${setupHTML()}</div>`;
+      h+=`<div class="faded">${bodyHTML()}</div>`;
     }else{
       h+=`<div class="sect"><div class="bar"></div><h2>Published setup</h2></div><div class="histnote">No published setup on file for ${esc(ASSET)}.</div>`+media();
     }
@@ -353,7 +416,7 @@ async function load(){
       h+=`<div class="histnote"><b>STATUS UPDATE (${esc(srcType(cur))}) — NOT A NEW CALL FROM CHELSEA.</b> The levels below are Chelsea's published setup from ${esc(stamp(get(S,"timestamp")))}.</div>`;
     }
     h+=media();
-    h+=`<div class="${(closed||paused)?"faded":""}">${setupHTML()}</div>`;
+    h+=`<div class="${(closed||paused)?"faded":""}">${bodyHTML()}</div>`;
   }
 
   // 2026-10-16 (Angela, explicit, per Chelsea): the per-asset History list below was removed from display -
@@ -809,6 +872,47 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
     });
   }
   const tsInfo = (o) => { const p = parseSheetTimestamp(F.timestamp(o)); return { ts_text: F.timestamp(o), iso: p.iso, utcMs: p.utcMs, precision: p.precision }; };
+  /* TWO-SIDED SETUPS (2026-10-21). Chelsea publishing a LONG and a SHORT on the same asset minutes apart -
+     AVAX and UNI on 2026-10-20 - used to lose a side right here: groupByAsset collapsed both rows under one
+     asset, selectRows picked the newest, and the other side's levels were simply absent from the board while
+     the monitor carried both. A member looking at AVAX saw the long and never learned the short existed.
+
+     This page keeps keying by ASSET deliberately. Every consumer of buildAll() uses the key as a price symbol
+     and as the sheet.html?asset= link, and there is no symbol called AVAX|LONG; Angela also asked for one card
+     per asset ("I would like one card for AVAX type setups", 2026-10-20). So a paired asset's entry is
+     UNCHANGED - still exactly the side selectRows would have chosen - and carries both sides in `sides` for
+     the render to read. Adding a field cannot break a consumer that does not read it.
+
+     The pair rule mirrors core/levelup-core.js's groupBySetup() exactly, window anchoring included: a pair
+     exists if ANY row of one direction was published within 2h of ANY row of the other, never just the newest
+     of each. Comparing only the newest rows was worse than the bug it fixed - correcting ONE side later in the
+     day (Chelsea's AVAX short stop on 2026-10-20) pushed the newest rows outside the window, dissolved the
+     pair, and silently superseded the untouched long. A genuine republish weeks later still has no pair of
+     rows within the window in any combination, so that case is unchanged.
+
+     Keep this in sync with core/levelup-core.js and with the other board file: PAC-9 in
+     test/parity-att-core.test.js fails if any copy loses a side, and PAC-5 fails if the two board copies
+     diverge in code. */
+  const PAIR_WINDOW_MS = 2 * 60 * 60 * 1000;
+  function directionProbe(row) {
+    if (!row || !hasLevels(row)) return null;
+    try { const d = extractLevels(row).direction; return (d && d.value) || null; } catch (e) { return null; }
+  }
+  function pairSides(assetRows) {
+    const dirs = [...new Set(assetRows.map(directionProbe).filter(Boolean))].sort();
+    if (dirs.length < 2) return null;
+    const timesOf = (d) => assetRows.filter((r) => directionProbe(r) === d)
+      .map((r) => tsInfo(r).utcMs).filter((v) => v !== null && v !== undefined);
+    const paired = dirs.some((a, i) => dirs.slice(i + 1).some((b) =>
+      timesOf(a).some((ta) => timesOf(b).some((tb) => Math.abs(ta - tb) <= PAIR_WINDOW_MS))));
+    if (!paired) return null;
+    /* rows with no readable direction (price checks, admin status) belong to both sides, as in the monitor */
+    const shared = assetRows.filter((r) => directionProbe(r) === null);
+    const out = {};
+    dirs.forEach((d) => { out[d] = assetRows.filter((r) => directionProbe(r) === d).concat(shared); });
+    return out;
+  }
+
 
   function selectRows(assetRows) {
     const rs = sortRows(assetRows);
@@ -884,14 +988,31 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
 
   function buildAll(csvText) {
     const rows = loadRows(csvText); const by = groupByAsset(rows); const out = {};
-    Object.keys(by).sort().forEach((a) => { out[a] = buildSetup(a, by[a]); });
+    Object.keys(by).sort().forEach((a) => {
+      const entry = buildSetup(a, by[a]);
+      const sides = pairSides(by[a]);
+      if (sides) {
+        /* Both sides, each built from its own rows, under the SAME asset key. `sides` is keyed by direction and
+           every side carries the monitor's setup_key, so the render and the mechanical feed can line up. */
+        entry.sides = {};
+        Object.keys(sides).forEach((d) => {
+          const side = buildSetup(a, sides[d]);
+          side.setup_key = a + '|' + d.toUpperCase();
+          side.paired_with = a + '|' + Object.keys(sides).find((o) => o !== d).toUpperCase();
+          entry.sides[d] = side;
+        });
+        entry.paired = true;
+        entry.primary_side = (entry.direction && entry.direction.value) || null;
+      }
+      out[a] = entry;
+    });
     return out;
   }
 
   return {
     hash, parseCSV, loadRows, rowRef, rowId, F, srcType, isPC, hasLevels, statusClass,
     parseSheetTimestamp, scanNumbers, firstZone, parseTrigger, parseTargets, parseStop, parseSafety,
-    extractLevels, levelFingerprint, edges, groupByAsset, selectRows, buildSetup, buildAll,
+    extractLevels, levelFingerprint, edges, groupByAsset, directionProbe, pairSides, selectRows, buildSetup, buildAll,
   };
 });
 

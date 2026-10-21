@@ -873,6 +873,47 @@ load();setInterval(load,60000);
     });
   }
   const tsInfo = (o) => { const p = parseSheetTimestamp(F.timestamp(o)); return { ts_text: F.timestamp(o), iso: p.iso, utcMs: p.utcMs, precision: p.precision }; };
+  /* TWO-SIDED SETUPS (2026-10-21). Chelsea publishing a LONG and a SHORT on the same asset minutes apart -
+     AVAX and UNI on 2026-10-20 - used to lose a side right here: groupByAsset collapsed both rows under one
+     asset, selectRows picked the newest, and the other side's levels were simply absent from the board while
+     the monitor carried both. A member looking at AVAX saw the long and never learned the short existed.
+
+     This page keeps keying by ASSET deliberately. Every consumer of buildAll() uses the key as a price symbol
+     and as the sheet.html?asset= link, and there is no symbol called AVAX|LONG; Angela also asked for one card
+     per asset ("I would like one card for AVAX type setups", 2026-10-20). So a paired asset's entry is
+     UNCHANGED - still exactly the side selectRows would have chosen - and carries both sides in `sides` for
+     the render to read. Adding a field cannot break a consumer that does not read it.
+
+     The pair rule mirrors core/levelup-core.js's groupBySetup() exactly, window anchoring included: a pair
+     exists if ANY row of one direction was published within 2h of ANY row of the other, never just the newest
+     of each. Comparing only the newest rows was worse than the bug it fixed - correcting ONE side later in the
+     day (Chelsea's AVAX short stop on 2026-10-20) pushed the newest rows outside the window, dissolved the
+     pair, and silently superseded the untouched long. A genuine republish weeks later still has no pair of
+     rows within the window in any combination, so that case is unchanged.
+
+     Keep this in sync with core/levelup-core.js and with the other board file: PAC-9 in
+     test/parity-att-core.test.js fails if any copy loses a side, and PAC-5 fails if the two board copies
+     diverge in code. */
+  const PAIR_WINDOW_MS = 2 * 60 * 60 * 1000;
+  function directionProbe(row) {
+    if (!row || !hasLevels(row)) return null;
+    try { const d = extractLevels(row).direction; return (d && d.value) || null; } catch (e) { return null; }
+  }
+  function pairSides(assetRows) {
+    const dirs = [...new Set(assetRows.map(directionProbe).filter(Boolean))].sort();
+    if (dirs.length < 2) return null;
+    const timesOf = (d) => assetRows.filter((r) => directionProbe(r) === d)
+      .map((r) => tsInfo(r).utcMs).filter((v) => v !== null && v !== undefined);
+    const paired = dirs.some((a, i) => dirs.slice(i + 1).some((b) =>
+      timesOf(a).some((ta) => timesOf(b).some((tb) => Math.abs(ta - tb) <= PAIR_WINDOW_MS))));
+    if (!paired) return null;
+    /* rows with no readable direction (price checks, admin status) belong to both sides, as in the monitor */
+    const shared = assetRows.filter((r) => directionProbe(r) === null);
+    const out = {};
+    dirs.forEach((d) => { out[d] = assetRows.filter((r) => directionProbe(r) === d).concat(shared); });
+    return out;
+  }
+
 
   function selectRows(assetRows) {
     const rs = sortRows(assetRows);
@@ -948,14 +989,31 @@ load();setInterval(load,60000);
 
   function buildAll(csvText) {
     const rows = loadRows(csvText); const by = groupByAsset(rows); const out = {};
-    Object.keys(by).sort().forEach((a) => { out[a] = buildSetup(a, by[a]); });
+    Object.keys(by).sort().forEach((a) => {
+      const entry = buildSetup(a, by[a]);
+      const sides = pairSides(by[a]);
+      if (sides) {
+        /* Both sides, each built from its own rows, under the SAME asset key. `sides` is keyed by direction and
+           every side carries the monitor's setup_key, so the render and the mechanical feed can line up. */
+        entry.sides = {};
+        Object.keys(sides).forEach((d) => {
+          const side = buildSetup(a, sides[d]);
+          side.setup_key = a + '|' + d.toUpperCase();
+          side.paired_with = a + '|' + Object.keys(sides).find((o) => o !== d).toUpperCase();
+          entry.sides[d] = side;
+        });
+        entry.paired = true;
+        entry.primary_side = (entry.direction && entry.direction.value) || null;
+      }
+      out[a] = entry;
+    });
     return out;
   }
 
   return {
     hash, parseCSV, loadRows, rowRef, rowId, F, srcType, isPC, hasLevels, statusClass,
     parseSheetTimestamp, scanNumbers, firstZone, parseTrigger, parseTargets, parseStop, parseSafety,
-    extractLevels, levelFingerprint, edges, groupByAsset, selectRows, buildSetup, buildAll,
+    extractLevels, levelFingerprint, edges, groupByAsset, directionProbe, pairSides, selectRows, buildSetup, buildAll,
   };
 });
 
