@@ -72,6 +72,13 @@ h1 em{font-style:normal;color:var(--pink)}
 .dirtag.d-long{background:#e7f4ee;color:#0f7a52}
 .dirtag.d-short{background:#fcebe9;color:#a8231f}
 .sidenote{font-size:13px;color:#6c7488;margin:2px 0 0}
+/* 2026-10-21 (Angela, explicit): "disclaimer disclaimer disclaimer... it needs to say I am not a financial
+   advisor Do your own research". The footer version is below the fold on a long setup page - this one sits
+   directly under the ladder, where a member has just finished reading the actual numbers. */
+.dyor{margin:14px 0 0;border:2px solid var(--pink);border-radius:12px;background:#FDE7F5;padding:13px 16px}
+.dyor b{display:block;font-family:Archivo,sans-serif;font-weight:900;font-size:11.5px;color:var(--pink);
+  letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px}
+.dyor p{margin:0;font-size:12.5px;line-height:1.6;color:#141720}
 .row{display:grid;grid-template-columns:54px 1fr auto;gap:14px;align-items:center;padding:15px 20px;border-bottom:1px solid #F0F0F4}
 .row:last-child{border-bottom:none}.row.now{background:var(--pink-soft);border-top:2px solid var(--pink);border-bottom:2px solid var(--pink)}
 .dot{width:14px;height:14px;border-radius:50%;margin:0 auto}
@@ -350,7 +357,7 @@ async function load(){
     if(T.length){x+=`<div class="sect"><div class="bar"></div><h2>The Levels</h2></div>`;T.forEach((t,i)=>x+=`<div class="card soft"><h3>Trigger ${i+1}</h3><p>${esc(t)}</p></div>`);}
     if(Lrows.length){x+=`<div class="sect"><div class="bar"></div><h2>The Ladder</h2>${primary?`<div class="hint">live price</div>`:""}</div><div class="ladder"${primary?` id="ladder"`:""}>`;
       const rowsH=Lrows.map(l=>`<div class="row" data-p="${l.price}"><div class="dot d-${l.kind}"></div><div><div class="rl">${esc(l.role)}</div><div class="rn">${esc(l.note)}</div></div><div class="rp">${fmt(l.price)}<small>${l.kind==="tp"?"target":l.kind==="stop"?"invalidation":"level"}</small></div></div>`);
-      x+=rowsH.join("")+`</div><p class="rn" style="margin-top:10px"><b>Levels are structure, not instructions.</b> Price reaching a level is information. Whether it becomes an entry is your decision and your risk.</p>`;}
+      x+=rowsH.join("")+`</div><p class="rn" style="margin-top:10px"><b>Levels are structure, not instructions.</b> Price reaching a level is information. Whether it becomes an entry is your decision and your risk.</p><div class="dyor"><b>&#9888; Not financial advice</b><p>Chelsea is not a financial advisor. Every level above is an assumption about what the market may do next &mdash; never a guarantee, and never a promise of a result. Do your own research, size your own risk, and make your own decision. The outcome is yours.</p></div>`;}
     if(get(Srow,"warning"))x+=`<div class="sect"><div class="bar"></div><h2>Warning</h2></div><div class="warn"><div class="wh">Heads up</div><div class="wb">${esc(get(Srow,"warning"))}</div></div>`;
     if(get(Srow,"confidence up")||get(Srow,"confidence down"))x+=`<div class="sect"><div class="bar"></div><h2>Confidence Check</h2></div><div class="grid2"><div class="inv up"><div class="ih">▲ Confidence up</div><div class="ib">${esc(get(Srow,"confidence up"))}</div></div><div class="inv dn"><div class="ih">▼ Confidence down</div><div class="ib">${esc(get(Srow,"confidence down"))}</div></div></div>`;
     return x;};
