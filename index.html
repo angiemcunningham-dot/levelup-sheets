@@ -85,6 +85,15 @@ a.card.is-both{border-color:var(--pink-line)}
    never changes a status or hides a card. */
 .stop-breach-flag{font-family:Archivo,sans-serif;font-weight:700;font-size:11.5px;letter-spacing:.01em;color:var(--red-d);background:rgba(239,68,68,.10);border:2px solid var(--red);border-radius:10px;padding:9px 12px;margin:0 0 10px;line-height:1.55}
 .stop-breach-flag b{font-weight:900;display:block;margin-bottom:3px;font-size:12px;letter-spacing:.03em;text-transform:uppercase}
+/* A setup whose stop was passed before it ever triggered: the headline number and the tier tag are no longer
+   telling the truth about anything, so they stop shouting. Greyed and shrunk, never removed - the member can
+   still see what the board was measuring, it just no longer reads as "nearly there". */
+a.att-card.is-dead{border-color:var(--red);background:#fff}
+a.att-card.is-dead .att-pct b{font-size:20px;color:var(--gray);text-decoration:line-through;text-decoration-thickness:2px}
+a.att-card.is-dead .att-pct span{color:var(--gray)}
+a.att-card.is-dead .att-tag{background:var(--gray);color:#fff;opacity:.55}
+a.att-card.is-dead .att-bar{opacity:.3}
+a.att-card.is-dead .att-meta{color:var(--gray)}
 /* 2026-10-16 (Chelsea, explicit, via Angela): mandatory pre-entry checklist / "golden rules," shown once at the
    top of the board so every member reads it before treating a TRIGGERED card as an instruction to enter. */
 .golden-rules{margin:28px 0 0;border:2px solid var(--pink);border-radius:16px;overflow:hidden;background:#fff}
@@ -1778,6 +1787,13 @@ load();setInterval(load,60000);
             // childList mutation, which (called from inside mech-feed's decorate(), re-triggered by exactly
             // this kind of mutation) becomes a live MutationObserver feedback loop - the same class of bug
             // caught and fixed earlier in this file for the Currently Watching section.
+            /* 2026-10-21: the card itself is marked, not just annotated. The warning explains that the
+               distance-to-trigger means nothing - but a 30px pink "2.9%" and a CLEARED THE FLOOR badge are
+               still the loudest things on the card, so the member reads "nearly there" and then reads a
+               paragraph telling them it is dead. Muting the number and the tag is what actually removes the
+               contradiction Angela reported. */
+            if (shouldShow) { try { c.className = (c.className || '').indexOf('is-dead') < 0 ? (c.className + ' is-dead') : c.className; } catch (e) {} }
+            else { try { c.className = (c.className || '').replace(/\s*is-dead/g, ''); } catch (e) {} }
             if (shouldShow && !old) {
               var el = document.createElement('div');
               el.className = 'stop-breach-flag';
