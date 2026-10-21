@@ -83,7 +83,8 @@ a.card.is-both{border-color:var(--pink-line)}
 /* 2026-10-06 (Angela, explicit: real invalidation misses found on KAS/LINK/AAVE - price already closed past the
    stop level before ever triggering, with nothing surfacing it): a pre-trigger stop-breach flag, additive only,
    never changes a status or hides a card. */
-.stop-breach-flag{font-family:Archivo,sans-serif;font-weight:800;font-size:11.5px;letter-spacing:.02em;color:var(--red-d);background:rgba(239,68,68,.08);border:2px solid var(--red);border-radius:10px;padding:8px 11px;margin-top:8px;line-height:1.5}
+.stop-breach-flag{font-family:Archivo,sans-serif;font-weight:700;font-size:11.5px;letter-spacing:.01em;color:var(--red-d);background:rgba(239,68,68,.10);border:2px solid var(--red);border-radius:10px;padding:9px 12px;margin:0 0 10px;line-height:1.55}
+.stop-breach-flag b{font-weight:900;display:block;margin-bottom:3px;font-size:12px;letter-spacing:.03em;text-transform:uppercase}
 /* 2026-10-16 (Chelsea, explicit, via Angela): mandatory pre-entry checklist / "golden rules," shown once at the
    top of the board so every member reads it before treating a TRIGGERED card as an instruction to enter. */
 .golden-rules{margin:28px 0 0;border:2px solid var(--pink);border-radius:16px;overflow:hidden;background:#fff}
@@ -94,18 +95,31 @@ a.card.is-both{border-color:var(--pink-line)}
    elsewhere on the page. */
 .gr-top{background:var(--pink);color:#fff;padding:14px 20px;font-family:Archivo;font-weight:900;font-size:13px;letter-spacing:.12em;text-transform:uppercase}
 .gr-warn{background:#FDE7F5;border-bottom:2px solid var(--pink);color:var(--pink);font-family:Archivo;font-weight:800;font-size:12.5px;padding:10px 20px;text-align:center;letter-spacing:.02em}
-.gr-body{padding:20px 22px 4px}
-.gr-rule{margin-bottom:18px}
-.gr-rule h3{font-family:Archivo;font-weight:900;font-size:14px;color:var(--pink);text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px}
+/* 2026-10-21 (Angela, explicit): the three rules stacked vertically filled the whole first screen, so the
+   board itself was below the fold on a laptop. They now sit side by side across the SAME full width - three
+   columns on a wide screen, two on a tablet, one on a phone - which is the only change: every word is intact.
+   Type is a shade smaller and the vertical rhythm tighter for the same reason. */
+.gr-body{padding:18px 22px 6px;display:grid;grid-template-columns:repeat(3,1fr);gap:2px 30px;align-items:start}
+.gr-rule{margin-bottom:14px;break-inside:avoid}
+.gr-rule h3{font-family:Archivo;font-weight:900;font-size:12.5px;color:var(--pink);text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px}
 .gr-rule ul,.gr-golden ul{list-style:none;margin:0;padding:0}
-.gr-rule li{font-size:13px;line-height:1.6;padding-left:22px;position:relative;margin:5px 0}
+.gr-rule li{font-size:12.5px;line-height:1.5;padding-left:20px;position:relative;margin:4px 0}
 .gr-rule li::before{content:"\2713";position:absolute;left:0;color:var(--green-d);font-weight:800}
-.gr-golden{margin:4px 22px 20px;background:var(--ink);color:#fff;border-radius:12px;padding:18px 20px}
-.gr-golden h3{font-family:Archivo;font-weight:900;font-size:14px;color:var(--pink-line);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px}
-.gr-golden li{font-size:13px;line-height:1.7;padding-left:22px;position:relative;margin:5px 0;color:#F3F3F5}
+.gr-golden{margin:4px 22px 16px;background:var(--ink);color:#fff;border-radius:12px;padding:16px 20px}
+.gr-golden h3{font-family:Archivo;font-weight:900;font-size:13px;color:var(--pink-line);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+.gr-golden ul{display:grid;grid-template-columns:repeat(2,1fr);gap:0 28px}
+.gr-golden li{font-size:12.5px;line-height:1.6;padding-left:20px;position:relative;margin:4px 0;color:#F3F3F5}
 .gr-golden li::before{content:"\2713";position:absolute;left:0;color:#fff}
+/* 2026-10-21 (Angela, explicit): the disclaimer sits INSIDE the rules card, directly under the Golden Rule,
+   because that is the part everyone actually reads before taking a trade. The footer version stays too. */
+.gr-disc{margin:0 22px 18px;border:2px solid var(--pink);border-radius:12px;background:#FDE7F5;padding:14px 18px}
+.gr-disc b{display:block;font-family:Archivo;font-weight:900;font-size:12.5px;color:var(--pink);
+  letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+.gr-disc p{margin:0;font-size:12.5px;line-height:1.6;color:var(--ink)}
+.gr-disc p+p{margin-top:6px}
 .gr-tag{text-align:center;font-family:"JetBrains Mono";font-size:10.5px;color:var(--pink);letter-spacing:.04em;padding:14px 20px;border-top:2px solid var(--pink-line)}
-@media(max-width:640px){.gr-body{padding:16px 16px 4px}.gr-golden{margin:4px 16px 18px}}
+@media(max-width:1040px){.gr-body{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){.gr-body{padding:16px 16px 4px;grid-template-columns:1fr}.gr-golden{margin:4px 16px 14px}.gr-golden ul{grid-template-columns:1fr}.gr-disc{margin:0 16px 16px}}
 .foot{margin-top:34px;padding-top:18px;border-top:2px solid var(--pink-line);text-align:center}.f1{font-family:Archivo;font-weight:800;font-size:13px;letter-spacing:.18em;color:var(--pink);text-transform:uppercase}.f2{font-size:11.5px;color:var(--gray);margin-top:8px;line-height:1.6}
 .empty{padding:40px;text-align:center;color:var(--gray)}
 @media(max-width:640px){.inner{padding:30px 18px 24px}}
@@ -287,7 +301,7 @@ a.act-card.side-short:hover{box-shadow:0 10px 26px rgba(185,28,28,.18)}
 </section>
 <div class="inner">
 <section class="golden-rules" aria-label="Chelsea's mandatory pre-entry rules">
-  <div class="gr-top">⭐ Level Up Crypto — Mandatory Rules Before Entering a Trade</div>
+  <div class="gr-top">⭐ Level Up Crypto — Mandatory Rules Before Entering a Trade <span style="opacity:.85">*</span></div>
   <div class="gr-warn">⚠️ A triggered trade does not automatically mean enter.</div>
   <div class="gr-body">
     <div class="gr-rule">
@@ -325,8 +339,40 @@ a.act-card.side-short:hover{box-shadow:0 10px 26px rgba(185,28,28,.18)}
       <li>If even one rule fails — no entry.</li>
     </ul>
   </div>
+  <div class="gr-disc">
+    <b>* Read this before you act on anything above</b>
+    <p><b>Chelsea is not a financial advisor, and nothing on this board is financial advice.</b> Every level here
+    is an assumption about what the market may do next — never a guarantee, never a promise that it will.</p>
+    <p>Do your own research. Size your own risk. The decision to enter, hold or exit a trade is yours alone, and
+    so is the outcome. A level being reached is information, not an instruction.</p>
+  </div>
   <div class="gr-tag">LEVEL UP CRYPTO — READ THE CHART. THEN READ BETWEEN THE CANDLES.</div>
 </section>
+<details class="whatsnew" open>
+  <summary>What changed on this board — 21 October 2026</summary>
+  <div class="wn-body">
+    <ul>
+      <li><b>Both sides of a setup now show.</b> When Chelsea publishes a long <i>and</i> a short on the same
+      asset, the board used to show only one of them. Now you get one card for the asset, and the other side
+      opens in a dropdown on its detail page. Nothing she published is hidden any more.</li>
+      <li><b>The rules box is shorter.</b> Same words, now in columns, so the setups are visible without
+      scrolling past a full screen of text.</li>
+      <li><b>Clearer warning on a dead setup.</b> If price closed past Chelsea&#39;s stop before a setup ever
+      triggered, that card now says so in plain language at the top, instead of a hedged note underneath a
+      percentage telling you how close it was.</li>
+      <li><b>A banner if automatic tracking falls behind.</b> The TRIGGERED / TP ticks update every 30 minutes.
+      If that stops, a red banner now says so. On 20 October it stopped for almost 13 hours and the board said
+      almost nothing — that is what this is for.</li>
+      <li><b>Old watches move aside.</b> A setup still &ldquo;watching&rdquo; after two weeks without triggering
+      now sits in a collapsed section instead of the live list. <b>Nothing is deleted</b> — it is still
+      there, with its age stated.</li>
+    </ul>
+    <div class="wn-foot">Some of this is deliberately temporary while the board is being improved, and it may
+    change again. <b>None of it is financial advice.</b> Chelsea is not a financial advisor. Every level on this
+    board is an assumption about what the market may do — never a guarantee. Do your own research, and make
+    your own decision.</div>
+  </div>
+</details>
 <div class="section-head"><div class="section-title">Today's Untriggered <em>Setups</em></div><div class="section-sub" id="today-sub"></div></div>
 <div class="grid" id="grid"><div class="empty">Loading…</div></div>
 <section class="att watch" id="currently-watching" hidden aria-label="Currently watching: setups published on an earlier day that are still Watching, not yet triggered, not resolved">
@@ -473,7 +519,20 @@ const rest=cards.filter(x=>!(x.today&&!x.isResolved)&&!(!x.today&&x.c==="b-watch
 document.getElementById("today-sub").textContent=latestDay?("published "+latestDay):"";
 document.getElementById("grid").innerHTML=today.map(({a,r,c,t})=>cardHtml(a,r,c,t,pc,all,false,pairDirs)).join("")||`<div class="empty">No current setups yet today — see history below, or Active Now above.</div>`;
 const watchSec=document.getElementById("currently-watching"),watchGrid=document.getElementById("grid-watching");
-if(watchGrid){watchGrid.innerHTML=watching.map(({a,r,c,t})=>cardHtml(a,r,c,t,pc,all,true,pairDirs)).join("");}
+/* 2026-10-21 (Angela, explicit): "I do not want assets stuck there that have been in a loop for weeks and
+   weeks and weeks". TAO had been sitting in Currently Watching since Sep 29 - twenty-two days - reading like
+   a live consideration. A watch that has not triggered in two weeks is not a current watch.
+   This is an AGE rule, deliberately not a list of assets: a hardcoded ticker (see CHELSEA_RECORD_EXCLUSIONS)
+   stops being true the moment the next one goes stale. Same shape as the 72h STALE_ACTIVE_MS rule that already
+   splits Active records. NOTHING is deleted - Chelsea published it, so it stays on the page, collapsed, with
+   its age stated plainly. */
+const STALE_WATCH_MS=14*24*60*60*1000;
+const watchAge=x=>{const ms=new Date(get(x.r,"timestamp")).getTime();return isNaN(ms)?0:Date.now()-ms;};
+const freshWatch=watching.filter(x=>watchAge(x)<STALE_WATCH_MS);
+const staleWatch=watching.filter(x=>watchAge(x)>=STALE_WATCH_MS);
+if(watchGrid){watchGrid.innerHTML=freshWatch.map(({a,r,c,t})=>cardHtml(a,r,c,t,pc,all,true,pairDirs)).join("")
+  +(staleWatch.length?`<details class="hist-toggle" style="grid-column:1/-1;margin-top:4px"><summary>Older watches — published more than two weeks ago and still not triggered<span> (${staleWatch.length})</span></summary><div class="att-note">Still Chelsea&#39;s real published setups — nothing is deleted. Moved out of the current view because a watch this old is no longer a live consideration, and its levels may no longer reflect the chart. Not financial advice; do your own research.</div><div class="grid">`
+    +staleWatch.map(({a,r,c,t})=>cardHtml(a,r,c,t,pc,all,true,pairDirs)).join("")+`</div></details>`:"");}
 if(watchSec)watchSec.hidden=!watching.length;
 const histEl=document.getElementById("grid-history");
 if(histEl){histEl.innerHTML=rest.map(({a,r,c,t})=>cardHtml(a,r,c,t,pc,all,false,pairDirs)).join("")||`<div class="empty">Nothing here yet.</div>`;}
@@ -1720,11 +1779,22 @@ load();setInterval(load,60000);
             // this kind of mutation) becomes a live MutationObserver feedback loop - the same class of bug
             // caught and fixed earlier in this file for the Currently Watching section.
             if (shouldShow && !old) {
-              var anchor = c.querySelector('.hl') || c.querySelector('.att-meta');
               var el = document.createElement('div');
               el.className = 'stop-breach-flag';
-              el.textContent = '⚠ Price already closed past the stop level ($' + A.fmtPrice(res.threshold) + ') before this ever triggered — may already be invalidated, needs a human check.';
-              if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(el, anchor.nextSibling); else c.appendChild(el);
+              /* 2026-10-21 (Angela, explicit, ~03:00): "it is very confusing and it makes traders not
+                 really understand what they're looking at". The old wording was written for an operator, not a
+                 member: "may already be invalidated, needs a human check" hedges, and reads like a job handed
+                 to whoever is looking at it. Worse, it sat UNDER a headline saying "0.9% to trigger - CLEARED
+                 THE FLOOR - watching for a 1H candle to confirm", so one card said watch this and this might
+                 be dead at the same time. Now it states the fact plainly, says what it means for the card it
+                 is sitting on, and asks nothing of the member. Still flags only - it never changes a status,
+                 never removes a setup, and nothing Chelsea published disappears. */
+              el.innerHTML = '<b>⚠ Not a live watch</b>' + ' — this never triggered, and price has since closed past '
+                + 'Chelsea&#39;s stop (' + A.fmtPrice(res.threshold) + '). The level it was built on is gone, so the '
+                + 'distance-to-trigger shown here no longer means anything. Kept visible for the record, not as something to watch.';
+              /* FIRST in the card, above the percentage and the tier label. A member reads top-down, and
+                 the fact that a setup is dead has to arrive before the number saying how close it is. */
+              if (c.firstChild) c.insertBefore(el, c.firstChild); else c.appendChild(el);
             } else if (!shouldShow && old) {
               old.remove();
             }
@@ -1777,6 +1847,28 @@ load();setInterval(load,60000);
 .mech-tick.stop{border-color:var(--red);color:var(--red-d);background:rgba(239,68,68,.08)}
 .mech-tick.complete{border-color:var(--pink);color:var(--pink);background:rgba(250,3,152,.06)}
 .mech-note{font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--gray2);margin:4px 0 0}
+/* 2026-10-21 (Angela, explicit): on 2026-10-20 the mechanical feed froze for 12.7 hours - through Chelsea's
+   05:27 post - and the ONLY thing the board said about it was a 10.5px grey line reading "(may be stale)".
+   Nobody saw it. A freeze is now a banner at the top of the board, in the same register as the rules card,
+   because a member needs to know the ticks are paused BEFORE they read a card, not after. */
+.feed-stale{margin:20px 0 0;border:3px solid var(--red);border-radius:14px;background:rgba(239,68,68,.07);padding:16px 20px}
+.feed-stale b{display:block;font-family:Archivo,sans-serif;font-weight:900;font-size:13.5px;color:var(--red-d);
+  letter-spacing:.06em;text-transform:uppercase;margin-bottom:7px}
+.feed-stale p{margin:0;font-size:13px;line-height:1.6;color:var(--ink)}
+.feed-stale p+p{margin-top:7px}
+/* 2026-10-21 (Angela, explicit): "I need everyone to know the changes that have been made even if temporary".
+   Dated, in plain language, open by default on the day it changes. */
+.whatsnew{margin:20px 0 0;border:2px solid var(--pink-line);border-radius:14px;background:#fff;overflow:hidden}
+.whatsnew>summary{cursor:pointer;list-style:none;padding:13px 18px;background:#FDE7F5;
+  font-family:Archivo,sans-serif;font-weight:900;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--pink)}
+.whatsnew>summary::-webkit-details-marker{display:none}
+.whatsnew>summary::after{content:"BE";float:right;font-size:10px;opacity:.6}
+.whatsnew[open]>summary::after{content:"B4"}
+.whatsnew .wn-body{padding:14px 20px 16px}
+.whatsnew ul{list-style:none;margin:0;padding:0}
+.whatsnew li{font-size:12.5px;line-height:1.55;padding-left:20px;position:relative;margin:7px 0;color:var(--ink)}
+.whatsnew li::before{content:"2";position:absolute;left:4px;color:var(--pink);font-weight:900}
+.whatsnew .wn-foot{margin-top:12px;padding-top:10px;border-top:1px solid var(--pink-line);font-size:12px;color:var(--gray);line-height:1.55}
 .mech-headline{font-family:"Archivo",sans-serif;font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;margin:2px 0 4px}
 .mech-headline.mech-active{color:var(--green-d)}
 .mech-headline.mech-stopped{color:var(--red-d)}
@@ -1995,6 +2087,32 @@ load();setInterval(load,60000);
     function decorate() {
       obs.disconnect();
       try {
+      /* 2026-10-21: FIRST thing decorate() does, in its own guard. This used to sit at the bottom, after the
+         card loops - and decorate() swallows its own exceptions silently ("never break the page"), so any
+         throw in those loops took the staleness warning down with it. That is backwards: the warning matters
+         MOST when something else is going wrong. Nothing above it can stop it now. */
+      try {
+        var feedAgeMs = feed ? (Date.now() - Date.parse(feed.generated_at)) : null;
+        var feedIsStale = (feed === null) || !(feedAgeMs < STALE_MS);
+        var staleEl = document.getElementById('feed-stale');
+        if (feedIsStale) {
+          if (!staleEl) {
+            staleEl = document.createElement('div');
+            staleEl.id = 'feed-stale'; staleEl.className = 'feed-stale';
+            var anchor = document.querySelector('.golden-rules') || grid;
+            if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(staleEl, anchor.nextSibling);
+            else if (grid && grid.parentNode) grid.parentNode.insertBefore(staleEl, grid);
+          }
+          var ageTxt = feed ? fmtAgo(feed.generated_at) : 'an unknown time';
+          staleEl.innerHTML = '<b>&#9888; Automatic tracking is behind</b>'
+            + '<p>The mechanical evidence on this board last updated <b>' + ageTxt + '</b>. It normally updates every 30 minutes.</p>'
+            + '<p><b>Chelsea&#39;s setups and levels below are still current</b> - those are read straight from the Sheet and are not affected. '
+            + 'What has paused is the automatic TRIGGERED / TP tracking, so a card may not yet show a move that has already happened.</p>'
+            + '<p>Read the chart before acting on anything here. Nothing on this board is financial advice, and every level is an assumption about what the market may do - never a guarantee. Do your own research.</p>';
+        } else if (staleEl) {
+          staleEl.remove();
+        }
+      } catch (e) { /* a warning must never break the page either */ }
         Array.prototype.forEach.call(document.querySelectorAll('a.card'), function (c) {
           var m = /[?&]asset=([^&]+)/.exec(c.getAttribute('href') || ''); if (!m) return;
           var asset = decodeURIComponent(m[1]).toUpperCase();
@@ -2065,7 +2183,7 @@ load();setInterval(load,60000);
         if (window.__attention && window.__attention.applyStopBreachFlags) window.__attention.applyStopBreachFlags();
         var hc = document.getElementById('hist-count'), histGridEl = document.getElementById('grid-history');
         if (hc && histGridEl) hc.textContent = ' (' + Array.prototype.filter.call(histGridEl.querySelectorAll('a.card'), function (c) { return c.style.display !== 'none'; }).length + ')';
-        var note = feed ? ('Feed updated ' + fmtAgo(feed.generated_at) + ((Date.now() - Date.parse(feed.generated_at)) > STALE_MS ? ' (may be stale)' : '')) : '';
+        var note = feed ? ('Feed updated ' + fmtAgo(feed.generated_at) + (((Date.now() - Date.parse(feed.generated_at))) > STALE_MS ? ' (may be stale)' : '')) : '';
         var head = document.querySelector('.section-head');
         var n = document.getElementById('mech-note');
         if (note && head) { if (!n) { n = document.createElement('div'); n.id = 'mech-note'; n.className = 'mech-note'; head.parentNode.insertBefore(n, head.nextSibling); } n.textContent = note; }
