@@ -398,7 +398,7 @@ async function load(){
     }catch(err){return null;}
   };
   const sides=pairedSides();
-  const sideFlip=(q)=>`<details class="sideflip"><summary><span class="dirtag d-${q.dir}">${q.dir.toUpperCase()}</span>The other side of this setup</summary><div class="flipbody"><p class="sidenote">Chelsea published this ${q.dir} alongside the ${sides.primary.dir} above, ${esc(stamp(get(q.row,"timestamp")))}. Both are real published levels. One firing does not confirm the other.</p>${setupHTML(q.row,false)}</div></details>`;
+  const sideFlip=(q)=>`<details class="sideflip"><summary><span class="dirtag d-${q.dir}">${q.dir.toUpperCase()}</span>The other side of this setup</summary><div class="flipbody"><p class="sidenote">Chelsea published this ${q.dir} alongside the ${sides.primary.dir} above, ${esc(stamp(get(q.row,"timestamp")))}. These are Chelsea&#39;s real published levels for that side. The current state shown at the top of this page governs - if the side above has already triggered, this one may no longer apply.</p>${setupHTML(q.row,false)}</div></details>`;
   /* every existing call site renders the primary side exactly as before; the flip is additive */
   const bodyHTML=()=>setupHTML(S,true)+(sides?sideFlip(sides.quiet):"");
   if(noTradeLike){
