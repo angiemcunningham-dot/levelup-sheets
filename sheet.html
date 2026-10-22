@@ -685,6 +685,12 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
        Verified against the full live Sheet: of 58 setups, exactly VVV and CRV change, and BOTH keep their
        existing fingerprint - no live instance is re-keyed.
        Keep in sync with core/levelup-core.js and the other board file (PAC-2/PAC-5/PAC-9). */
+    /* 2026-10-21 HOTFIX: declared HERE, above the labelled-price branch that reads it. In this file it used
+       to sit further down, beside its own `splitAt` use - which made the branch below reference a const in its
+       temporal dead zone, so parseTrigger threw ReferenceError the first time it met "Entry: $27.54". That
+       killed buildAll(), which left att-ui's `setups` null, which silently removed the mechanical overlay from
+       the entire board. core/levelup-core.js has always declared it up here; this file now matches. */
+    const CONDITION_SPLIT = /\b(?:followed by|then)\b|→|->|\+|\band\s+(?=(?:a\s+)?(?:successful|confirmed|defended)\s+retest\b)/i;
     const LABELLED_PRICE = /^\s*(?:entry|trigger|execution|buy)(?:\s+(?:price|level|zone))?\s*[:\-–—]\s*/i;
     const labelled = text.match(LABELLED_PRICE);
     if (labelled && !CONDITION_SPLIT.test(text)) {
@@ -712,7 +718,6 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
     // engine.js, receipts.js all gate on `state === 'present'`) correctly inert on it - no lifecycle/trigger
     // rule changes anywhere, this asset simply stays out of mechanical evaluation until a human/product
     // decision defines how a conditional trigger should be evaluated.
-    const CONDITION_SPLIT = /\b(?:followed by|then)\b|→|->|\+|\band\s+(?=(?:a\s+)?(?:successful|confirmed|defended)\s+retest\b)/i;
     const splitAt = CONDITION_SPLIT.exec(text);
     if (nums.length && splitAt) {
       // 2026-09-29: the anchor is the first zone/number found anywhere BEFORE an "Entry Zone:" sentence
