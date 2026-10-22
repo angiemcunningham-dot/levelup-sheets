@@ -1322,6 +1322,16 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
    reclaim, a retest, a higher low...) has no mechanical detector in this system today and is always shown as
    UNKNOWN rather than guessed - see readinessHtml()'s own comment for why this is an honest, deliberate limit of
    this release, not an oversight. */
+/* 2026-10-22: states which side's levels are on screen, and flags a retired side. See the audit comment in
+   scratchpad/side-truth.js - the BTC page showed the short's trigger and targets under an ACTIVE LONG headline. */
+.mech-sidetruth{margin:18px 0 0;border:3px solid var(--red);border-radius:14px;background:rgba(239,68,68,.07);padding:14px 18px}
+.mech-sidetruth p{margin:0 0 8px;font-size:13.5px;line-height:1.6;color:var(--ink)}
+.mech-sidetruth p:last-child{margin-bottom:0}
+.mech-sidetruth b{color:var(--red-d)}
+.mech-sidetruth .sidetruth-dyor{font-size:11.5px;color:var(--gray);line-height:1.5}
+.sideflip-retired{margin:0 0 10px;padding:10px 12px;border-left:4px solid var(--red);background:rgba(239,68,68,.06);
+  font-size:12.5px;line-height:1.55;color:var(--ink)}
+.sideflip-retired b{color:var(--red-d)}
 .mech-readiness{margin-top:14px}
 .mech-readiness-title{font-family:Archivo,sans-serif;font-weight:800;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#6B7280;margin-bottom:8px}
 .mech-cond-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
@@ -1926,7 +1936,68 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
        either of those async fetches has resolved would permanently no-op (attnTarget() null -> early return) and
        never get a second chance. applyAll() already reliably fires again once each of those resolves, and
        loadLivePrice()'s own freshness check above keeps this from re-fetching on every one of those cycles. */
-    function applyAll() { ensure(); ensureHeadline(); ensureReadiness(); ensureSixLineFlag(); suppressStaleChip(); ensureAttnChip(); loadLivePrice(); loadReadinessPrice(); }
+    /* 2026-10-22 audit: make every claim on a two-sided page true about the side it is actually showing.
+       The page picks its row by recency, so for BTC it renders the SHORT (published 09:50) while the
+       mechanical overlay reports the LONG (09:36) because that is the side that fired - headline and numbers
+       describing opposite directions, with the short's trigger and TP1 both on the wrong side of the live
+       price. The shown side was also retired and the page never said so. Full case: scratchpad/side-truth.js.
+       Additive and idempotent, like every other ensure* here: removes its own node and rebuilds from the feed. */
+    function ensureSideTruth() {
+      var old = document.getElementById('mech-sidetruth'); if (old) old.remove();
+      var oldFlip = document.getElementById('sideflip-retired'); if (oldFlip) oldFlip.remove();
+      if (!feed || !feed.assets) return;
+      var sides = {};
+      ['LONG', 'SHORT'].forEach(function (d) { var e = feed.assets[ASSET_ + '|' + d]; if (e) sides[d] = e; });
+      if (!sides.LONG || !sides.SHORT) return;              // single-sided asset: nothing to disambiguate
+
+      var shown = null;
+      ['LONG', 'SHORT'].forEach(function (d) {
+        if (currentInstanceKey && sides[d].setup_instance_key === currentInstanceKey) shown = d;
+      });
+      var reported = pairDirectionFor(ASSET_);
+      var isRetired = function (d) { return !!(sides[d].lifecycle && sides[d].lifecycle.retired); };
+
+      var msgs = [];
+      if (shown && isRetired(shown)) {
+        var winner = shown === 'LONG' ? 'SHORT' : 'LONG';
+        msgs.push('<b>The levels on this page are the ' + shown + ' side, and that side is retired.</b> Chelsea'
+          + ' published both directions on ' + ASSET_ + '; the ' + winner + ' triggered first, so the monitor'
+          + ' stopped tracking this one. These levels are no longer live.');
+      }
+      if (shown && reported && reported !== shown) {
+        msgs.push('<b>Read the direction carefully: the state at the top of this page is the ' + reported
+          + ' side, and the ladder and levels below it are the ' + shown + ' side.</b> Chelsea published both.'
+          + ' For the ' + reported + " levels, open \u201cThe other side of this setup\u201d further down.");
+      }
+      if (msgs.length) {
+        var ladder = document.getElementById('ladder');
+        var anchor = ladder ? (ladder.previousElementSibling || ladder) : null;
+        if (anchor && anchor.parentNode) {
+          var el = document.createElement('div');
+          el.id = 'mech-sidetruth'; el.className = 'mech-sidetruth';
+          el.innerHTML = msgs.map(function (m) { return '<p>' + m + '</p>'; }).join('')
+            + '<p class="sidetruth-dyor">I am not a financial advisor. Do your own research. Every level here is'
+            + ' an assumption about what the market may do, never a guarantee.</p>';
+          anchor.parentNode.insertBefore(el, anchor);
+        }
+      }
+
+      /* The flip holds the OTHER side's full ladder. If that side is retired, say so there too - otherwise a
+         member opens it and reads a dead setup's levels as live. */
+      var otherDir = shown ? (shown === 'LONG' ? 'SHORT' : 'LONG') : null;
+      if (otherDir && isRetired(otherDir)) {
+        var body = document.querySelector('.sideflip .flipbody');
+        if (body) {
+          var n = document.createElement('div');
+          n.id = 'sideflip-retired'; n.className = 'sideflip-retired';
+          n.innerHTML = '<b>This side is retired.</b> It never triggered, and the ' + shown + ' side above'
+            + ' fired first, so the monitor stopped tracking it. Shown because Chelsea published it and nothing'
+            + ' published is ever deleted - not because these levels are live.';
+          body.insertBefore(n, body.firstChild);
+        }
+      }
+    }
+    function applyAll() { ensure(); ensureHeadline(); ensureReadiness(); ensureSixLineFlag(); ensureSideTruth(); suppressStaleChip(); ensureAttnChip(); loadLivePrice(); loadReadinessPrice(); }
     var obs = new MutationObserver(function () { obs.disconnect(); applyAll(); obs.observe(app, { childList: true }); });
     function load() { return fetchFeed().then(function (f) { feed = f; applyAll(); }); }
     load();
