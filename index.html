@@ -2366,6 +2366,48 @@ load();setInterval(load,60000);
           }
         });
       } catch (e) { /* colour is never worth breaking the page for */ }
+      /* 2026-10-22 (Angela: 'btc short says "short watch" and Active long triggered is not right'). A paired
+         card named the side from its newest Sheet row while the overlay reported the side that actually fired,
+         and told members both sides were open when one of them was already retired. Both corrected from the
+         feed's own per-side facts. See the file comment in scratchpad/pair-card-truth.js for the full case. */
+      function pairCardTruth() {
+        if (!feed || !feed.assets) return;
+        var paired = document.querySelectorAll('a.card.is-both, a.act-card.is-both');
+        Array.prototype.forEach.call(paired, function (c) {
+          var m = /[?&]asset=([^&]+)/.exec(c.getAttribute('href') || '');
+          if (!m) return;
+          var asset = decodeURIComponent(m[1]).toUpperCase();
+          var dir = pairDirectionFor(asset);
+          if (!dir) return;                 // nothing has happened on either side - leave the card alone
+          var reported = feed.assets[asset + '|' + dir];
+          var other = feed.assets[asset + '|' + (dir === 'LONG' ? 'SHORT' : 'LONG')];
+          if (!reported) return;
+
+          /* Name the side the evidence belongs to, not the newest row. */
+          var hl = c.querySelector('.hl');
+          if (hl) {
+            var want = (dir === 'LONG' ? 'Long' : 'Short') + ' Watch';
+            if (hl.textContent.trim() !== want) hl.textContent = want;
+          }
+
+          /* And say what the other side actually is. A retired side is not open. */
+          var note = c.querySelector('.bothnote');
+          if (note) {
+            var otherName = dir === 'LONG' ? 'Short' : 'Long';
+            var txt;
+            if (other && other.lifecycle && other.lifecycle.retired) {
+              txt = 'Long and Short both published \u00b7 the ' + otherName + ' side is retired - the '
+                + (dir === 'LONG' ? 'Long' : 'Short') + ' triggered first, so only its levels are live';
+            } else if (other && other.lifecycle && other.lifecycle.trigger && other.lifecycle.trigger.reached_at) {
+              txt = 'Long and Short both published \u00b7 both sides triggered - each one lives or dies on its own stop';
+            } else {
+              txt = 'Long and Short both published \u00b7 open for either side\u2019s levels';
+            }
+            if (note.textContent.trim() !== txt) note.textContent = txt;
+          }
+        });
+      }
+      try { pairCardTruth(); } catch (e) { /* a label is never worth breaking the page for */ }
       try {
         var feedAgeMs = feed ? (Date.now() - Date.parse(feed.generated_at)) : null;
         var feedIsStale = (feed === null) || !(feedAgeMs < STALE_MS);
