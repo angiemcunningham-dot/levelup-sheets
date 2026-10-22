@@ -804,13 +804,31 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
     return res;
   }
 
+  /* 2026-10-22: a price that parses to zero or below is not a published level - it is a formatting
+     casualty, and treating it as real is worse than having none. Chelsea's PEPE rows carried "$0.00" in
+     the Stp field (PEPE trades near $0.0000045, so two-decimal rounding erased it); the engine recorded a
+     stop breach against zero and, since a short is invalidated while price sits above its stop, barred
+     PEPE|SHORT from ever triggering. `ambiguous` + review is the honest state: a number was written, so
+     this is not `absent`, and every mechanical consumer gates on `present`, so it stays inert until the
+     row is fixed. The raw text is preserved verbatim and no level is ever guessed. */
+  function nonPositiveZone(z) {
+    if (!z) return false;
+    const vals = [z.low, z.high, z.point].filter((v) => v != null);
+    if (!vals.length) return false;
+    return vals.some((v) => !isFinite(v) || v <= 0);
+  }
   function parseStop(text) {
     if (!text) return mkLevel('STOP', 'stop', 'Stop', null, 'Stp', '', 'absent');
     const nums = scanNumbers(text);
     if (!nums.length) return mkLevel('STOP', 'stop', 'Stop', null, 'Stp', text, 'absent', { notes: ['text only - no numeric level'] });
     let i = 0;
     if (nums[0].idx > 3) { const d = nums.findIndex((n) => n.dollar); if (d >= 0) i = d; }
-    return mkLevel('STOP', 'stop', 'Stop', zoneAt(nums, i, text), 'Stp', text, 'present');
+    const stopZone = zoneAt(nums, i, text);
+    if (nonPositiveZone(stopZone)) {
+      return mkLevel('STOP', 'stop', 'Stop', null, 'Stp', text, 'ambiguous',
+        { review: true, notes: ['stop price parsed as zero or negative - not a usable level, left mechanically inert'] });
+    }
+    return mkLevel('STOP', 'stop', 'Stop', stopZone, 'Stp', text, 'present');
   }
 
   function parseSafety(text) {
