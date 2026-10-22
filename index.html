@@ -2343,7 +2343,13 @@ load();setInterval(load,60000);
       var votes = Object.assign({ sma_smma: !!r.gate }, r.votes || {});
       var shown = STR_ORDER.filter(function (k) { return votes[k] != null; });
       var met = shown.filter(function (k) { return votes[k] === true; });
-      var tone = met.length >= 4 ? 's-strong' : (met.length >= 2 ? 's-mixed' : 's-weak');
+      /* The COLOUR follows Chelsea's word, not my count. They can legitimately disagree - her thresholds
+         require Stochastics for "Strong", so three readings without it is Mixed - and a strip reading
+         "Weak" in amber is exactly the mixed message this meter must not send. Pre-trigger there is no
+         word yet, so the count drives it there. */
+      var tone = r.frozen
+        ? ({ 'Weak': 's-weak', 'Mixed': 's-mixed', 'Strong': 's-strong', 'Very strong': 's-strong' }[r.word] || 's-mixed')
+        : (met.length >= 4 ? 's-strong' : (met.length >= 2 ? 's-mixed' : 's-weak'));
       /* Verdicts describe the READINGS, not Chelsea's entry - see the note at the top of this patch. */
       var say = met.length === shown.length ? 'every reading agrees'
         : met.length >= 4 ? 'most readings agree'
