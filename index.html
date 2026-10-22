@@ -2300,7 +2300,7 @@ load();setInterval(load,60000);
         // 2026-10-02: reads as a win (kind 'complete', same pink as a full TP1+TP2+TP3 completion) rather than a
         // plain closure - banking real TP progress before the stop is a completed, successful trade to Angela.
         // The coin graphic stays reserved for the exact TP1+TP2+TP3 case (coinEligible() below is unchanged).
-        if (m.outcome === 'CLOSED_WITH_PROGRESS' && m.tpsBeforeStop.length) return { text: 'COMPLETE — ' + m.tpsBeforeStop.join(' + ') + ' HIT', kind: 'complete' };
+        if (m.outcome === 'CLOSED_WITH_PROGRESS' && m.tpsBeforeStop.length) return { text: 'COMPLETE — ' + m.tpsBeforeStop.join(' + ') + ' REACHED', kind: 'complete' };
         return { text: 'STOPPED', kind: 'stopped' };
       }
       if (m.complete) return { text: 'COMPLETE', kind: 'complete' };
@@ -2308,7 +2308,7 @@ load();setInterval(load,60000);
       if (!dir) return null;                  // never fabricate a direction we can't evidence
       var hit = -1;
       m.tp.forEach(function (v, i) { if (v) hit = i; });
-      var suffix = hit >= 0 ? ('TP' + (hit + 1) + ' HIT') : 'TRIGGERED';
+      var suffix = hit >= 0 ? ('TP' + (hit + 1) + ' REACHED') : 'CONDITION MET';   // 2026-10-22: the board states a fact, it does not declare
       // non-breaking spaces around the dash: keeps it glued to a neighboring word so it can never end up
       // stranded alone on its own line when this text wraps in a tight card (Active Now's fixed-size badge).
       return { text: 'ACTIVE ' + dir + ' — ' + suffix, kind: 'active', dir: dir, tpHit: hit + 1 };
@@ -2374,7 +2374,7 @@ load();setInterval(load,60000);
     }
     function badgeHtml(m) {
       if (!m) return '';
-      var parts = ['<span class="mech-tick on">&#10003; TRIGGERED</span>'];
+      var parts = ['<span class="mech-tick on">&#10003; MET</span>'];
       m.tp.forEach(function (hit, i) { parts.push('<span class="mech-tick' + (hit ? ' on' : '') + '">' + (hit ? '&#10003;' : '&#9675;') + ' TP' + (i + 1) + '</span>'); });
       if (m.stopped) {
         // 2026-09-29: banked TP progress before the stop reads as a plain (non-alarm) tick - the raw
@@ -2507,7 +2507,7 @@ load();setInterval(load,60000);
           staleEl.innerHTML = '<b>&#9888; Automatic tracking is behind</b>'
             + '<p>The mechanical evidence on this board last updated <b>' + ageTxt + '</b>. It normally updates every 30 minutes.</p>'
             + '<p><b>Chelsea&#39;s setups and levels below are still current</b> - those are read straight from the Sheet and are not affected. '
-            + 'What has paused is the automatic TRIGGERED / TP tracking, so a card may not yet show a move that has already happened.</p>'
+            + 'What has paused is the automatic condition and target tracking, so a card may not yet show a move that has already happened.</p>'
             + '<p>Read the chart before acting on anything here. Nothing on this board is financial advice, and every level is an assumption about what the market may do - never a guarantee. Do your own research.</p>';
         } else if (staleEl) {
           staleEl.remove();

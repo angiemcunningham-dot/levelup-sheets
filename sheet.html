@@ -1589,7 +1589,7 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
       var z = m.triggerZone ? ('$' + m.triggerZone.low + '–$' + m.triggerZone.high) : null;
       var fresh = A && livePriceAt && (Date.now() - livePriceAt) < PRICE_STALE_MS;
       var curLine = fresh ? ('<br>Current price: $' + A.fmtPrice(livePrice) + (livePriceSrc ? ' (' + livePriceSrc.charAt(0).toUpperCase() + livePriceSrc.slice(1) + ')' : '')) : '';
-      return '<div class="mech-trigger-marker"><b>&#10003; TRIGGER HIT</b><br>' + escH(fmtEt(m.triggerAt)) + (z ? '<br>Entered trigger zone ' + escH(z) : '') + curLine + '</div>';
+      return '<div class="mech-trigger-marker"><b>&#10003; CONDITION MET</b><br>' + escH(fmtEt(m.triggerAt)) + (z ? '<br>Entered trigger zone ' + escH(z) : '') + curLine + '</div>';
     }
     /* Recomputes the SAME setup_instance.key formula core/levelup-core.js defines (asset|published_ms|fingerprint)
        from fields the embedded LevelUpCore copy on THIS page already exposes (.fingerprint, .setup_row.utcMs/
@@ -1665,7 +1665,7 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
         // 2026-10-02: reads as a win (kind 'complete', same pink as a full TP1+TP2+TP3 completion) rather than a
         // plain closure - banking real TP progress before the stop is a completed, successful trade to Angela.
         // The coin graphic stays reserved for the exact TP1+TP2+TP3 case (coinEligible() below is unchanged).
-        if (m.outcome === 'CLOSED_WITH_PROGRESS' && m.tpsBeforeStop.length) return { text: 'COMPLETE — ' + m.tpsBeforeStop.join(' + ') + ' HIT', kind: 'complete' };
+        if (m.outcome === 'CLOSED_WITH_PROGRESS' && m.tpsBeforeStop.length) return { text: 'COMPLETE — ' + m.tpsBeforeStop.join(' + ') + ' REACHED', kind: 'complete' };
         return { text: 'STOPPED', kind: 'stopped' };
       }
       if (m.complete) return { text: 'COMPLETE', kind: 'complete' };
@@ -1673,7 +1673,7 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
       if (!dir) return null;                  // never fabricate a direction we can't evidence
       var hit = -1;
       m.tp.forEach(function (v, i) { if (v) hit = i; });
-      var suffix = hit >= 0 ? ('TP' + (hit + 1) + ' HIT') : 'TRIGGERED';
+      var suffix = hit >= 0 ? ('TP' + (hit + 1) + ' REACHED') : 'CONDITION MET';   // 2026-10-22: states a fact, never declares
       // non-breaking spaces around the dash - keeps it glued to a neighboring word (see index.html's copy for why)
       return { text: 'ACTIVE ' + dir + ' — ' + suffix, kind: 'active', dir: dir, tpHit: hit + 1 };
     }
@@ -1820,7 +1820,7 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
     }
     function panelHtml(m) {
       if (!m) return '';
-      var rows = ['<div class="mech-item on">&#10003; TRIGGERED</div>'];
+      var rows = ['<div class="mech-item on">&#10003; MET</div>'];
       m.tp.forEach(function (hit, i) { rows.push('<div class="mech-item' + (hit ? ' on' : '') + '">' + (hit ? '&#10003;' : '&#9675;') + ' TP' + (i + 1) + (hit ? ' HIT' : '') + '</div>'); });
       if (m.stopped) {
         // 2026-09-29: banked TP progress before the stop reads as a plain (non-alarm) item - the raw
@@ -1895,7 +1895,7 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
         var title = { verified: 'Price is currently within Chelsea’s published zone.', developing: 'Price is close to Chelsea’s published zone but has not reached it.', unknown: 'Not mechanically tracked yet - requires human confirmation of Chelsea’s stated condition.', not: 'Price has not reached Chelsea’s published zone.' }[state];
         return '<span class="mech-cond' + (cls ? ' ' + cls : '') + '" title="' + escH(title) + '">' + icon + ' ' + escH(c) + '</span>';
       }).join('');
-      var statusLine = firstUnmet ? ('NOT TRIGGERED — WAITING FOR ' + escH(firstUnmet.toUpperCase())) : 'NOT TRIGGERED';
+      var statusLine = firstUnmet ? ('CONDITION NOT MET — WAITING FOR ' + escH(firstUnmet.toUpperCase())) : 'CONDITION NOT MET';
       return '<div id="mech-readiness"><div class="sect"><div class="bar"></div><h2>Trigger Readiness</h2></div>'
         + '<div class="card mech-panel-card"><div class="mech-cond-row">' + chips + '</div>'
         + '<div class="mech-readiness-count">' + verified + ' OF ' + trig.conditions.length + ' CONDITIONS OBSERVED</div>'
@@ -2099,7 +2099,7 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
         var h = hits[label]; if (!h) return;
         var tag = document.createElement('span');
         tag.className = 'mech-hit' + (h.kind === 'stop' ? ' stop' : '');
-        tag.innerHTML = (h.kind === 'stop' ? '&#10003; Stop reached' : '&#10003; Hit')
+        tag.innerHTML = (h.kind === 'stop' ? '&#10003; Stop reached' : (label === 'TRIGGER 1' ? '&#10003; Met' : '&#10003; Reached'))
           + '<span class="mech-hit-when">' + escH(fmtEt(h.at)) + '</span>';
         rl.appendChild(tag);
       });
