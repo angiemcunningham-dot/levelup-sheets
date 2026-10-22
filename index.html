@@ -126,6 +126,20 @@ a.att-card.is-dead .att-meta{color:var(--gray)}
   letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
 .gr-disc p{margin:0;font-size:12.5px;line-height:1.6;color:var(--ink)}
 .gr-disc p+p{margin-top:6px}
+/* 2026-10-22 (Angela, option 2): the rules open in full on a first visit and collapse on later ones. The
+   card was 593px - the single biggest block above the setups, which sat 2.4 screens down. The header, the
+   "triggered does not mean enter" line and the disclaimer all stay visible whatever the state. */
+.gr-wrap{border-top:2px solid var(--pink-line)}
+.gr-wrap>summary{cursor:pointer;list-style:none;padding:11px 22px;display:flex;align-items:center;gap:10px;
+  font-family:Archivo,sans-serif;font-weight:800;font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--pink);background:#fff}
+.gr-wrap>summary::-webkit-details-marker{display:none}
+.gr-wrap>summary:hover{background:#FFF7FC}
+.gr-wrap>summary:focus-visible{outline:2px solid var(--pink);outline-offset:-2px}
+.gr-wrap>summary .gr-sum-hint{margin-left:auto;font-weight:700;letter-spacing:.04em;opacity:.75}
+.gr-wrap>summary .gr-sum-hint::after{content:" \25BE"}
+.gr-wrap[open]>summary .gr-sum-hint::after{content:" \25B4"}
+.gr-wrap[open]>summary{border-bottom:1px solid var(--pink-line)}
 .gr-tag{text-align:center;font-family:"JetBrains Mono";font-size:10.5px;color:var(--pink);letter-spacing:.04em;padding:14px 20px;border-top:2px solid var(--pink-line)}
 @media(max-width:1040px){.gr-body{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:640px){.gr-body{padding:16px 16px 4px;grid-template-columns:1fr}.gr-golden{margin:4px 16px 14px}.gr-golden ul{grid-template-columns:1fr}.gr-disc{margin:0 16px 16px}}
@@ -320,6 +334,8 @@ a.act-card.side-short:hover{box-shadow:0 10px 26px rgba(185,28,28,.18)}
 <section class="golden-rules" aria-label="Chelsea's mandatory pre-entry rules">
   <div class="gr-top">⭐ Level Up Crypto — Mandatory Rules Before Entering a Trade <span style="opacity:.85">*</span></div>
   <div class="gr-warn">⚠️ A triggered trade does not automatically mean enter.</div>
+  <details class="gr-wrap" id="gr-wrap" open>
+    <summary><span>The three conditions &amp; the Golden Rule</span><span class="gr-sum-hint">Read them</span></summary>
   <div class="gr-body">
     <div class="gr-rule">
       <h3>1. One-Hour Candle Confirmation</h3>
@@ -356,6 +372,7 @@ a.act-card.side-short:hover{box-shadow:0 10px 26px rgba(185,28,28,.18)}
       <li>If even one rule fails — no entry.</li>
     </ul>
   </div>
+  </details>
   <div class="gr-disc">
     <b>* Read this before you act on anything above</b>
     <p><b>Chelsea is not a financial advisor, and nothing on this board is financial advice.</b> Every level here
@@ -363,6 +380,19 @@ a.act-card.side-short:hover{box-shadow:0 10px 26px rgba(185,28,28,.18)}
     <p>Do your own research. Size your own risk. The decision to enter, hold or exit a trade is yours alone, and
     so is the outcome. A level being reached is information, not an instruction.</p>
   </div>
+  <script id="gr-toggle">
+  /* Open the first time this browser sees the board, collapsed after. Any storage failure (private window,
+     blocked site data) leaves it OPEN - if we cannot tell whether someone has read the rules, they get them. */
+  (function () {
+    try {
+      var el = document.getElementById('gr-wrap');
+      if (!el) return;
+      var KEY = 'lu_rules_seen_v1';
+      if (window.localStorage.getItem(KEY)) el.open = false;
+      else window.localStorage.setItem(KEY, String(Date.now()));
+    } catch (e) { /* stays open */ }
+  })();
+  </script>
   <div class="gr-tag">LEVEL UP CRYPTO — READ THE CHART. THEN READ BETWEEN THE CANDLES.</div>
 </section>
 <details class="whatsnew">
