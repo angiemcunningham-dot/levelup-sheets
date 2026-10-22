@@ -1399,9 +1399,36 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
       if (lc.state && lc.state !== 'WAITING_FOR_TRIGGER') return 1;
       return 0;
     }
+    /* Only the CURRENT batch counts. Chelsea republishes one side without the other all the time: on
+       2026-10-21 AVAX's long was that morning's fresh call (waiting) while its short was the previous day's,
+       already stopped - and reporting the stopped side put "STOPPED" on a card whose actual call of the day
+       had not even triggered. UNI was the mirror: the long was that day's and HAD stopped, the short was
+       yesterday's, and there STOPPED was right. The difference is not which side is terminal, it is which side
+       belongs to the batch being shown. So: take the newest side, keep any side published within the same
+       pair window of it, and only then prefer activity among those. */
+    var BATCH_WINDOW_MS = 2 * 60 * 60 * 1000;
+    function publishedMs(item) {
+      var v = item && item.entry && item.entry.instance_published_at;
+      var t = v ? Date.parse(v) : NaN;
+      return isFinite(t) ? t : null;
+    }
+    function currentBatch(all) {
+      var times = all.map(publishedMs).filter(function (t) { return t !== null; });
+      if (!times.length) return all;
+      var newest = Math.max.apply(null, times);
+      return all.filter(function (it) {
+        var t = publishedMs(it);
+        return t === null || (newest - t) <= BATCH_WINDOW_MS;
+      });
+    }
     function feedEntryFor(asset) {
-      var all = feedEntriesFor(asset);
+      var all = currentBatch(feedEntriesFor(asset));
       if (!all.length) return null;
+      /* One candidate: hand it back untouched. Gating this on activity broke the receipt fallback - an
+         asset whose lifecycle is null because its Sheet status is Closed (ONDO's real shape) scores zero
+         activity, and returning null here meant mechanicalFor() never reached the receipt that still holds
+         its facts. The activity rule exists to CHOOSE BETWEEN SIDES, nothing more; everything downstream
+         already declines to speak without a confirmed trigger. */
       if (all.length === 1) return all[0];
       var best = null;
       for (var i = 0; i < all.length; i++) {
@@ -1413,7 +1440,7 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
           if (isFinite(t) && isFinite(bt) && t < bt) best = { rank: r, item: all[i] };
         }
       }
-      return best && best.rank > 0 ? best.item : null;   // a pair with no activity reports nothing
+      return best ? best.item : null;   // the chosen side; the trigger check downstream still decides
     }
     /* The direction the card should wear, taken from the side actually being reported. null for a single-sided
        asset (the existing headline logic decides), and null for a pair with no activity yet. */
@@ -1537,6 +1564,12 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
         }).catch(function () { /* leave directionVal/currentInstanceKey/currentSetup as-is - never break the page */ });
     }
     function directionFor(asset) {
+      /* 2026-10-21: for a paired asset, the direction must come from the side being REPORTED, not from the
+         board's primary row. BTC published a long at 09:36 and a short at 09:50; the long is what triggered,
+         but the primary row is the short - so the card read "ACTIVE SHORT - TRIGGERED" over the long's
+         evidence. Two different sides in one sentence is worse than no sentence. */
+      var pd = pairDirectionFor(asset);
+      if (pd) return pd;
       if (directionAsset === asset && directionVal) return directionVal;
       var a = feed && feed.assets && feed.assets[asset];
       var cls = a && a.sheet_status && a.sheet_status.class;
