@@ -770,6 +770,34 @@ load();setInterval(load,60000);
       out.trigger = mkLevel(id, 'trigger', 'Trigger ' + n, zoneAt(nums, 0, text), 'Trigger ' + n, text, 'present');
       return out;
     }
+    /* 2026-10-21 (Angela-reported, found live): a PLAINLY LABELLED price. VVV, posted that morning, read
+       "Entry: $27.54" and CRV read "Trigger: $0.390. Entry: $0.390" - and both parsed as 'ambiguous' with no
+       zone, so the board rendered targets and a stop with NO entry level and the monitor could not track
+       either. The branch directly above only catches text that STARTS with the number (idx <= 3); a label
+       like "Entry: " pushes the first digit to index 8, past that window, and with no connector word there is
+       nothing for the conditional branch below to match either. So the simplest phrasing Chelsea can write
+       was the one shape that fell through everything.
+
+       Deliberately narrow:
+         - It only fires when the text BEGINS with the label, so a number mid-sentence is untouched.
+         - The number must follow the label immediately, so "Entry: after the retest, $27.54" does not qualify.
+         - It is guarded on CONDITION_SPLIT. "Entry: $27.54, followed by a defended retest" still falls
+           through to the conditional branch below and stays mechanically inert, because flattening a stated
+           confirmation into a simple numeric trigger is the one thing this parser must never do.
+       Verified against the full live Sheet: of 58 setups, exactly VVV and CRV change, and BOTH keep their
+       existing fingerprint - no live instance is re-keyed.
+       Keep in sync with core/levelup-core.js and the other board file (PAC-2/PAC-5/PAC-9). */
+    const LABELLED_PRICE = /^\s*(?:entry|trigger|execution|buy)(?:\s+(?:price|level|zone))?\s*[:\-–—]\s*/i;
+    const labelled = text.match(LABELLED_PRICE);
+    if (labelled && !CONDITION_SPLIT.test(text)) {
+      const afterLabel = text.slice(labelled[0].length);
+      const labelledNums = scanNumbers(afterLabel);
+      if (labelledNums.length && labelledNums[0].idx <= 3) {
+        out.trigger = mkLevel(id, 'trigger', 'Trigger ' + n, zoneAt(labelledNums, 0, afterLabel), 'Trigger ' + n, text, 'present',
+          { notes: ['stated as a plainly labelled price with no confirmation wording'] });
+        return out;
+      }
+    }
     // Conditional / multi-step trigger (e.g. "Failed 1H reclaim of approximately $X-$Y, followed by an
     // open-and-hold back below the MAs" or "Decisive loss of $X, followed by failed reclaim/lower high";
     // 2026-09-29: also "$X-$Y area + 1H open-and-hold back below the moving-average structure" ('+' as a
