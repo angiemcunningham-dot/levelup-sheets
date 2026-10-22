@@ -2089,6 +2089,10 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
       var valid = instanceKeysForCurrent(ASSET_);
       if (valid.length && valid.indexOf(picked.entry.setup_instance_key) < 0) return;
       var hits = {};
+      /* The TRIGGER row too (2026-10-22). It was left out of this map, so the one row a member looks at
+         first - Chelsea's own level - was the only reached level with no mark on it. Its marker reads
+         'Met' rather than 'Reached': the level's name stays Trigger 1, but nothing declares. */
+      if (lc.trigger && lc.trigger.reached_at) hits['TRIGGER 1'] = { at: lc.trigger.reached_at, kind: 'tp' };
       (lc.targets || []).forEach(function (t) { if (t.reached_at) hits[t.level_id] = { at: t.reached_at, kind: 'tp' }; });
       if (lc.extended && lc.extended.reached_at) hits.EXTENDED = { at: lc.extended.reached_at, kind: 'tp' };
       if (lc.stop_boundary && lc.stop_boundary.reached_at) hits.STOP = { at: lc.stop_boundary.reached_at, kind: 'stop' };
