@@ -2092,11 +2092,11 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
       }).join('');
       var el = document.createElement('div');
       el.id = 'mech-str'; el.className = 'mech-str';
-      el.innerHTML = '<div class="sect"><div class="bar"></div><h2>Entry Conditions</h2></div>'
+      el.innerHTML = '<div class="sect"><div class="bar"></div><h2>Entry Strength</h2></div>'
         + '<div class="card mech-panel-card">'
         + (r.frozen
             ? '<span class="mech-str-word ' + cls + '"><span class="mech-str-dot"></span>' + escH(r.word) + '</span>'
-            : '<span class="mech-str-word ' + (gateNow ? 'mech-str-mixed' : 'mech-str-weak') + '"><span class="mech-str-dot"></span>Not triggered yet &middot; ' + metCount + ' of ' + shownCount + ' conditions met</span>')
+            : '<span class="mech-str-word ' + (gateNow ? 'mech-str-mixed' : 'mech-str-weak') + '"><span class="mech-str-dot"></span>Not triggered yet &middot; ' + metCount + ' of ' + shownCount + ' readings agree</span>')
         + '<div class="mech-str-votes">' + voteHtml + '</div>'
         + (r.frozen
             ? '<p class="mech-str-note"><b>Read at the trigger and held there.</b> This is how the conditions looked when the setup fired' + (r.frozen_at ? ' (' + escH(fmtEt(r.frozen_at)) + ')' : '') + ', kept for reference. It is not re-measured as the trade runs, so it will not change and it will not disappear if price pulls back through the moving averages - watching that is yours to do. Only all of Chelsea&#39;s listed targets being reached, or the stop being hit, ends a trade.</p>'
