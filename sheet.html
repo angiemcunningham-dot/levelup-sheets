@@ -1363,10 +1363,76 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
        to the prior behavior rather than blanking the page; the receipt fallback is held to the stricter standard
        of requiring an affirmed match every time, since receipts are the higher-risk case (a terminal, possibly
        old, closed-out record). */
+    /* TWO-SIDED SETUPS IN THE FEED (2026-10-21). The monitor keys a paired asset by SETUP - "BTC|LONG" and
+       "BTC|SHORT" - while this board keys by ASSET, because one card per asset is what it renders and there is
+       no price symbol or detail page called BTC|LONG. So a bare feed.assets["BTC"] lookup simply missed, and
+       the card fell back to Chelsea's Sheet status with no mechanical state at all. On 2026-10-21 BTC's long
+       and UNI's long both triggered and neither showed; worse, applyStopBreachFlags() only skips an asset when
+       mechanicalFor() reports it triggered, so the null lookup let both cards be marked "NOT A LIVE WATCH" on
+       the day they fired.
+
+       WHICH SIDE THE CARD FOLLOWS (Angela, 2026-10-21: "go with your instinct"): the side with actual
+       mechanical activity. A triggered or terminal side beats one still waiting, because that is the side a
+       member needs to know about - BTC long TRIGGERED matters, BTC short WAITING does not. If both sides have
+       activity the earlier trigger wins, so the card follows the trade that actually started first. If neither
+       has any, there is nothing to report and the card stays neutral, which is the honest answer for a pair
+       where nothing has happened yet.
+
+       Returns the bare entry untouched for every single-sided asset, so 52 of 55 assets take exactly the path
+       they always did. */
+    var PAIR_SUFFIXES = ['|LONG', '|SHORT'];
+    function feedEntriesFor(asset) {
+      if (!feed || !feed.assets) return [];
+      var bare = feed.assets[asset];
+      if (bare) return [{ key: asset, entry: bare }];
+      var out = [];
+      for (var i = 0; i < PAIR_SUFFIXES.length; i++) {
+        var k = asset + PAIR_SUFFIXES[i];
+        if (feed.assets[k]) out.push({ key: k, entry: feed.assets[k] });
+      }
+      return out;
+    }
+    function activityRank(entry) {
+      var lc = entry && entry.lifecycle;
+      if (!lc) return 0;
+      if (lc.trigger && lc.trigger.reached_at) return 2;   // it actually fired
+      if (lc.state && lc.state !== 'WAITING_FOR_TRIGGER') return 1;
+      return 0;
+    }
+    function feedEntryFor(asset) {
+      var all = feedEntriesFor(asset);
+      if (!all.length) return null;
+      if (all.length === 1) return all[0];
+      var best = null;
+      for (var i = 0; i < all.length; i++) {
+        var r = activityRank(all[i].entry);
+        if (!best || r > best.rank) { best = { rank: r, item: all[i] }; continue; }
+        if (r === best.rank && r === 2) {
+          var t = Date.parse(all[i].entry.lifecycle.trigger.reached_at);
+          var bt = Date.parse(best.item.entry.lifecycle.trigger.reached_at);
+          if (isFinite(t) && isFinite(bt) && t < bt) best = { rank: r, item: all[i] };
+        }
+      }
+      return best && best.rank > 0 ? best.item : null;   // a pair with no activity reports nothing
+    }
+    /* The direction the card should wear, taken from the side actually being reported. null for a single-sided
+       asset (the existing headline logic decides), and null for a pair with no activity yet. */
+    function pairDirectionFor(asset) {
+      if (!feed || !feed.assets || feed.assets[asset]) return null;
+      var picked = feedEntryFor(asset);
+      if (!picked) return null;
+      var m = /\|(LONG|SHORT)$/.exec(picked.key);
+      return m ? m[1] : null;
+    }
     function mechanicalFor(asset, currentInstanceKey) {
       if (!feed) return null;
-      var a = feed.assets[asset]; if (!a) return null;
-      if (currentInstanceKey && a.setup_instance_key !== currentInstanceKey) return null;
+      var picked = feedEntryFor(asset); if (!picked) return null;
+      var a = picked.entry;
+      if (currentInstanceKey) {
+        var validKeys = instanceKeysForCurrent(asset);
+        var keyOk = validKeys.length ? validKeys.indexOf(a.setup_instance_key) >= 0 : (a.setup_instance_key === currentInstanceKey);
+        if (!keyOk) return null;
+      }
       var lc = a.lifecycle;
       /* RETROACTIVE VOID (2026-10-18): a terminal observation that was mechanically wrong has had its CLAIM
          withdrawn (receipts.js VOIDED / LEVEL_UP_RETROACTIVE_VOID_SPEC_2026-10-18.md). Returning null here - rather
@@ -1427,6 +1493,23 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
        is NOT a second identity system - it is the existing one's own published formula, computed here only
        because att-core/att-module/att-ui stay byte-for-byte untouched (project hard rule); if that embedded copy
        is ever resynced to include .setup_instance directly, this can read it straight from there instead. */
+    /* EVERY instance key legitimately current for this asset (2026-10-21). A two-sided setup is ONE page but
+       TWO published setups, each with its own row, fingerprint and instance key. The 2026-09-25 instance-safety
+       check compared the feed entry against a single key, so picking the long's feed entry on a page whose
+       primary side is the short looked exactly like a stale instance and was rejected. A genuinely old
+       instance is still rejected - it simply is not among today's keys. */
+    function instanceKeysForCurrent(asset) {
+      var keys = [];
+      if (currentInstanceKey) keys.push(currentInstanceKey);
+      var s = currentSetup;
+      if (s && s.sides) {
+        Object.keys(s.sides).forEach(function (d) {
+          var k = instanceKeyFromSetup(asset, s.sides[d]);
+          if (k && keys.indexOf(k) < 0) keys.push(k);
+        });
+      }
+      return keys;
+    }
     function instanceKeyFromSetup(asset, s) {
       if (!s || !s.fingerprint) return null;
       var sr = s.setup_row || {};
@@ -1731,7 +1814,11 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
     function sixLineReadinessFor(asset, currentInstanceKey) {
       if (!feed) return null;
       var a = feed.assets[asset]; if (!a) return null;
-      if (currentInstanceKey && a.setup_instance_key !== currentInstanceKey) return null;
+      if (currentInstanceKey) {
+        var validKeys = instanceKeysForCurrent(asset);
+        var keyOk = validKeys.length ? validKeys.indexOf(a.setup_instance_key) >= 0 : (a.setup_instance_key === currentInstanceKey);
+        if (!keyOk) return null;
+      }
       var r = a.trigger_readiness;
       if (!r || r.floor == null || r.price == null) return null;
       return r;
