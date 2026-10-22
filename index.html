@@ -2002,6 +2002,24 @@ load();setInterval(load,60000);
 .mech-tick.on{border-color:var(--green);color:var(--green-d);background:rgba(34,197,94,.08)}
 .mech-tick.stop{border-color:var(--red);color:var(--red-d);background:rgba(239,68,68,.08)}
 .mech-tick.complete{border-color:var(--pink);color:var(--pink);background:rgba(250,3,152,.06)}
+/* 2026-10-22: OPTION D, the placement Angela chose in "Where The Light Lives" - a full-width strip on the
+   card with the count, a plain-language verdict and the unmet readings on tap. Never gates: a red strip
+   still leaves the setup live, which is what the mockup said in so many words. */
+.mech-str-strip{display:flex;align-items:center;gap:9px;flex-wrap:wrap;border:2px solid;border-radius:8px;
+  padding:7px 11px;margin:8px 0 2px;font-size:12.5px;background:#fff}
+.mech-str-strip .sdot{width:9px;height:9px;border-radius:50%;background:currentColor;flex:none}
+.mech-str-strip .scount{font-family:Archivo,sans-serif;font-weight:900;font-size:11.5px;letter-spacing:.07em;text-transform:uppercase}
+.mech-str-strip .ssay{color:#4C5663;font-size:12px}
+.mech-str-strip .swhy{margin-left:auto;appearance:none;background:transparent;border:0;cursor:pointer;color:inherit;
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;
+  text-decoration:underline;text-underline-offset:3px;padding:0}
+.mech-str-strip.s-weak{border-color:#EF4444;color:#B91C1C;background:rgba(239,68,68,.06)}
+.mech-str-strip.s-mixed{border-color:#E5A00D;color:#8a5a00;background:rgba(229,160,13,.08)}
+.mech-str-strip.s-strong{border-color:#22C55E;color:#15803D;background:rgba(34,197,94,.08)}
+.mech-str-fails{margin:2px 0 4px;padding-left:2px;display:flex;flex-direction:column;gap:3px;font-size:12px;color:#374151}
+.mech-str-fails .ff{display:flex;gap:7px}
+.mech-str-fails .fm{color:#B91C1C;font-family:'JetBrains Mono',monospace;font-size:11px;flex:none}
+.mech-str-frozen{font-family:'JetBrains Mono',monospace;font-size:10px;color:#9CA3AF;letter-spacing:.04em}
 .mech-note{font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--gray2);margin:4px 0 0}
 /* 2026-10-21 (Angela, explicit): on 2026-10-20 the mechanical feed froze for 12.7 hours - through Chelsea's
    05:27 post - and the ONLY thing the board said about it was a 10.5px grey line reading "(may be stale)".
@@ -2312,6 +2330,42 @@ load();setInterval(load,60000);
       };
       window.LevelUpAttention.__mechWrapped = true;
     }
+    /* OPTION D's strip for one asset, or '' when the feed has no reading. Only our own vocabulary goes into
+       the markup - no Sheet text, no asset names - so nothing here needs escaping. */
+    var strOpen = {};   // which cards have their readings expanded, by asset
+    var STR_LABEL = { stoch: 'Stochastics', sma_smma: 'Simple + Smooth', macd: 'MACD', triple: 'Triple RSI', rsi: 'RSI' };
+    var STR_ORDER = ['stoch', 'sma_smma', 'macd', 'triple', 'rsi'];
+    function strengthStripFor(asset) {
+      if (!feed || !feed.assets) return '';
+      var picked = feedEntryFor(asset);
+      var r = picked && picked.entry && picked.entry.confirmation_strength;
+      if (!r || !r.word) return '';
+      var votes = Object.assign({ sma_smma: !!r.gate }, r.votes || {});
+      var shown = STR_ORDER.filter(function (k) { return votes[k] != null; });
+      var met = shown.filter(function (k) { return votes[k] === true; });
+      var tone = met.length >= 4 ? 's-strong' : (met.length >= 2 ? 's-mixed' : 's-weak');
+      /* Verdicts describe the READINGS, not Chelsea's entry - see the note at the top of this patch. */
+      var say = met.length === shown.length ? 'every reading agrees'
+        : met.length >= 4 ? 'most readings agree'
+        : met.length >= 2 ? 'readings are mixed'
+        : 'few readings agree';
+      var count = (r.frozen ? r.word : met.length + ' of ' + shown.length);
+      var open = !!strOpen[asset];
+      var fails = shown.filter(function (k) { return votes[k] !== true; });
+      var failHtml = open
+        ? '<div class="mech-str-fails">' + (fails.length
+            ? fails.map(function (k) { return '<div class="ff"><span class="fm">&#9675;</span><span>' + STR_LABEL[k] + ' is not pointing this way</span></div>'; }).join('')
+            : '<div class="ff"><span class="fm">&#10003;</span><span>All five readings agree.</span></div>')
+          + (r.frozen ? '<div class="mech-str-frozen">Read at the trigger and held - not re-measured as the trade runs.</div>' : '')
+          + '</div>'
+        : '';
+      return '<div class="mech-str-strip ' + tone + '">'
+        + '<span class="sdot"></span>'
+        + '<span class="scount">' + count + ' &middot; ' + met.length + ' of ' + shown.length + '</span>'
+        + '<span class="ssay">' + say + '</span>'
+        + '<button type="button" class="swhy" data-str="' + asset + '">' + (open ? 'hide' : 'why') + '</button>'
+        + '</div>' + failHtml;
+    }
     function badgeHtml(m) {
       if (!m) return '';
       var parts = ['<span class="mech-tick on">&#10003; TRIGGERED</span>'];
@@ -2483,6 +2537,15 @@ load();setInterval(load,60000);
           }
           var html = badgeHtml(mechanicalFor(asset, currentInstanceKeyFor(asset)));
           if (html) { var d = document.createElement('div'); d.innerHTML = html; if (pill && pill.parentNode) pill.parentNode.insertBefore(d.firstChild, pill.nextSibling); }
+          /* OPTION D: the strip goes under the state line, after the TP ladder badge. Removed and rebuilt
+             each pass so it cannot double up when load() re-renders the card. */
+          var oldStrip = c.querySelector('.mech-str-strip'); if (oldStrip) oldStrip.remove();
+          var oldFails = c.querySelector('.mech-str-fails'); if (oldFails) oldFails.remove();
+          var stripHtml = strengthStripFor(asset);
+          if (stripHtml && pill && pill.parentNode) {
+            var sw = document.createElement('div'); sw.innerHTML = stripHtml;
+            while (sw.firstChild) pill.parentNode.insertBefore(sw.firstChild, pill.nextSibling);
+          }
           /* 2026-10-06 (Angela, explicit: "any trades that are also closed or all tp's have been hit needs to
              move to previous call history"): a terminal (stopped/complete) card still sitting in "Today's
              Untriggered Setups" - a same-day setup the Sheet-driven partition in load() wouldn't otherwise move,
@@ -2513,6 +2576,16 @@ load();setInterval(load,60000);
           if (histGrid && c.parentNode === histGrid) {
             c.style.display = (resolved && resolved.kind === 'active') ? 'none' : '';
           }
+        });
+        /* `why` reveals the readings that are NOT pointing the trade's way - the mockup's "failures on tap".
+           The card is a link, so the click must not navigate. */
+        Array.prototype.forEach.call(document.querySelectorAll('.swhy'), function (b) {
+          b.addEventListener('click', function (ev) {
+            ev.preventDefault(); ev.stopPropagation();
+            var a = b.getAttribute('data-str');
+            strOpen[a] = !strOpen[a];
+            decorate();
+          });
         });
         decorateActiveNow();
         // 2026-10-06: re-apply the pre-trigger stop-breach flag (att-ui, same page - cross-script hook via
