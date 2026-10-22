@@ -2057,9 +2057,12 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
       var r = picked && picked.entry && picked.entry.confirmation_strength;
       if (!r || !r.word) return;
       var cls = { 'Weak': 'mech-str-weak', 'Mixed': 'mech-str-mixed', 'Strong': 'mech-str-strong', 'Very strong': 'mech-str-vstrong' }[r.word] || 'mech-str-mixed';
-      var LABEL = { stoch: 'Stochastics', macd: 'MACD', triple: 'Triple RSI', rsi: 'RSI' };
-      var votes = r.votes || {};
-      var voteHtml = ['stoch', 'macd', 'triple', 'rsi'].filter(function (k) { return votes[k] != null; }).map(function (k) {
+      /* Chelsea's own order of importance, with Simple+Smooth shown as a CONDITION rather than a hidden
+         precondition - she ranked it second, and Angela's instruction is that the panel shows which boxes
+         were checked and which were not. */
+      var LABEL = { stoch: 'Stochastics', sma_smma: 'Simple + Smooth', macd: 'MACD', triple: 'Triple RSI', rsi: 'RSI' };
+      var votes = Object.assign({ sma_smma: !!r.gate }, r.votes || {});
+      var voteHtml = ['stoch', 'sma_smma', 'macd', 'triple', 'rsi'].filter(function (k) { return votes[k] != null; }).map(function (k) {
         return '<span class="mech-str-vote ' + (votes[k] ? 'yes' : 'no') + '">' + (votes[k] ? '&#10003;' : '&#9675;') + ' ' + escH(LABEL[k]) + '</span>';
       }).join('');
       var el = document.createElement('div');
@@ -2068,6 +2071,9 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
         + '<div class="card mech-panel-card">'
         + '<span class="mech-str-word ' + cls + '"><span class="mech-str-dot"></span>' + escH(r.word) + '</span>'
         + '<div class="mech-str-votes">' + voteHtml + '</div>'
+        + (r.frozen
+            ? '<p class="mech-str-note"><b>Read at the trigger and held there.</b> This is how the conditions looked when the setup fired' + (r.frozen_at ? ' (' + escH(fmtEt(r.frozen_at)) + ')' : '') + ', kept for reference. It is not re-measured as the trade runs, so it will not change and it will not disappear if price pulls back through the moving averages - watching that is yours to do. Only all of Chelsea&#39;s listed targets being reached, or the stop being hit, ends a trade.</p>'
+            : '<p class="mech-str-note"><b>Not triggered yet - this is live.</b> These conditions are being read now and will keep changing until the setup fires, at which point the reading is held for reference.</p>')
         + '<p class="mech-str-note">' + escH(r.note || '') + ' Observed on the 1H timeframe at the moment of this reading - conditions change, and this is never a reason on its own to take or skip a trade. I am not a financial advisor. Do your own research.</p>'
         + '</div>';
       var anchor = document.getElementById('mech-readiness') || document.getElementById('ladder');
