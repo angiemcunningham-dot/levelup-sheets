@@ -1532,6 +1532,31 @@ load();setInterval(load,60000);
       var ord = A.bandOrd(distPct);
       return { state: cleared ? 'INSIDE' : 'APPROACHING', real: true, distance_pct: distPct, band: A.BAND_NAMES[ord], band_ord: ord, direction: r.direction, floor: r.floor, inside: cleared };
     }
+    /* 2026-10-22 (Angela): a watch this old or this far from its own trigger is not a live consideration.
+       The age figure is deliberately the SAME 14 days the card partition in load() already uses - the two
+       surfaces disagreeing is the bug being fixed here, so they must read one number, not two.
+
+       ATTENTION_CAP_PCT is my choice, not Chelsea's: 10% from the near edge of the published trigger. The
+       existing bands stop at 3% (NORMAL is anything beyond), which is far too tight to use as a cap - it
+       would hide ordinary setups that are simply waiting. 10% is round, well outside normal breathing room,
+       and TAO at 21.6% is nowhere near it. One line to change if Chelsea wants it tighter or looser.
+
+       NOTHING IS DELETED OR HIDDEN. Chelsea published these, so the card still renders in the collapsed
+       'Older watches' section with its age stated. This only decides what gets to be a HEADLINE - the
+       ticker and the Live Attention grid. */
+    var ATTENTION_STALE_MS = 14 * 24 * 60 * 60 * 1000;
+    var ATTENTION_CAP_PCT = 10;
+    function pastAttentionCap(s, prox) {
+      var pub = s && s.setup_instance && s.setup_instance.published_ms != null
+        ? s.setup_instance.published_ms
+        : (s && s.publication ? s.publication.utcMs : null);
+      if (pub != null && (Date.now() - pub) >= ATTENTION_STALE_MS) return 'age';
+      /* Only when a real distance is actually known. A missing price must never silently cap a setup -
+         that would turn a data outage into setups vanishing off the top of the board. */
+      var d = prox && prox.distance_pct;
+      if (d != null && isFinite(d) && d > ATTENTION_CAP_PCT && prox.state !== 'INSIDE' && prox.state !== 'PASSED') return 'distance';
+      return null;
+    }
     function view() {
       if (!setups) return null;
       var fresh = !!ps.at && (Date.now() - ps.at) < STALE_MS && Object.keys(ps.prices).length > 0;
@@ -1547,6 +1572,8 @@ load();setInterval(load,60000);
         var prox = A.triggerProximity(s, price, opts);
         if (prox.state === 'NA') { var approx = approxTriggerProximity(s, price); if (approx.state !== 'NA') prox = approx; }
         var real = sixLineProxFor(a, price);
+        var capped = pastAttentionCap(s, real || prox);
+        if (capped) return;   // still on the page as a card; just not a headline - see pastAttentionCap
         watch.push({ asset: a, setup: s, price: price, prox: real || prox, publishedProx: prox, real: !!real });
       });
       watch = A.sortAttention(watch);
