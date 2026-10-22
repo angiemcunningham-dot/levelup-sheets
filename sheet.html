@@ -344,7 +344,7 @@ async function load(){
     +`<div><b>Published setup</b><span>${hasSetup?`${stamp(get(S,"timestamp"))} ${srcBadge(srcType(S))}${carried?` <i>· history, not a current call</i>`:""}`:"none on file"}</span></div></div>`;
   }
   if(prevAuth&&get(prevAuth,"status")!==get(cur,"status"))h+=`<div class="diff">Status changed: ${esc(get(prevAuth,"status"))} → ${esc(get(cur,"status"))} (${esc(stamp(get(cur,"timestamp")))})</div>`;
-  if(ld.length)h+=`<div class="diff">This published setup differs from the one before it (${esc(stamp(get(P,"timestamp")))}) in: ${esc(ld.join(", "))}.</div>`;
+  if(ld.length)h+=`<div class="diff ld-note">This published setup differs from the one before it (${esc(stamp(get(P,"timestamp")))}) in: ${esc(ld.join(", "))}.</div>`;
   if(cur!==S&&srcType(cur)==="ADMIN STATUS"&&get(cur,"why"))h+=`<div class="histnote"><b>ADMIN NOTE — not Chelsea's words.</b> ${esc(get(cur,"why"))}</div>`;
   if(closed){h+=`<div class="sect"><div class="bar"></div><h2>What happened</h2></div><div class="lesson"><div class="wl">Outcome</div><h3>${esc(get(cur,"outcome")||"Setup closed")}</h3><div class="wl" style="margin-top:14px">The lesson</div><p>${esc(get(cur,"lesson")||"—")}</p></div>`;}
 
@@ -1370,7 +1370,6 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
 .mech-str-bar.lv2 .mech-str-seg.on{background:var(--yellow)}
 .mech-str-bar.lv3 .mech-str-seg.on{background:#E67E00}
 .mech-str-bar.lv4 .mech-str-seg.on,.mech-str-bar.lv5 .mech-str-seg.on{background:var(--green)}
-.mech-str-scale{display:flex;justify-content:space-between;font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--gray2);margin-bottom:10px}
 .mech-str{margin-top:14px}
 .mech-str-title{font-family:Archivo,sans-serif;font-weight:800;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#6B7280;margin-bottom:8px}
 .mech-str-word{display:inline-flex;align-items:center;gap:8px;font-family:Archivo,sans-serif;font-weight:900;
@@ -1405,6 +1404,86 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
 .mech-sixline-flag{display:inline-flex;align-items:center;gap:7px;font-family:Archivo,sans-serif;font-weight:900;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--orange-d);background:#fff;border:2px solid var(--orange);border-radius:999px;padding:6px 12px;margin-top:8px;animation:attBlink 1.6s ease-in-out infinite;cursor:default}
 .mech-sixline-flag.is-close{color:var(--pink);border-color:var(--pink)}
 .mech-sixline-note{font-size:12px;color:#6B7280;line-height:1.55;margin-top:8px;max-width:640px}
+/* ===== OPTION D - RULED SECTIONS (Angela, 2026-10-22) ===================================================
+   Chosen from four mockups after walking this page top to bottom. Nothing here changes what the page says;
+   it changes what a member can actually read. See scratchpad/option-d-ruled.js for her exact words. */
+
+/* Every section header is a solid dark rule, numbered in document order. The number comes from a counter
+   because Market Evidence, Trigger Readiness and Entry Strength are inserted by three different functions
+   at three different anchors and not all of them exist at once - a hard-coded "1 ·" would be wrong half
+   the time. The counter restarts inside the folded second side of a two-sided setup. */
+#app{counter-reset:sect}
+details.sideflip{counter-reset:sect}
+.sect{display:flex;align-items:center;gap:10px;margin:30px 0 0;padding:11px 18px;background:var(--ink);border-radius:4px 4px 0 0}
+.sect .bar{display:none}
+.sect h2{color:#fff;font-size:13px;letter-spacing:.15em}
+.sect h2::before{counter-increment:sect;content:counter(sect) "\00a0\00a0\00b7\00a0\00a0";color:var(--pink);font-weight:900}
+.sect .hint{color:var(--pink-line)}
+/* the block under a rule butts up against it, so the two read as one section */
+.sect + .card,.sect + .ladder,.sect + .warn,.sect + .lesson,.sect + .histnote,.sect + .grid2,.sect + .card.soft{margin-top:0;border-top-left-radius:0;border-top-right-radius:0}
+
+/* MARKET EVIDENCE. Was #F8F8FA on a #E5E7EB hairline with #374151 text - Angela: "the box is just fading
+   into the background". Now a real green rule down the left, dark ink, and the timestamp as a solid stamp. */
+.mech-trigger-marker{font-family:Inter,sans-serif;font-size:14px;color:var(--ink);background:#F2FCF6;
+  border:2px solid var(--green);border-left-width:9px;border-radius:0 10px 10px 0;padding:14px 17px;line-height:1.65}
+.mech-tm-head{display:flex;align-items:center;gap:11px;flex-wrap:wrap}
+.mech-trigger-marker b{color:var(--green-d);font-family:Archivo,sans-serif;font-weight:900;font-size:19px;letter-spacing:.01em}
+.mech-tm-when{font-family:"JetBrains Mono",monospace;font-size:12.5px;font-weight:700;background:var(--green-d);
+  color:#fff;border-radius:3px;padding:3px 8px;white-space:nowrap}
+.mech-tm-body{margin-top:8px;font-weight:500}
+.mech-tm-body:empty{display:none}
+
+/* THE LADDER and every other number a member reads. --gray (#6B7280) and --gray2 (#9CA3AF) on white were
+   the "font is kind of light" Angela named; these are the same roles in ink that holds up on a phone. */
+.rn{color:#2B333D;font-size:12.5px}
+.rp small{color:#4C5663;font-weight:600}
+.rl .now-ts{color:#4C5663}
+#ladder .row:has(.mech-hit){background:#F4FDF7}
+.mech-hit{background:#E3F9EC;border:1.5px solid var(--green)}
+.mech-hit.stop{background:#FDE8E8;border-color:var(--red)}
+.mech-hit-when{color:#3A424D;font-weight:600}
+
+/* ENTRY STRENGTH. The word, then the count in a solid pill of the same colour - no light grey anywhere,
+   and no "Weaker / N of 5 / Stronger" scale (removed in ensureStrengthMeter(), see above). */
+.mech-str-head{display:flex;align-items:center;gap:11px;flex-wrap:wrap}
+.mech-str-count{font-family:"JetBrains Mono",monospace;font-size:12.5px;font-weight:700;letter-spacing:.04em;
+  text-transform:uppercase;border-radius:3px;padding:5px 9px;color:#fff}
+.mech-str-count.mech-str-weak{background:var(--red-d)}
+.mech-str-count.mech-str-mixed{background:#8a5a00}
+.mech-str-count.mech-str-strong,.mech-str-count.mech-str-vstrong{background:var(--green-d)}
+/* The live reading is the word plus its count, both off the same number as the bar. This pill is what
+   stops that from reading as an instruction - it blinks for as long as nothing has fired. */
+/* The filled segments take Chelsea's word, not the headcount - see scratchpad/bar-tone.js. The bar
+   LENGTH is still the count, because that is what a length means. */
+.mech-str-bar.mech-str-weak .mech-str-seg.on{background:var(--red)}
+.mech-str-bar.mech-str-mixed .mech-str-seg.on{background:var(--yellow)}
+.mech-str-bar.mech-str-strong .mech-str-seg.on{background:var(--green)}
+.mech-str-bar.mech-str-vstrong .mech-str-seg.on{background:var(--green-d)}
+.mech-str-live{font-family:Archivo,sans-serif;font-weight:900;font-size:10.5px;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--pink);background:#fff;border:2px solid var(--pink);border-radius:999px;
+  padding:5px 11px;animation:attBlink 1.6s ease-in-out infinite}
+.mech-str-bar{height:20px;background:#D9DEE4}
+.mech-str-seg{background:#fff}
+/* the five readings: outlined and inked, never grey-on-grey */
+.mech-str-vote{border:1.5px solid #6B7280;background:#fff;color:#2B333D;font-weight:700;border-radius:7px;padding:5px 9px}
+.mech-str-vote.yes{background:#EBFBF1;border-color:var(--green);color:var(--green-d)}
+.mech-str-vote.no{background:#fff;border-color:#9AA3AE;color:#3A424D}
+.mech-str-note{color:#2B333D;font-size:12.5px;line-height:1.6}
+.mech-str-note b{color:var(--ink)}
+
+/* TRIGGER READINESS - the pre-trigger twin of Market Evidence, same treatment. */
+.mech-readiness-count{color:#2B333D;font-weight:600}
+.mech-readiness-status{color:var(--ink);font-weight:900;font-size:13px}
+.mech-cond{border-color:#6B7280;color:#2B333D}
+.mech-cond.unknown{color:#3A424D;border-color:#9AA3AE}
+.mech-sixline-note{color:#2B333D;font-size:12.5px}
+
+/* Angela, on the Oct-16 note: "who cares about that". The status-change note and the admin note stay - a
+   member needs those - only the levels-diff line goes. */
+.diff.ld-note{display:none}
+
+@media(max-width:640px){.sect{padding:10px 14px}.sect h2{font-size:11.5px;letter-spacing:.1em}
+  .mech-trigger-marker b{font-size:16px}}
 </style>
 <script id="mech-feed">
 /* MECHANICAL FEED (staging addon). Reads the published monitor feed - durable trigger/TP/stop facts computed from
@@ -1589,7 +1668,9 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
       var z = m.triggerZone ? ('$' + m.triggerZone.low + '–$' + m.triggerZone.high) : null;
       var fresh = A && livePriceAt && (Date.now() - livePriceAt) < PRICE_STALE_MS;
       var curLine = fresh ? ('<br>Current price: $' + A.fmtPrice(livePrice) + (livePriceSrc ? ' (' + livePriceSrc.charAt(0).toUpperCase() + livePriceSrc.slice(1) + ')' : '')) : '';
-      return '<div class="mech-trigger-marker"><b>&#10003; CONDITION MET</b><br>' + escH(fmtEt(m.triggerAt)) + (z ? '<br>Entered trigger zone ' + escH(z) : '') + curLine + '</div>';
+      return '<div class="mech-trigger-marker"><div class="mech-tm-head"><b>&#10003; CONDITION MET</b>'
+        + '<span class="mech-tm-when">' + escH(fmtEt(m.triggerAt)) + '</span></div>'
+        + '<div class="mech-tm-body">' + (z ? 'Entered trigger zone ' + escH(z) : '') + curLine + '</div></div>';
     }
     /* Recomputes the SAME setup_instance.key formula core/levelup-core.js defines (asset|published_ms|fingerprint)
        from fields the embedded LevelUpCore copy on THIS page already exposes (.fingerprint, .setup_row.utcMs/
@@ -2150,18 +2231,27 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
         /* THE BAR (Angela, 2026-10-22: "a long pill graph"). Five segments for her five readings, filling
            left to right, red through amber to green as more of them agree. The word sits beside it so the bar
            is a picture of the same thing rather than a second claim. */
-        + '<div class="mech-str-bar lv' + metCount + '">'
+        + '<div class="mech-str-bar lv' + metCount + ' ' + cls + '">'
         + '<span class="mech-str-seg' + (metCount >= 1 ? ' on' : '') + '"></span>'
         + '<span class="mech-str-seg' + (metCount >= 2 ? ' on' : '') + '"></span>'
         + '<span class="mech-str-seg' + (metCount >= 3 ? ' on' : '') + '"></span>'
         + '<span class="mech-str-seg' + (metCount >= 4 ? ' on' : '') + '"></span>'
         + '<span class="mech-str-seg' + (metCount >= 5 ? ' on' : '') + '"></span>'
         + '</div>'
-        + '<div class="mech-str-scale"><span>Weaker</span><span>' + metCount + ' of ' + shownCount + '</span><span>Stronger</span></div>'
+        /* The word and the count sit side by side, the count in a solid pill. The "Weaker / N of 5 /
+           Stronger" scale that used to be here is gone - Angela, 2026-10-22: "week three of 5 stronger"
+           was one of the four things on this page she could not read. The bar above already says the same
+           thing as a picture, so the scale was a third copy of it in the lightest type on the page. */
+        + '<div class="mech-str-head">'
         + (r.frozen
             ? '<span class="mech-str-word ' + cls + '"><span class="mech-str-dot"></span>' + escH(r.word) + '</span>'
-            : '<span class="mech-str-word ' + (gateNow ? 'mech-str-mixed' : 'mech-str-weak') + '"><span class="mech-str-dot"></span>Not triggered yet &middot; ' + metCount + ' of ' + shownCount + ' readings agree</span>')
+              + '<span class="mech-str-count ' + cls + '">' + metCount + ' of ' + shownCount + '</span>'
+            : '<span class="mech-str-word ' + cls + '"><span class="mech-str-dot"></span>' + escH(r.word) + '</span>'
+              + '<span class="mech-str-count ' + cls + '">' + metCount + ' of ' + shownCount + ' readings agree</span>'
+              + '<span class="mech-str-live">Live &middot; not triggered yet</span>')
+        + '</div>'
         + '<div class="mech-str-votes">' + voteHtml + '</div>'
+        + '<p class="mech-str-note"><b>The word is not a headcount.</b> Chelsea ranks Stochastics first, so a reading can tick four of these five boxes and still read Mixed when Stochastics is the one that disagrees.</p>'
         + (r.frozen
             ? '<p class="mech-str-note"><b>Read at the trigger and held there.</b> This is how the conditions looked when the setup fired' + (r.frozen_at ? ' (' + escH(fmtEt(r.frozen_at)) + ')' : '') + ', kept for reference. It is not re-measured as the trade runs, so it will not change and it will not disappear if price pulls back through the moving averages - watching that is yours to do. Only all of Chelsea&#39;s listed targets being reached, or the stop being hit, ends a trade.</p>'
             : '<p class="mech-str-note"><b>Not triggered yet - this updates live.</b> '
