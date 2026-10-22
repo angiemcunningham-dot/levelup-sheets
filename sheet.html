@@ -1357,6 +1357,20 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
 .sideflip-retired b{color:var(--red-d)}
 /* 2026-10-22: the confirmation strength meter. Red/amber/green on Chelsea's four words; see the comment on
    ensureStrengthMeter() for why the gate can make this disappear on a live trade. */
+/* 2026-10-22: a reached level says so ON THE LADDER, not only in the headline. AVAX|LONG hit TP1 and its
+   ladder row showed nothing. */
+.mech-hit{display:inline-block;margin-left:8px;padding:2px 7px;border-radius:999px;background:rgba(34,197,94,.15);
+  color:var(--green-d);font-family:Archivo,sans-serif;font-weight:800;font-size:10px;letter-spacing:.06em;text-transform:uppercase;vertical-align:middle}
+.mech-hit.stop{background:rgba(239,68,68,.15);color:var(--red-d)}
+.mech-hit-when{display:block;font-family:"JetBrains Mono",monospace;font-size:10.5px;font-weight:400;color:var(--gray);letter-spacing:0;text-transform:none;margin-top:2px}
+/* The strength bar: one long pill, five segments, filling as more readings agree. */
+.mech-str-bar{display:flex;gap:3px;height:18px;border-radius:999px;overflow:hidden;background:#EDEFF2;padding:3px;margin:2px 0 10px}
+.mech-str-seg{flex:1;border-radius:999px;background:#DFE3E8;transition:background .4s ease}
+.mech-str-bar.lv0 .mech-str-seg.on,.mech-str-bar.lv1 .mech-str-seg.on{background:var(--red)}
+.mech-str-bar.lv2 .mech-str-seg.on{background:var(--yellow)}
+.mech-str-bar.lv3 .mech-str-seg.on{background:#E67E00}
+.mech-str-bar.lv4 .mech-str-seg.on,.mech-str-bar.lv5 .mech-str-seg.on{background:var(--green)}
+.mech-str-scale{display:flex;justify-content:space-between;font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--gray2);margin-bottom:10px}
 .mech-str{margin-top:14px}
 .mech-str-title{font-family:Archivo,sans-serif;font-weight:800;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#6B7280;margin-bottom:8px}
 .mech-str-word{display:inline-flex;align-items:center;gap:8px;font-family:Archivo,sans-serif;font-weight:900;
@@ -2055,6 +2069,41 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
        refreshed every 30s. Same shape of hybrid as sixLineProxFor on the landing page: the board never
        recomputes an indicator, only the comparison against it. Returns null when there is no fresh price, and
        the caller then falls back to the feed's own gate rather than guessing. */
+    /* A LEVEL THAT HAS BEEN REACHED SAYS SO ON THE LADDER (2026-10-22, Angela on AVAX). Its TP1 was
+       reached 2026-10-21 13:00, the feed recorded it and the headline said "TP1 HIT" - and the ladder row
+       for TP1 showed nothing, because a TP marker had never been built. triggerMarkerHtml() covered only the
+       trigger. The ladder is where a member reads the actual prices, so it is the worst place to be silent
+       about what has already happened.
+
+       Reads the feed only - never Chelsea's text, never a guess - and is additive and idempotent like every
+       other ensure* here. A stop that was reached is marked too, in red. */
+    function ensureLadderHits() {
+      var ladder = document.getElementById('ladder'); if (!ladder) return;
+      Array.prototype.forEach.call(ladder.querySelectorAll('.mech-hit'), function (n) { n.remove(); });
+      if (!feed || !feed.assets) return;
+      var picked = feedEntryFor(ASSET_);
+      var lc = picked && picked.entry && picked.entry.lifecycle;
+      if (!lc) return;
+      /* Only for the instance this page is showing - the same guard mechanicalFor() applies, so a stale
+         instance's evidence can never be painted onto a newer setup's ladder. */
+      var valid = instanceKeysForCurrent(ASSET_);
+      if (valid.length && valid.indexOf(picked.entry.setup_instance_key) < 0) return;
+      var hits = {};
+      (lc.targets || []).forEach(function (t) { if (t.reached_at) hits[t.level_id] = { at: t.reached_at, kind: 'tp' }; });
+      if (lc.extended && lc.extended.reached_at) hits.EXTENDED = { at: lc.extended.reached_at, kind: 'tp' };
+      if (lc.stop_boundary && lc.stop_boundary.reached_at) hits.STOP = { at: lc.stop_boundary.reached_at, kind: 'stop' };
+      if (!Object.keys(hits).length) return;
+      Array.prototype.forEach.call(ladder.querySelectorAll('.row'), function (row) {
+        var rl = row.querySelector('.rl'); if (!rl) return;
+        var label = (rl.textContent || '').trim().toUpperCase();
+        var h = hits[label]; if (!h) return;
+        var tag = document.createElement('span');
+        tag.className = 'mech-hit' + (h.kind === 'stop' ? ' stop' : '');
+        tag.innerHTML = (h.kind === 'stop' ? '&#10003; Stop reached' : '&#10003; Hit')
+          + '<span class="mech-hit-when">' + escH(fmtEt(h.at)) + '</span>';
+        rl.appendChild(tag);
+      });
+    }
     function liveGateFor(asset) {
       var r = sixLineReadinessFor(asset, null);
       if (!r || r.floor == null || !r.direction) return null;
@@ -2094,6 +2143,17 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
       el.id = 'mech-str'; el.className = 'mech-str';
       el.innerHTML = '<div class="sect"><div class="bar"></div><h2>Entry Strength</h2></div>'
         + '<div class="card mech-panel-card">'
+        /* THE BAR (Angela, 2026-10-22: "a long pill graph"). Five segments for her five readings, filling
+           left to right, red through amber to green as more of them agree. The word sits beside it so the bar
+           is a picture of the same thing rather than a second claim. */
+        + '<div class="mech-str-bar lv' + metCount + '">'
+        + '<span class="mech-str-seg' + (metCount >= 1 ? ' on' : '') + '"></span>'
+        + '<span class="mech-str-seg' + (metCount >= 2 ? ' on' : '') + '"></span>'
+        + '<span class="mech-str-seg' + (metCount >= 3 ? ' on' : '') + '"></span>'
+        + '<span class="mech-str-seg' + (metCount >= 4 ? ' on' : '') + '"></span>'
+        + '<span class="mech-str-seg' + (metCount >= 5 ? ' on' : '') + '"></span>'
+        + '</div>'
+        + '<div class="mech-str-scale"><span>Weaker</span><span>' + metCount + ' of ' + shownCount + '</span><span>Stronger</span></div>'
         + (r.frozen
             ? '<span class="mech-str-word ' + cls + '"><span class="mech-str-dot"></span>' + escH(r.word) + '</span>'
             : '<span class="mech-str-word ' + (gateNow ? 'mech-str-mixed' : 'mech-str-weak') + '"><span class="mech-str-dot"></span>Not triggered yet &middot; ' + metCount + ' of ' + shownCount + ' readings agree</span>')
@@ -2114,7 +2174,7 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
       if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(el, anchor.nextSibling);
       else { var app2 = document.getElementById('app'); if (app2) app2.appendChild(el); }
     }
-    function applyAll() { ensure(); ensureHeadline(); ensureReadiness(); ensureSixLineFlag(); ensureSideTruth(); ensureStrengthMeter(); suppressStaleChip(); ensureAttnChip(); loadLivePrice(); loadReadinessPrice(); }
+    function applyAll() { ensure(); ensureHeadline(); ensureReadiness(); ensureSixLineFlag(); ensureSideTruth(); ensureStrengthMeter(); ensureLadderHits(); suppressStaleChip(); ensureAttnChip(); loadLivePrice(); loadReadinessPrice(); }
     var obs = new MutationObserver(function () { obs.disconnect(); applyAll(); obs.observe(app, { childList: true }); });
     function load() { return fetchFeed().then(function (f) { feed = f; applyAll(); }); }
     load();
