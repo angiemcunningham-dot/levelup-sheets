@@ -831,6 +831,21 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
     const head = F.headline(row), st = F.status(row);
     if (/\bshort\b/i.test(head)) votes.short.push('headline'); if (/\blong\b/i.test(head)) votes.long.push('headline');
     if (/short/i.test(st)) votes.short.push('status'); else if (/active long|\blong\b/i.test(st)) votes.long.push('status');
+    /* 2026-10-22: mirrored from core/levelup-core.js - direction stated in the row BODY, not the headline.
+       Chelsea's ADMIN UPDATE rows read "Chelsea has updated the published NEAR long watch setup" while the
+       headline says only "ADMIN UPDATE - Revised Levels". Fallback only (skipped whenever the headline or
+       status already voted) and anchored on a setup noun, never a bare long/short in prose. This copy must
+       stay identical to core's: direction feeds the fingerprint, which IS the instance key, so a board copy
+       that computes a different direction computes a different key and suppresses the overlay it is meant to
+       show. test/parity-att-core.test.js is what holds the three copies together. */
+    if (!votes.long.length && !votes.short.length) {
+      const SETUP_DIRECTION_PHRASE = /\b(long|short)[\s-]+(?:watch|setup|trade|position|idea|call)\b/gi;
+      const body = [F.why(row), F.warning(row)].filter(Boolean).join('  ');
+      const seen = { long: false, short: false };
+      let m;
+      while ((m = SETUP_DIRECTION_PHRASE.exec(body)) !== null) seen[m[1].toLowerCase()] = true;
+      if (seen.long !== seen.short) votes[seen.long ? 'long' : 'short'].push('setup wording in the row body (the headline states no direction)');
+    }
     const trig = levels.find((l) => l.kind === 'trigger' && l.state === 'present'), tp1 = levels.find((l) => l.id === 'TP1' && l.state === 'present'), stop = levels.find((l) => l.id === 'STOP' && l.state === 'present');
     // Geometry is only informative when the two prices actually differ. When Chelsea's TP1 sits at exactly the
     // same price as the trigger/stop (e.g. ONDO 2026-09-28: trigger $0.587, TP1 $0.587 - both numbers are hers,
