@@ -2050,7 +2050,26 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
        The four words are Chelsea's. The colours are not - Weak red, Mixed amber, Strong and Very strong
        green - and are one line to change. The note is printed verbatim: entry conditions only, never a
        signal, a size, or advice to take or skip a trade. */
+    /* The Simple + Smooth gate, recomputed from the live price rather than the feed's hourly snapshot. The
+       floor is the monitor's (sma9/smma7, published in trigger_readiness); the price is this page's own,
+       refreshed every 30s. Same shape of hybrid as sixLineProxFor on the landing page: the board never
+       recomputes an indicator, only the comparison against it. Returns null when there is no fresh price, and
+       the caller then falls back to the feed's own gate rather than guessing. */
+    function liveGateFor(asset) {
+      var r = sixLineReadinessFor(asset, null);
+      if (!r || r.floor == null || !r.direction) return null;
+      var fresh = readinessPriceAt && (Date.now() - readinessPriceAt) < PRICE_STALE_MS;
+      var px = fresh ? readinessPrice : null;
+      if (px == null || !isFinite(px) || px <= 0) return null;
+      var cleared = r.direction === 'short' ? px < r.floor : px > r.floor;
+      return { cleared: cleared, price: px, floor: r.floor, direction: r.direction,
+               distance_pct: Math.abs(px - r.floor) / r.floor * 100 };
+    }
     function ensureStrengthMeter() {
+      /* A is bound locally in five other functions here and was NOT in scope in this one - referencing it
+         would have thrown the moment a live reading rendered. Same shape as the 2026-10-21 TDZ outage, so
+         it is declared here rather than assumed. */
+      var A = window.LevelUpAttention;
       var old = document.getElementById('mech-str'); if (old) old.remove();
       if (!feed || !feed.assets) return;
       var picked = feedEntryFor(ASSET_);
@@ -2061,7 +2080,13 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
          precondition - she ranked it second, and Angela's instruction is that the panel shows which boxes
          were checked and which were not. */
       var LABEL = { stoch: 'Stochastics', sma_smma: 'Simple + Smooth', macd: 'MACD', triple: 'Triple RSI', rsi: 'RSI' };
-      var votes = Object.assign({ sma_smma: !!r.gate }, r.votes || {});
+      /* The live gate only applies before the freeze. A frozen reading is a snapshot of the entry and must
+         never be touched by a later price - that is the whole point of freezing it. */
+      var lg = r.frozen ? null : liveGateFor(ASSET_);
+      var gateNow = lg ? lg.cleared : !!r.gate;
+      var votes = Object.assign({ sma_smma: gateNow }, r.votes || {});
+      var metCount = ['stoch', 'sma_smma', 'macd', 'triple', 'rsi'].filter(function (k) { return votes[k] === true; }).length;
+      var shownCount = ['stoch', 'sma_smma', 'macd', 'triple', 'rsi'].filter(function (k) { return votes[k] != null; }).length;
       var voteHtml = ['stoch', 'sma_smma', 'macd', 'triple', 'rsi'].filter(function (k) { return votes[k] != null; }).map(function (k) {
         return '<span class="mech-str-vote ' + (votes[k] ? 'yes' : 'no') + '">' + (votes[k] ? '&#10003;' : '&#9675;') + ' ' + escH(LABEL[k]) + '</span>';
       }).join('');
@@ -2069,11 +2094,19 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
       el.id = 'mech-str'; el.className = 'mech-str';
       el.innerHTML = '<div class="sect"><div class="bar"></div><h2>Entry Conditions</h2></div>'
         + '<div class="card mech-panel-card">'
-        + '<span class="mech-str-word ' + cls + '"><span class="mech-str-dot"></span>' + escH(r.word) + '</span>'
+        + (r.frozen
+            ? '<span class="mech-str-word ' + cls + '"><span class="mech-str-dot"></span>' + escH(r.word) + '</span>'
+            : '<span class="mech-str-word ' + (gateNow ? 'mech-str-mixed' : 'mech-str-weak') + '"><span class="mech-str-dot"></span>Not triggered yet &middot; ' + metCount + ' of ' + shownCount + ' conditions met</span>')
         + '<div class="mech-str-votes">' + voteHtml + '</div>'
         + (r.frozen
             ? '<p class="mech-str-note"><b>Read at the trigger and held there.</b> This is how the conditions looked when the setup fired' + (r.frozen_at ? ' (' + escH(fmtEt(r.frozen_at)) + ')' : '') + ', kept for reference. It is not re-measured as the trade runs, so it will not change and it will not disappear if price pulls back through the moving averages - watching that is yours to do. Only all of Chelsea&#39;s listed targets being reached, or the stop being hit, ends a trade.</p>'
-            : '<p class="mech-str-note"><b>Not triggered yet - this is live.</b> These conditions are being read now and will keep changing until the setup fires, at which point the reading is held for reference.</p>')
+            : '<p class="mech-str-note"><b>Not triggered yet - this updates live.</b> '
+              + (lg
+                  ? 'Price ' + escH(A.fmtPrice(lg.price)) + ' is ' + lg.distance_pct.toFixed(2) + '% '
+                    + (lg.cleared ? 'past' : 'from') + ' the Simple + Smooth lines at ' + escH(A.fmtPrice(lg.floor))
+                    + ', refreshed every few seconds. '
+                  : '')
+              + 'The momentum conditions are read on the 1H timeframe - Chelsea&#39;s own setting - so they move as each hour closes, not continuously. The reading is held for reference the moment the setup fires.</p>')
         + '<p class="mech-str-note">' + escH(r.note || '') + ' Observed on the 1H timeframe at the moment of this reading - conditions change, and this is never a reason on its own to take or skip a trade. I am not a financial advisor. Do your own research.</p>'
         + '</div>';
       var anchor = document.getElementById('mech-readiness') || document.getElementById('ladder');
