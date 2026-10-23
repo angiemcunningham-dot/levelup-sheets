@@ -1548,6 +1548,57 @@ details.sideflip{counter-reset:sect}
 .mech-rung .ct{font-family:"JetBrains Mono",monospace;font-size:11px;font-weight:700;letter-spacing:.05em;
   text-transform:uppercase;color:#3A424D;width:52px;text-align:right;flex:none}
 @media(max-width:640px){.mech-rung{flex-wrap:wrap;gap:6px 10px}.mech-rung .wh{flex:1 1 100%;order:3}}
+/* ===== CONTRAST PASS (Angela, 2026-10-23) ==============================================================
+   "the only place it looks dark is at the top of the board... even the shading on the rows and in
+   background below is light." Same hues and same structure as Option D - they just land where she can
+   actually see them. Measured first: every rule below replaces a specific colour the audit flagged. */
+
+/* BODY COPY. 400-weight #2A2A32 is the single biggest reason the page goes soft under the Why bar. */
+.card p{color:#15181F;font-weight:500}
+.card h3{color:#111114}
+.rn{color:#1F2933;font-weight:500}
+
+/* THE LADDER'S RIGHT COLUMN - "target", "level", "invalidation", "live". Eleven of them at #4C5663. */
+.rp small{color:#2B333D;font-weight:700}
+.rl .now-ts{color:#2B333D;font-weight:700}
+.mech-hit-when{color:#1F2933;font-weight:700}
+
+/* ROW TINTS. #EBFBF1 and #FFF4FA are a few percent off white; these are the same hues with enough
+   saturation to read as shading rather than as paper. */
+#ladder .row:has(.mech-hit){background:#D9F2E4}
+/* A HIT STOP IS NOT A SUCCESS. :has(.mech-hit) tinted every reached row the same green, the stop included -
+   FIL banked three targets and then stopped out, and its STOP row was the same colour as its TP rows. The bug
+   predates this pass; at the old #EBFBF1 it was too pale to notice, and deepening the tint exposed it. */
+#ladder .row:has(.mech-hit.stop){background:#FBE0E0}
+.row.now{background:#FFE1F1}
+.mech-trigger-marker{background:#E2F6EB}
+.mech-hit{background:#CDEEDC}
+.mech-hit.stop{background:#FAD9D9}
+
+/* ENTRY STRENGTH - the cream block and its ruled list, same treatment. */
+#mech-str .card.mech-panel-card{background:#F9EFD6}
+.mech-str-reads,.mech-rungs{border-color:#111114}
+.mech-str-read.yes{background:#D9F2E4}
+.mech-str-read.no{background:#FFFFFF}
+.mech-str-read .nm{color:#111114;font-weight:700}
+.mech-str-note{color:#15181F;font-weight:500}
+.mech-str-bar{background:#CFC9BC}
+.mech-rung .wh{color:#1F2933;font-weight:600}
+.mech-rung .ct{color:#1F2933}
+
+/* THE BLACK BARS. "live price" sat at #F9C8E3 - pale pink on near-black reads as a smudge. */
+.sect .hint{color:#fff;font-weight:800}
+
+/* FOOTNOTES AND THE FOLDED SIDE. The last two places still running 400-weight grey. */
+.sidenote{color:#1F2933;font-weight:500}
+.foot .f2{color:#2B333D;font-weight:500}   /* .foot .f2 wins over a bare .f2 - the disclaimer is the last thing a member reads */
+.mech-sidetruth .sidetruth-dyor{color:#1F2933}
+.mech-sixline-note{color:#1F2933;font-weight:500}
+.mech-readiness-count{color:#1F2933;font-weight:700}
+.hist .hd{color:#2B333D;font-weight:600}
+.dyor p{color:#111114;font-weight:500}
+.warn .wb{color:#241B09;font-weight:500}
+.inv .ib{color:#15181F;font-weight:500}
 </style>
 <script id="mech-feed">
 /* MECHANICAL FEED (staging addon). Reads the published monitor feed - durable trigger/TP/stop facts computed from
@@ -2248,7 +2299,10 @@ details.sideflip{counter-reset:sect}
         var h = hits[label]; if (!h) return;
         var tag = document.createElement('span');
         tag.className = 'mech-hit' + (h.kind === 'stop' ? ' stop' : '');
-        tag.innerHTML = (h.kind === 'stop' ? '&#10003; Stop reached' : (label === 'TRIGGER 1' ? '&#10003; Met' : '&#10003; Reached'))
+        /* "Hit", per OptionD.dc.html, which draws both the Trigger row and the TP rows as "&#10003; Hit".
+           Ladder markers only - the headline and the evidence box still state a fact without declaring an
+           entry, which is the 2026-10-22 decision: keep Chelsea's word on the ladder and nowhere else. */
+        tag.innerHTML = (h.kind === 'stop' ? '&#10003; Stop hit' : '&#10003; Hit')
           + '<span class="mech-hit-when">' + escH(fmtEt(h.at)) + '</span>';
         rl.appendChild(tag);
       });
