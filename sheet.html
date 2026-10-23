@@ -1484,6 +1484,57 @@ details.sideflip{counter-reset:sect}
 
 @media(max-width:640px){.sect{padding:10px 14px}.sect h2{font-size:11.5px;letter-spacing:.1em}
   .mech-trigger-marker b{font-size:16px}}
+/* ===== OPTION D - THE MOCKUP COLOURS (2026-10-23) =======================================================
+   Yesterday I built Option D's layout but coloured it from this board's palette variables instead of the
+   hex values the mockup draws. These are the mockup's own values, taken from project/OptionD.dc.html.
+   See scratchpad/option-d-colours.js for the before/after table and the one flagged departure. */
+
+/* the three mechanical blocks read as ONE square black-ruled card, not three soft pink ones */
+.ladder{border:2px solid #111114;border-radius:0 0 4px 4px;box-shadow:none}
+.card.mech-panel-card{border:2px solid #111114;border-radius:0 0 4px 4px;box-shadow:none}
+
+/* MARKET EVIDENCE */
+.mech-trigger-marker{background:#F2FCF6;border:2px solid #0F6B46;border-left-width:9px;color:#1F2933}
+.mech-trigger-marker b{color:#0F6B46}
+.mech-tm-when{background:#0F6B46}
+.mech-tm-body{color:#1F2933;font-weight:500}
+
+/* THE LADDER - row tints and ink straight off the mockup */
+.row{border-bottom:1px solid #DDE1E6}
+#ladder .row:has(.mech-hit){background:#EBFBF1}
+.row.now{background:#FFF4FA;border-top:1px solid #DDE1E6;border-bottom:1px solid #DDE1E6}
+.row.now .rl{color:#A4006A}
+.row .rl{color:#111114}
+.mech-hit{background:#EBFBF1;border:1.5px solid #0F6B46;color:#0F6B46}
+.mech-hit.stop{background:#FDE8E8;border-color:#9B1C1C;color:#9B1C1C}
+
+/* ENTRY STRENGTH - the cream block, the big word, the solid count, the ruled list */
+#mech-str .card.mech-panel-card{background:#FDF8EC}
+.mech-str-head{gap:13px}
+.mech-str-word{border:0;background:none;padding:0;font-size:24px;font-family:Archivo,sans-serif;font-weight:900}
+.mech-str-dot{display:none}
+.mech-str-count{font-size:13px;border-radius:3px;padding:3px 9px}
+.mech-str-weak{color:#8C1D1D}
+.mech-str-mixed{color:#6B4700}
+.mech-str-strong,.mech-str-vstrong{color:#0F6B46}
+.mech-str-count.mech-str-weak{background:#8C1D1D;color:#fff}
+.mech-str-count.mech-str-mixed{background:#6B4700;color:#fff}
+.mech-str-count.mech-str-strong,.mech-str-count.mech-str-vstrong{background:#0F6B46;color:#fff}
+.mech-str-reads{margin-top:13px;border:2px solid #111114;background:#fff}
+.mech-str-read{display:flex;align-items:center;gap:11px;padding:9px 12px;background:#fff;border-bottom:1px solid #DDE1E6}
+.mech-str-read:last-child{border-bottom:none}
+.mech-str-read.yes{background:#EBFBF1}
+.mech-str-read .mk{font-family:Archivo,sans-serif;font-weight:900;font-size:15px;width:20px;flex:none;text-align:center}
+.mech-str-read .nm{font-size:13.5px;font-weight:700;color:#111114;flex:1 1 0}
+.mech-str-read .wd{font-family:"JetBrains Mono",monospace;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase}
+.mech-str-read.yes .mk,.mech-str-read.yes .wd{color:#0F6B46}
+.mech-str-read.no .mk,.mech-str-read.no .wd{color:#8A5A00}
+.mech-str-note{color:#1F2933;font-size:13.5px;line-height:1.65;font-weight:500}
+
+/* The bar is NOT in this mockup - it is Angela's separate locked choice from "Where The Light Lives" and
+   stays. Its colour still comes from Chelsea's word, so it can never disagree with the word beside it. */
+.mech-str-bar{background:#E6E0D4}
+.mech-str-bar .mech-str-seg{background:#fff}
 </style>
 <script id="mech-feed">
 /* MECHANICAL FEED (staging addon). Reads the published monitor feed - durable trigger/TP/stop facts computed from
@@ -2222,7 +2273,13 @@ details.sideflip{counter-reset:sect}
       var metCount = ['stoch', 'sma_smma', 'macd', 'triple', 'rsi'].filter(function (k) { return votes[k] === true; }).length;
       var shownCount = ['stoch', 'sma_smma', 'macd', 'triple', 'rsi'].filter(function (k) { return votes[k] != null; }).length;
       var voteHtml = ['stoch', 'sma_smma', 'macd', 'triple', 'rsi'].filter(function (k) { return votes[k] != null; }).map(function (k) {
-        return '<span class="mech-str-vote ' + (votes[k] ? 'yes' : 'no') + '">' + (votes[k] ? '&#10003;' : '&#9675;') + ' ' + escH(LABEL[k]) + '</span>';
+        /* One row per reading, as OptionD.dc.html draws it: the mark, the name, then the verdict word at the
+           right. The chip row this replaced put five pills on one line, which is where "the boxes are Gray
+           it's just light and hard to read" was coming from. */
+        return '<div class="mech-str-read ' + (votes[k] ? 'yes' : 'no') + '">'
+          + '<span class="mk">' + (votes[k] ? '&#10003;' : '&#9675;') + '</span>'
+          + '<span class="nm">' + escH(LABEL[k]) + '</span>'
+          + '<span class="wd">' + (votes[k] ? 'agreed' : 'no') + '</span></div>';
       }).join('');
       var el = document.createElement('div');
       el.id = 'mech-str'; el.className = 'mech-str';
@@ -2250,7 +2307,7 @@ details.sideflip{counter-reset:sect}
               + '<span class="mech-str-count ' + cls + '">' + metCount + ' of ' + shownCount + ' readings agree</span>'
               + '<span class="mech-str-live">Live &middot; not triggered yet</span>')
         + '</div>'
-        + '<div class="mech-str-votes">' + voteHtml + '</div>'
+        + '<div class="mech-str-reads">' + voteHtml + '</div>'
         + '<p class="mech-str-note"><b>The word is not a headcount.</b> Chelsea ranks Stochastics first, so a reading can tick four of these five boxes and still read Mixed when Stochastics is the one that disagrees.</p>'
         + (r.frozen
             ? '<p class="mech-str-note"><b>Read at the trigger and held there.</b> This is how the conditions looked when the setup fired' + (r.frozen_at ? ' (' + escH(fmtEt(r.frozen_at)) + ')' : '') + ', kept for reference. It is not re-measured as the trade runs, so it will not change and it will not disappear if price pulls back through the moving averages - watching that is yours to do. Only all of Chelsea&#39;s listed targets being reached, or the stop being hit, ends a trade.</p>'
