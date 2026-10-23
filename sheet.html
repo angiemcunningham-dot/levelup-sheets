@@ -1648,6 +1648,12 @@ details.sideflip{counter-reset:sect}
 .dyor p{color:#111114;font-weight:500}
 .warn .wb{color:#241B09;font-weight:500}
 .inv .ib{color:#15181F;font-weight:500}
+/* A CLOSED SETUP'S live-price row. The pulsing pink dot and the pink wash both read as "this is running";
+   on a finished trade they are a claim the page should not be making. See ensureNowRowTruth(). */
+.row.now.mech-now-closed{background:#F1F2F4;border-top:1px solid #DDE1E6;border-bottom:1px solid #DDE1E6}
+.row.now.mech-now-closed .rl{color:#3A424D}
+.row.now.mech-now-closed .dot.d-now{background:#9AA3AE;animation:none}
+.row.now.mech-now-closed .rp small{color:#3A424D}
 </style>
 <script id="mech-feed">
 /* MECHANICAL FEED (staging addon). Reads the published monitor feed - durable trigger/TP/stop facts computed from
@@ -2322,6 +2328,25 @@ details.sideflip{counter-reset:sect}
 
        Reads the feed only - never Chelsea's text, never a guess - and is additive and idempotent like every
        other ensure* here. A stop that was reached is marked too, in red. */
+    /* THE LIVE PRICE ON A CLOSED SETUP SAYS IT IS CLOSED (Angela, 2026-10-23, on ADA: "the live price is
+       still showing in that ladder"). The row stays, because where price is now is still worth seeing. What
+       changes is that it stops describing itself as a running trade. */
+    function ensureNowRowTruth() {
+      var row = document.querySelector('#ladder .row.now'); if (!row) return;
+      var picked = feedEntryFor(ASSET_);
+      var lc = picked && picked.entry && picked.entry.lifecycle;
+      var done = !!(lc && (lc.state === 'STOP_BOUNDARY_REACHED' || lc.state === 'OBJECTIVES_EXHAUSTED'));
+      row.classList.toggle('mech-now-closed', done);
+      var note = row.querySelector('.rn');
+      if (note) {
+        var closedText = 'This setup is closed. The price above is for reference only - nothing here is being tracked any more.';
+        var liveText = 'Live price. Everything above this line is earned, not assumed.';
+        var want = done ? closedText : liveText;
+        if (note.textContent !== want) note.textContent = want;
+      }
+      var cap = row.querySelector('.rp small');
+      if (cap) { var w = done ? 'closed' : 'live'; if (cap.textContent !== w) cap.textContent = w; }
+    }
     function ensureLadderHits() {
       var ladder = document.getElementById('ladder'); if (!ladder) return;
       Array.prototype.forEach.call(ladder.querySelectorAll('.mech-hit'), function (n) { n.remove(); });
@@ -2466,7 +2491,7 @@ details.sideflip{counter-reset:sect}
       if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(el, anchor.nextSibling);
       else { var app2 = document.getElementById('app'); if (app2) app2.appendChild(el); }
     }
-    function applyAll() { ensure(); ensureHeadline(); ensureReadiness(); ensureSixLineFlag(); ensureSideTruth(); ensureStrengthMeter(); ensureLadderHits(); suppressStaleChip(); ensureAttnChip(); loadLivePrice(); loadReadinessPrice(); }
+    function applyAll() { ensure(); ensureHeadline(); ensureReadiness(); ensureSixLineFlag(); ensureSideTruth(); ensureStrengthMeter(); ensureLadderHits(); ensureNowRowTruth(); suppressStaleChip(); ensureAttnChip(); loadLivePrice(); loadReadinessPrice(); }
     var obs = new MutationObserver(function () { obs.disconnect(); applyAll(); obs.observe(app, { childList: true }); });
     function load() { return fetchFeed().then(function (f) { feed = f; applyAll(); }); }
     load();
@@ -2474,6 +2499,10 @@ details.sideflip{counter-reset:sect}
     setInterval(load, 60000);
     setInterval(function () { loadDirection().then(applyAll); }, 60000);
     setInterval(applyAll, 15000);
+    /* The NOW row is created by the price fetch, not by applyAll, so on a closed setup there was a window of
+       up to 15s where it still read "Live price... earned, not assumed" under a pulsing dot. Cheap enough to
+       check on its own short interval - it is two DOM reads and a class toggle. */
+    setInterval(ensureNowRowTruth, 2000);
     obs.observe(app, { childList: true });
     window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, getCurrentInstanceKey: function () { return currentInstanceKey; }, resolveCurrentState: resolveCurrentState, directionFor: directionFor, ensure: ensure, ensureHeadline: ensureHeadline, suppressStaleChip: suppressStaleChip, attnTarget: attnTarget, attnChipHtml: attnChipHtml, ensureAttnChip: ensureAttnChip, loadLivePrice: loadLivePrice, coinEligible: coinEligible, coinBadgeHtml: coinBadgeHtml, ensureCoinHero: ensureCoinHero, triggerMarkerHtml: triggerMarkerHtml, conditionalTrigger: conditionalTrigger, readinessHtml: readinessHtml, ensureReadiness: ensureReadiness, loadReadinessPrice: loadReadinessPrice, panelHtml: panelHtml, sixLineReadinessFor: sixLineReadinessFor, ensureSixLineFlag: ensureSixLineFlag };   // test hook (read-only)
   } catch (e) { if (window.console) console.warn('mechanical feed addon disabled:', e); }
