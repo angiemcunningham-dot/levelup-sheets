@@ -1,10 +1,10 @@
 {
  "schema_version": 1,
  "kind": "levelup-public-feed",
- "generated_at": "2026-10-23T22:04:52.919Z",
+ "generated_at": "2026-10-23T23:04:52.896Z",
  "notice": "Mechanical observations of Chelsea's published levels. Not a Sheet status, not a signal, and not a record of anyone's entry or exit.",
  "monitor": {
-  "last_successful_check_at": "2026-10-23T22:04:52.919Z"
+  "last_successful_check_at": "2026-10-23T23:04:52.896Z"
  },
  "assets": {
   "AAVE": {
@@ -116,8 +116,8 @@
      "ema200": 171.31223426282858
     },
     "floor": 172.46333333333334,
-    "price": 147.52,
-    "distance_pct": 14.462977637758748,
+    "price": 143.63,
+    "distance_pct": 16.718529542511458,
     "cleared": false
    },
    "confirmation_strength": {
@@ -252,16 +252,16 @@
    "trigger_readiness": {
     "direction": "long",
     "stack": {
-     "sma9": 0.21549999999999997,
-     "smma7": 0.2152327298312041,
-     "ema9": 0.21501079947204915,
-     "ema20": 0.21545484578109486,
-     "ema50": 0.21686420577302243,
-     "ema200": 0.22312940569025874
+     "sma9": 0.2144444444444444,
+     "smma7": 0.21429948271246063,
+     "ema9": 0.21374863957763934,
+     "ema20": 0.2148115271352763,
+     "ema50": 0.21654404084074705,
+     "ema200": 0.22298582951423626
     },
-    "floor": 0.21549999999999997,
-    "price": 0.2147,
-    "distance_pct": 0.37122969837585496,
+    "floor": 0.2144444444444444,
+    "price": 0.2091,
+    "distance_pct": 2.492227979274592,
     "cleared": false
    },
    "confirmation_strength": {
@@ -315,8 +315,8 @@
     "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "TRIGGERED",
-    "state_since": "2026-10-23T17:04:52.725Z",
+    "state": "TARGETS_IN_PROGRESS",
+    "state_since": "2026-10-23T23:04:52.896Z",
     "published_at": "2026-10-23T10:09:53.000Z",
     "trigger": {
      "level_id": "TRIGGER_1",
@@ -334,7 +334,7 @@
        "low": 0.2101,
        "high": 0.2101
       },
-      "reached_at": null
+      "reached_at": "2026-10-23T22:47:00.000Z"
      },
      {
       "level_id": "TP2",
@@ -355,7 +355,7 @@
     ],
     "objectives": {
      "defined": 3,
-     "reached": 0,
+     "reached": 1,
      "all_reached": false,
      "ladder_problems": [],
      "completed_at": null
@@ -381,16 +381,16 @@
    "trigger_readiness": {
     "direction": "short",
     "stack": {
-     "sma9": 0.21549999999999997,
-     "smma7": 0.2152327298312041,
-     "ema9": 0.21501079947204915,
-     "ema20": 0.21545484578109486,
-     "ema50": 0.21686421847485252,
-     "ema200": 0.22311184752566418
+     "sma9": 0.2144444444444444,
+     "smma7": 0.21429948271246063,
+     "ema9": 0.21374863957763934,
+     "ema20": 0.2148115271352763,
+     "ema50": 0.21654405304446614,
+     "ema200": 0.22296844605774713
     },
-    "floor": 0.2152327298312041,
-    "price": 0.2147,
-    "distance_pct": 0.2475133924203256,
+    "floor": 0.21429948271246063,
+    "price": 0.2091,
+    "distance_pct": 2.426269371558448,
     "cleared": true
    },
    "confirmation_strength": {
@@ -428,7 +428,46 @@
     "as_of": "2026-10-23T17:00:00.000Z",
     "frozen": true,
     "frozen_at": "2026-10-23T17:00:00.000Z",
-    "milestones": []
+    "milestones": [
+     {
+      "schema_version": 1,
+      "word": "Mixed",
+      "gate": true,
+      "votes": {
+       "stoch": false,
+       "macd": true,
+       "triple": true,
+       "rsi": true
+      },
+      "count": 3,
+      "order": [
+       "stoch",
+       "sma_smma",
+       "macd",
+       "triple",
+       "rsi"
+      ],
+      "readings": {
+       "price": 0.2087,
+       "sma9": 0.2144444444444444,
+       "smma7": 0.21429903620898827,
+       "stoch_k": 23.066666666666634,
+       "stoch_d": 21.833320058409612,
+       "rsi": 26.557998071283166,
+       "rsi6": 13.743951860432134,
+       "rsi12": 24.87354022718283,
+       "rsi24": 28.833401046130106,
+       "macd": -0.0011420836528857614,
+       "macd_signal": -0.0007057186742594652
+      },
+      "note": "Entry conditions only. Not a signal, not a position size, and not advice to take or skip a trade.",
+      "as_of": "2026-10-23T22:00:00.000Z",
+      "level_id": "TP1",
+      "at": "2026-10-23T22:47:00.000Z",
+      "frozen": true,
+      "frozen_at": "2026-10-23T22:47:00.000Z"
+     }
+    ]
    }
   },
   "AERO": {
@@ -800,20 +839,20 @@
      "rsi"
     ],
     "readings": {
-     "price": 0.1068,
-     "sma9": 0.10744444444444445,
-     "smma7": 0.10747674736918457,
-     "stoch_k": 27.03277990634327,
-     "stoch_d": 27.120168385540477,
-     "rsi": 39.5320610512015,
-     "rsi6": 38.98908704838863,
-     "rsi12": 39.964455086773725,
-     "rsi24": 35.91882543842566,
-     "macd": -0.0005818024823991685,
-     "macd_signal": -0.0005448917314300974
+     "price": 0.1053,
+     "sma9": 0.10697777777777777,
+     "smma7": 0.10695725592204178,
+     "stoch_k": 17.931034482758594,
+     "stoch_d": 21.646548290968028,
+     "rsi": 32.55268722567223,
+     "rsi6": 26.28099929907758,
+     "rsi12": 31.890610118710413,
+     "rsi24": 32.310210925246764,
+     "macd": -0.0007986541491251387,
+     "macd_signal": -0.000598269345043249
     },
     "note": "Entry conditions only. Not a signal, not a position size, and not advice to take or skip a trade.",
-    "as_of": "2026-10-23T22:00:00.000Z",
+    "as_of": "2026-10-23T23:00:00.000Z",
     "frozen": false,
     "milestones": []
    }
@@ -943,8 +982,8 @@
      "ema200": 0.18906896814464186
     },
     "floor": 0.19625555555555554,
-    "price": 0.1787,
-    "distance_pct": 8.945252788314551,
+    "price": 0.1718,
+    "distance_pct": 12.461076827266027,
     "cleared": false
    },
    "confirmation_strength": {
@@ -1098,8 +1137,8 @@
      "ema200": 1.8228680110272322
     },
     "floor": 1.9430935509568665,
-    "price": 1.746,
-    "distance_pct": 10.143286763512174,
+    "price": 1.69,
+    "distance_pct": 13.025289020810757,
     "cleared": false
    },
    "confirmation_strength": {
@@ -1261,29 +1300,29 @@
    "trigger_readiness": {
     "direction": "long",
     "stack": {
-     "sma9": 9.124222222222222,
-     "smma7": 9.14425036077937,
-     "ema9": 9.12990350230339,
-     "ema20": 9.166740405450806,
-     "ema50": 9.276543492443919,
-     "ema200": 9.660821379121245
+     "sma9": 9.09677777777778,
+     "smma7": 9.11450030923946,
+     "ema9": 9.091122801842713,
+     "ema20": 9.144765128741206,
+     "ema50": 9.263188845681412,
+     "ema200": 9.653609226095163
     },
-    "floor": 9.14425036077937,
-    "price": 9.145,
-    "distance_pct": 0.008197929748779467,
-    "cleared": true
+    "floor": 9.11450030923946,
+    "price": 8.956,
+    "distance_pct": 1.7389906617128252,
+    "cleared": false
    },
    "confirmation_strength": {
     "schema_version": 1,
-    "word": "Strong",
-    "gate": true,
+    "word": "Weak",
+    "gate": false,
     "votes": {
-     "stoch": true,
-     "macd": true,
-     "triple": true,
+     "stoch": false,
+     "macd": false,
+     "triple": false,
      "rsi": false
     },
-    "count": 3,
+    "count": 0,
     "order": [
      "stoch",
      "sma_smma",
@@ -1292,20 +1331,20 @@
      "rsi"
     ],
     "readings": {
-     "price": 9.147,
-     "sma9": 9.120222222222223,
-     "smma7": 9.144583281884428,
-     "stoch_k": 43.296366478301735,
-     "stoch_d": 35.44085035857691,
-     "rsi": 43.49016030236123,
-     "rsi6": 52.239772138655475,
-     "rsi12": 45.29098879193253,
-     "rsi24": 36.328017713339584,
-     "macd": -0.0457159305599788,
-     "macd_signal": -0.04870083901018525
+     "price": 8.952,
+     "sma9": 9.07788888888889,
+     "smma7": 9.091189857819808,
+     "stoch_k": 27.102362106882982,
+     "stoch_d": 30.294692556900245,
+     "rsi": 31.52386043326686,
+     "rsi6": 27.096214510162596,
+     "rsi12": 31.131245534310054,
+     "rsi24": 30.741299513784824,
+     "macd": -0.06844624369626118,
+     "macd_signal": -0.05282896447250786
     },
     "note": "Entry conditions only. Not a signal, not a position size, and not advice to take or skip a trade.",
-    "as_of": "2026-10-23T22:00:00.000Z",
+    "as_of": "2026-10-23T23:00:00.000Z",
     "frozen": false,
     "milestones": []
    }
@@ -1389,17 +1428,17 @@
    "trigger_readiness": {
     "direction": "short",
     "stack": {
-     "sma9": 9.124222222222222,
-     "smma7": 9.14425036077937,
-     "ema9": 9.12990350230339,
-     "ema20": 9.166740405450803,
-     "ema50": 9.276544075532755,
-     "ema200": 9.661052150239165
+     "sma9": 9.09677777777778,
+     "smma7": 9.11450030923946,
+     "ema9": 9.091122801842713,
+     "ema20": 9.144765128741204,
+     "ema50": 9.263189405904019,
+     "ema200": 9.653837700983054
     },
-    "floor": 9.124222222222222,
-    "price": 9.145,
-    "distance_pct": 0.22772108429332674,
-    "cleared": false
+    "floor": 9.09677777777778,
+    "price": 8.956,
+    "distance_pct": 1.5475565218453649,
+    "cleared": true
    },
    "confirmation_strength": {
     "schema_version": 1,
@@ -1592,8 +1631,8 @@
      "ema200": 277.77319693775024
     },
     "floor": 278.67777777777775,
-    "price": 284.2,
-    "distance_pct": 1.9815796818308744,
+    "price": 278.8,
+    "distance_pct": 0.043857900402709774,
     "cleared": true
    },
    "confirmation_strength": {
@@ -1930,9 +1969,9 @@
      "ema200": 770.4187384432538
     },
     "floor": 739.6454977005108,
-    "price": 741.69,
-    "distance_pct": 0.2764165138360827,
-    "cleared": true
+    "price": 737.59,
+    "distance_pct": 0.27790309099441274,
+    "cleared": false
    },
    "confirmation_strength": {
     "schema_version": 1,
@@ -2062,8 +2101,8 @@
     "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "TRIGGERED",
-    "state_since": "2026-10-23T19:04:52.764Z",
+    "state": "STOP_BOUNDARY_REACHED",
+    "state_since": "2026-10-23T23:04:52.896Z",
     "published_at": "2026-10-23T10:09:51.000Z",
     "trigger": {
      "level_id": "TRIGGER_1",
@@ -2108,36 +2147,51 @@
      "completed_at": null
     },
     "extended": null,
-    "stop_boundary": null,
-    "evidence_grade": null,
-    "confirm": null,
-    "terminal_at": null,
+    "stop_boundary": {
+     "level_id": "STOP",
+     "kind": "stop",
+     "zone": {
+      "low": 80273,
+      "high": 80832
+     },
+     "reached_at": "2026-10-23T22:51:00.000Z",
+     "in_trade": true,
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
+    },
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-10-23T22:52:00.000Z",
+     "close": 80787.69,
+     "level_id": "STOP"
+    },
+    "terminal_at": "2026-10-23T22:51:00.000Z",
     "later_evidence": null,
     "voided": null,
     "retired": null,
     "trigger_ordering": null,
     "public_display": {
-     "kind": null,
-     "ready": false,
-     "evidence_grade": null,
+     "kind": "STOP_BOUNDARY",
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
      "blockers": [],
-     "outcome": null,
+     "outcome": "STOPPED",
      "tps_reached_before_stop": []
     }
    },
    "trigger_readiness": {
     "direction": "long",
     "stack": {
-     "sma9": 81594.86555555556,
-     "smma7": 81565.97239056898,
-     "ema9": 81519.84307519515,
-     "ema20": 81632.74653102363,
-     "ema50": 81958.16565850649,
-     "ema200": 82345.30729842934
+     "sma9": 81464.10777777778,
+     "smma7": 81461.13776334483,
+     "ema9": 81382.30046015613,
+     "ema20": 81556.49733759281,
+     "ema50": 81914.00739738859,
+     "ema200": 82330.25080789771
     },
-    "floor": 81594.86555555556,
-    "price": 81406.01,
-    "distance_pct": 0.23145519545832047,
+    "floor": 81464.10777777778,
+    "price": 80947.32,
+    "distance_pct": 0.6343748085813418,
     "cleared": false
    },
    "confirmation_strength": {
@@ -2257,16 +2311,16 @@
    "trigger_readiness": {
     "direction": "short",
     "stack": {
-     "sma9": 81594.86555555556,
-     "smma7": 81565.97239056898,
-     "ema9": 81519.84307519515,
-     "ema20": 81632.74653102361,
-     "ema50": 81958.16675468846,
-     "ema200": 82343.44831787693
+     "sma9": 81464.10777777778,
+     "smma7": 81461.13776334483,
+     "ema9": 81382.30046015613,
+     "ema20": 81556.4973375928,
+     "ema50": 81914.00845058302,
+     "ema200": 82328.41032466423
     },
-    "floor": 81565.97239056898,
-    "price": 81406.01,
-    "distance_pct": 0.19611412195642022,
+    "floor": 81461.13776334483,
+    "price": 80947.32,
+    "distance_pct": 0.6307520094275243,
     "cleared": true
    },
    "confirmation_strength": {
@@ -2678,8 +2732,8 @@
      "ema200": 24.10436511792792
     },
     "floor": 23.07111111111111,
-    "price": 24.29,
-    "distance_pct": 5.283182431130797,
+    "price": 24.14,
+    "distance_pct": 4.633018686187633,
     "cleared": false
    },
    "confirmation_strength": {
@@ -2927,12 +2981,12 @@
     "word": "Weak",
     "gate": false,
     "votes": {
-     "stoch": false,
+     "stoch": true,
      "macd": false,
      "triple": false,
      "rsi": false
     },
-    "count": 0,
+    "count": 1,
     "order": [
      "stoch",
      "sma_smma",
@@ -2941,20 +2995,20 @@
      "rsi"
     ],
     "readings": {
-     "price": 0.3576,
-     "sma9": 0.36377777777777776,
-     "smma7": 0.362508041846901,
-     "stoch_k": 15.810544469081021,
-     "stoch_d": 19.639484273630572,
-     "rsi": 37.41720484806088,
-     "rsi6": 32.826431321155766,
-     "rsi12": 37.49027601223842,
-     "rsi24": 35.04086032482523,
-     "macd": -0.002977716024326671,
-     "macd_signal": -0.00296205599881173
+     "price": 0.3515,
+     "sma9": 0.36073333333333335,
+     "smma7": 0.3600170782050867,
+     "stoch_k": 17.44864395208842,
+     "stoch_d": 16.723838647130407,
+     "rsi": 33.02146599829295,
+     "rsi6": 27.49989066097062,
+     "rsi12": 32.666660400805355,
+     "rsi24": 32.08664155202757,
+     "macd": -0.0040272522202993155,
+     "macd_signal": -0.0031986954217890374
     },
     "note": "Entry conditions only. Not a signal, not a position size, and not advice to take or skip a trade.",
-    "as_of": "2026-10-23T22:00:00.000Z",
+    "as_of": "2026-10-23T23:00:00.000Z",
     "frozen": false,
     "milestones": []
    }
@@ -3037,15 +3091,15 @@
    "trigger_readiness": null,
    "confirmation_strength": {
     "schema_version": 1,
-    "word": "Weak",
-    "gate": false,
+    "word": "Very strong",
+    "gate": true,
     "votes": {
-     "stoch": false,
+     "stoch": true,
      "macd": true,
-     "triple": false,
-     "rsi": false
+     "triple": true,
+     "rsi": true
     },
-    "count": 1,
+    "count": 4,
     "order": [
      "stoch",
      "sma_smma",
@@ -3054,20 +3108,20 @@
      "rsi"
     ],
     "readings": {
-     "price": 54.33,
-     "sma9": 53.853333333333325,
-     "smma7": 53.804833143405965,
-     "stoch_k": 70.59144488659348,
-     "stoch_d": 63.27451366299035,
-     "rsi": 58.65959229160098,
-     "rsi6": 64.36751383801898,
-     "rsi12": 59.36365554953466,
-     "rsi24": 55.717670081567256,
-     "macd": 0.40400121347975926,
-     "macd_signal": 0.45543174213828524
+     "price": 52.2,
+     "sma9": 53.488888888888894,
+     "smma7": 53.356278310721216,
+     "stoch_k": 41.68693120046719,
+     "stoch_d": 51.91677519236904,
+     "rsi": 41.281627394970414,
+     "rsi6": 28.508597902195476,
+     "rsi12": 39.340340789482006,
+     "rsi24": 45.79729575523874,
+     "macd": 0.15275151308730983,
+     "macd_signal": 0.39676662627871695
     },
     "note": "Entry conditions only. Not a signal, not a position size, and not advice to take or skip a trade.",
-    "as_of": "2026-10-23T22:00:00.000Z",
+    "as_of": "2026-10-23T23:00:00.000Z",
     "frozen": false,
     "milestones": []
    }
@@ -3166,16 +3220,16 @@
    "trigger_readiness": {
     "direction": "long",
     "stack": {
-     "sma9": 0.0797511111111111,
-     "smma7": 0.07966974594289021,
-     "ema9": 0.07960463573424492,
-     "ema20": 0.0797074073173613,
-     "ema50": 0.07993583233083086,
-     "ema200": 0.08098004118135221
+     "sma9": 0.07947888888888889,
+     "smma7": 0.07942692509390589,
+     "ema9": 0.07927770858739594,
+     "ema20": 0.07954193995380308,
+     "ema50": 0.0798587408668767,
+     "ema200": 0.0809500905228313
     },
-    "floor": 0.0797511111111111,
-    "price": 0.07945,
-    "distance_pct": 0.3775635309852727,
+    "floor": 0.07947888888888889,
+    "price": 0.07811,
+    "distance_pct": 1.7223301785240002,
     "cleared": false
    },
    "confirmation_strength": {
@@ -3325,8 +3379,8 @@
      "ema200": 1.2117732054943564
     },
     "floor": 1.2576313742143725,
-    "price": 1.11,
-    "distance_pct": 11.738843133314484,
+    "price": 1.077,
+    "distance_pct": 14.362823472594332,
     "cleared": false
    },
    "confirmation_strength": {
@@ -3508,8 +3562,8 @@
      "ema200": 0.23850591778729316
     },
     "floor": 0.2086628501121876,
-    "price": 0.2065,
-    "distance_pct": 1.0365285967409905,
+    "price": 0.196,
+    "distance_pct": 6.068569515550762,
     "cleared": false
    },
    "confirmation_strength": null
@@ -3627,8 +3681,8 @@
      "ema200": 8.740778129629803
     },
     "floor": 8.095673516882048,
-    "price": 7.82,
-    "distance_pct": 3.405195581407537,
+    "price": 7.68,
+    "distance_pct": 5.134514330589506,
     "cleared": false
    },
    "confirmation_strength": {
@@ -3721,8 +3775,8 @@
     "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "TRIGGERED",
-    "state_since": "2026-10-23T12:04:37.385Z",
+    "state": "STOP_BOUNDARY_REACHED",
+    "state_since": "2026-10-23T23:04:52.896Z",
     "published_at": "2026-10-23T09:38:12.000Z",
     "trigger": {
      "level_id": "TRIGGER_1",
@@ -3767,36 +3821,51 @@
      "completed_at": null
     },
     "extended": null,
-    "stop_boundary": null,
-    "evidence_grade": null,
-    "confirm": null,
-    "terminal_at": null,
+    "stop_boundary": {
+     "level_id": "STOP",
+     "kind": "stop",
+     "zone": {
+      "low": 2320,
+      "high": 2357
+     },
+     "reached_at": "2026-10-23T22:53:00.000Z",
+     "in_trade": true,
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
+    },
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-10-23T22:55:00.000Z",
+     "close": 2355.8,
+     "level_id": "STOP"
+    },
+    "terminal_at": "2026-10-23T22:53:00.000Z",
     "later_evidence": null,
     "voided": null,
     "retired": null,
     "trigger_ordering": null,
     "public_display": {
-     "kind": null,
-     "ready": false,
-     "evidence_grade": null,
+     "kind": "STOP_BOUNDARY",
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
      "blockers": [],
-     "outcome": null,
+     "outcome": "STOPPED",
      "tps_reached_before_stop": []
     }
    },
    "trigger_readiness": {
     "direction": "long",
     "stack": {
-     "sma9": 2405.1433333333334,
-     "smma7": 2402.9052377964626,
-     "ema9": 2402.5135541450827,
-     "ema20": 2403.717371414617,
-     "ema50": 2412.4243333239483,
-     "ema200": 2435.0902491781317
+     "sma9": 2399.8700000000003,
+     "smma7": 2397.8130609683967,
+     "ema9": 2395.4628433160665,
+     "ema20": 2400.245240803701,
+     "ema50": 2410.6531829975193,
+     "ema200": 2434.415321325613
     },
-    "floor": 2405.1433333333334,
-    "price": 2401.64,
-    "distance_pct": 0.1456600646115432,
+    "floor": 2399.8700000000003,
+    "price": 2373.27,
+    "distance_pct": 1.1083933713076275,
     "cleared": false
    },
    "confirmation_strength": {
@@ -4133,8 +4202,8 @@
      "ema200": 1.12351719625128
     },
     "floor": 1.1590456503075293,
-    "price": 0.9774,
-    "distance_pct": 15.672001379698308,
+    "price": 0.9476,
+    "distance_pct": 18.243082164315656,
     "cleared": true
    },
    "confirmation_strength": {
@@ -4357,8 +4426,8 @@
     "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "TRIGGERED",
-    "state_since": "2026-10-23T19:04:52.764Z",
+    "state": "STOP_BOUNDARY_REACHED",
+    "state_since": "2026-10-23T23:04:52.896Z",
     "published_at": "2026-10-22T10:05:20.000Z",
     "trigger": {
      "level_id": "TRIGGER_1",
@@ -4403,36 +4472,51 @@
      "completed_at": null
     },
     "extended": null,
-    "stop_boundary": null,
-    "evidence_grade": null,
-    "confirm": null,
-    "terminal_at": null,
+    "stop_boundary": {
+     "level_id": "STOP",
+     "kind": "stop",
+     "zone": {
+      "low": 77.1,
+      "high": 77.1
+     },
+     "reached_at": "2026-10-23T22:36:00.000Z",
+     "in_trade": true,
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
+    },
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-10-23T22:37:00.000Z",
+     "close": 76.98,
+     "level_id": "STOP"
+    },
+    "terminal_at": "2026-10-23T22:36:00.000Z",
     "later_evidence": null,
     "voided": null,
     "retired": null,
     "trigger_ordering": null,
     "public_display": {
-     "kind": null,
-     "ready": false,
-     "evidence_grade": null,
+     "kind": "STOP_BOUNDARY",
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
      "blockers": [],
-     "outcome": null,
+     "outcome": "STOPPED",
      "tps_reached_before_stop": []
     }
    },
    "trigger_readiness": {
     "direction": "long",
     "stack": {
-     "sma9": 78.07777777777778,
-     "smma7": 77.9753680469163,
-     "ema9": 77.92455761605757,
-     "ema20": 78.04017126935446,
-     "ema50": 78.47941954001622,
-     "ema200": 79.89896160644868
+     "sma9": 77.90333333333334,
+     "smma7": 77.80602975449969,
+     "ema9": 77.69764609284606,
+     "ema20": 77.92110733893975,
+     "ema50": 78.41316779334893,
+     "ema200": 79.86802666509098
     },
-    "floor": 78.07777777777778,
-    "price": 77.86,
-    "distance_pct": 0.2789241497082753,
+    "floor": 77.90333333333334,
+    "price": 76.86,
+    "distance_pct": 1.3392666124684478,
     "cleared": false
    },
    "confirmation_strength": {
@@ -4552,16 +4636,16 @@
    "trigger_readiness": {
     "direction": "short",
     "stack": {
-     "sma9": 78.07777777777778,
-     "smma7": 77.9753680469163,
-     "ema9": 77.92455761605757,
-     "ema20": 78.04017126935446,
-     "ema50": 78.47941954001622,
-     "ema200": 79.89896160644868
+     "sma9": 77.90333333333334,
+     "smma7": 77.80602975449969,
+     "ema9": 77.69764609284606,
+     "ema20": 77.92110733893975,
+     "ema50": 78.41316779334893,
+     "ema200": 79.86802666509098
     },
-    "floor": 77.9753680469163,
-    "price": 77.86,
-    "distance_pct": 0.1479544756324681,
+    "floor": 77.80602975449969,
+    "price": 76.86,
+    "distance_pct": 1.2158823133434329,
     "cleared": true
    },
    "confirmation_strength": {
@@ -4711,8 +4795,8 @@
      "ema200": 3.2549506707474496
     },
     "floor": 2.978329368732551,
-    "price": 2.761,
-    "distance_pct": 7.2970226535098455,
+    "price": 2.681,
+    "distance_pct": 9.983092261521152,
     "cleared": false
    },
    "confirmation_strength": {
@@ -5123,16 +5207,16 @@
    "trigger_readiness": {
     "direction": "long",
     "stack": {
-     "sma9": 7.8436666666666675,
-     "smma7": 7.886187148779365,
-     "ema9": 7.853220066308435,
-     "ema20": 7.9343040119951365,
-     "ema50": 8.105855554566437,
-     "ema200": 8.261956128959971
+     "sma9": 7.811555555555556,
+     "smma7": 7.855160413239456,
+     "ema9": 7.816376053046748,
+     "ema20": 7.909036963233695,
+     "ema50": 8.088723964191283,
+     "ema200": 8.256056067975296
     },
-    "floor": 7.886187148779365,
-    "price": 7.849,
-    "distance_pct": 0.47154788591494445,
+    "floor": 7.855160413239456,
+    "price": 7.682,
+    "distance_pct": 2.204416003365159,
     "cleared": false
    },
    "confirmation_strength": {
@@ -5415,8 +5499,8 @@
     "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "TRIGGERED",
-    "state_since": "2026-10-23T19:04:52.764Z",
+    "state": "STOP_BOUNDARY_REACHED",
+    "state_since": "2026-10-23T23:04:52.896Z",
     "published_at": "2026-10-22T10:04:50.000Z",
     "trigger": {
      "level_id": "TRIGGER_1",
@@ -5461,36 +5545,51 @@
      "completed_at": null
     },
     "extended": null,
-    "stop_boundary": null,
-    "evidence_grade": null,
-    "confirm": null,
-    "terminal_at": null,
+    "stop_boundary": {
+     "level_id": "STOP",
+     "kind": "stop",
+     "zone": {
+      "low": 11.75,
+      "high": 11.75
+     },
+     "reached_at": "2026-10-23T22:47:00.000Z",
+     "in_trade": true,
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
+    },
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-10-23T22:50:00.000Z",
+     "close": 11.714,
+     "level_id": "STOP"
+    },
+    "terminal_at": "2026-10-23T22:47:00.000Z",
     "later_evidence": null,
     "voided": null,
     "retired": null,
     "trigger_ordering": null,
     "public_display": {
-     "kind": null,
-     "ready": false,
-     "evidence_grade": null,
+     "kind": "STOP_BOUNDARY",
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
      "blockers": [],
-     "outcome": null,
+     "outcome": "STOPPED",
      "tps_reached_before_stop": []
     }
    },
    "trigger_readiness": {
     "direction": "long",
     "stack": {
-     "sma9": 12.000777777777778,
-     "smma7": 12.010868947215423,
-     "ema9": 11.98856379421019,
-     "ema20": 12.035814081493356,
-     "ema50": 12.105356377988446,
-     "ema200": 12.284174617315564
+     "sma9": 11.958000000000002,
+     "smma7": 11.965030526184648,
+     "ema9": 11.928851035368151,
+     "ema20": 12.002879407065418,
+     "ema50": 12.089067892577136,
+     "ema200": 12.278262432068644
     },
-    "floor": 12.010868947215423,
-    "price": 11.954,
-    "distance_pct": 0.4734790419023482,
+    "floor": 11.965030526184648,
+    "price": 11.743,
+    "distance_pct": 1.8556620118832916,
     "cleared": false
    },
    "confirmation_strength": {
@@ -5544,8 +5643,8 @@
     "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "TRIGGERED",
-    "state_since": "2026-10-23T12:32:20.799Z",
+    "state": "TARGETS_IN_PROGRESS",
+    "state_since": "2026-10-23T23:04:52.896Z",
     "published_at": "2026-10-23T11:16:01.000Z",
     "trigger": {
      "level_id": "TRIGGER_1",
@@ -5563,7 +5662,7 @@
        "low": 11.81,
        "high": 11.81
       },
-      "reached_at": null
+      "reached_at": "2026-10-23T22:47:00.000Z"
      },
      {
       "level_id": "TP2",
@@ -5584,7 +5683,7 @@
     ],
     "objectives": {
      "defined": 3,
-     "reached": 0,
+     "reached": 1,
      "all_reached": false,
      "ladder_problems": [],
      "completed_at": null
@@ -5610,16 +5709,16 @@
    "trigger_readiness": {
     "direction": "short",
     "stack": {
-     "sma9": 12.000777777777778,
-     "smma7": 12.010868947215423,
-     "ema9": 11.98856379421019,
-     "ema20": 12.03581408149334,
-     "ema50": 12.105358518763932,
-     "ema200": 12.295732521037086
+     "sma9": 11.958000000000002,
+     "smma7": 11.965030526184648,
+     "ema9": 11.928851035368151,
+     "ema20": 12.002879407065404,
+     "ema50": 12.089069949400642,
+     "ema200": 12.289705331773035
     },
-    "floor": 12.000777777777778,
-    "price": 11.954,
-    "distance_pct": 0.38978955067726373,
+    "floor": 11.958000000000002,
+    "price": 11.743,
+    "distance_pct": 1.7979595250041946,
     "cleared": true
    },
    "confirmation_strength": {
@@ -5657,7 +5756,46 @@
     "as_of": "2026-10-23T12:00:00.000Z",
     "frozen": true,
     "frozen_at": "2026-10-23T12:00:00.000Z",
-    "milestones": []
+    "milestones": [
+     {
+      "schema_version": 1,
+      "word": "Mixed",
+      "gate": true,
+      "votes": {
+       "stoch": false,
+       "macd": true,
+       "triple": true,
+       "rsi": true
+      },
+      "count": 3,
+      "order": [
+       "stoch",
+       "sma_smma",
+       "macd",
+       "triple",
+       "rsi"
+      ],
+      "readings": {
+       "price": 11.69,
+       "sma9": 11.958000000000002,
+       "smma7": 11.965028169331237,
+       "stoch_k": 16.953627180899968,
+       "stoch_d": 18.356303532567527,
+       "rsi": 25.167627582031244,
+       "rsi6": 12.246854258410693,
+       "rsi12": 23.373836213285898,
+       "rsi24": 27.899203717889534,
+       "macd": -0.07681336030226582,
+       "macd_signal": -0.050091541876432756
+      },
+      "note": "Entry conditions only. Not a signal, not a position size, and not advice to take or skip a trade.",
+      "as_of": "2026-10-23T22:00:00.000Z",
+      "level_id": "TP1",
+      "at": "2026-10-23T22:47:00.000Z",
+      "frozen": true,
+      "frozen_at": "2026-10-23T22:47:00.000Z"
+     }
+    ]
    }
   },
   "LTC": {
@@ -5781,8 +5919,8 @@
      "ema200": 67.89712202861942
     },
     "floor": 63.26599740440899,
-    "price": 58.03,
-    "distance_pct": 8.276163530528795,
+    "price": 56.93,
+    "distance_pct": 10.014854209770885,
     "cleared": false
    },
    "confirmation_strength": {
@@ -6166,7 +6304,7 @@
        "low": 4.65,
        "high": 4.65
       },
-      "reached_at": null
+      "reached_at": "2026-10-23T22:48:00.000Z"
      },
      {
       "level_id": "TP3",
@@ -6179,7 +6317,7 @@
     ],
     "objectives": {
      "defined": 3,
-     "reached": 1,
+     "reached": 2,
      "all_reached": false,
      "ladder_problems": [],
      "completed_at": null
@@ -6205,16 +6343,16 @@
    "trigger_readiness": {
     "direction": "short",
     "stack": {
-     "sma9": 4.84011111111111,
-     "smma7": 4.850261349326748,
-     "ema9": 4.830383605786291,
-     "ema20": 4.876243617048094,
-     "ema50": 4.941989683678347,
-     "ema200": 5.032652634386119
+     "sma9": 4.804222222222222,
+     "smma7": 4.819366870851498,
+     "ema9": 4.791106884629032,
+     "ema20": 4.853172796376847,
+     "ema50": 4.929911656867432,
+     "ema200": 5.028685941506655
     },
-    "floor": 4.84011111111111,
-    "price": 4.806,
-    "distance_pct": 0.7047588439199948,
+    "floor": 4.804222222222222,
+    "price": 4.656,
+    "distance_pct": 3.085249086451738,
     "cleared": true
    },
    "confirmation_strength": {
@@ -6290,6 +6428,44 @@
       "at": "2026-10-23T14:17:00.000Z",
       "frozen": true,
       "frozen_at": "2026-10-23T14:17:00.000Z"
+     },
+     {
+      "schema_version": 1,
+      "word": "Mixed",
+      "gate": true,
+      "votes": {
+       "stoch": false,
+       "macd": true,
+       "triple": true,
+       "rsi": true
+      },
+      "count": 3,
+      "order": [
+       "stoch",
+       "sma_smma",
+       "macd",
+       "triple",
+       "rsi"
+      ],
+      "readings": {
+       "price": 4.634,
+       "sma9": 4.804222222222222,
+       "smma7": 4.819383576534668,
+       "stoch_k": 21.880789855029835,
+       "stoch_d": 19.418189242034316,
+       "rsi": 29.797169461444483,
+       "rsi6": 22.694316916916193,
+       "rsi12": 28.91272079135848,
+       "rsi24": 31.100696583055694,
+       "macd": -0.0680526599541249,
+       "macd_signal": -0.05149960851461116
+      },
+      "note": "Entry conditions only. Not a signal, not a position size, and not advice to take or skip a trade.",
+      "as_of": "2026-10-23T22:00:00.000Z",
+      "level_id": "TP2",
+      "at": "2026-10-23T22:48:00.000Z",
+      "frozen": true,
+      "frozen_at": "2026-10-23T22:48:00.000Z"
      }
     ]
    }
@@ -6334,7 +6510,7 @@
        "low": 0.4132,
        "high": 0.4132
       },
-      "reached_at": null
+      "reached_at": "2026-10-23T22:53:00.000Z"
      },
      {
       "level_id": "TP3",
@@ -6347,7 +6523,7 @@
     ],
     "objectives": {
      "defined": 3,
-     "reached": 1,
+     "reached": 2,
      "all_reached": false,
      "ladder_problems": [],
      "completed_at": null
@@ -6373,16 +6549,16 @@
    "trigger_readiness": {
     "direction": "short",
     "stack": {
-     "sma9": 0.4298777777777778,
-     "smma7": 0.43027207981768434,
-     "ema9": 0.4291911282901453,
-     "ema20": 0.4316592534412766,
-     "ema50": 0.4364685349451271,
-     "ema200": 0.44861046440359087
+     "sma9": 0.42783333333333334,
+     "smma7": 0.42833321127230084,
+     "ema9": 0.4266929026321163,
+     "ema20": 0.4302345626373455,
+     "ema50": 0.4356932982806123,
+     "ema200": 0.4482929473448487
     },
-    "floor": 0.4298777777777778,
-    "price": 0.4269,
-    "distance_pct": 0.6927033523740652,
+    "floor": 0.42783333333333334,
+    "price": 0.4169,
+    "distance_pct": 2.555512271133623,
     "cleared": true
    },
    "confirmation_strength": {
@@ -6458,6 +6634,44 @@
       "at": "2026-10-23T20:20:00.000Z",
       "frozen": true,
       "frozen_at": "2026-10-23T20:20:00.000Z"
+     },
+     {
+      "schema_version": 1,
+      "word": "Mixed",
+      "gate": true,
+      "votes": {
+       "stoch": false,
+       "macd": true,
+       "triple": true,
+       "rsi": true
+      },
+      "count": 3,
+      "order": [
+       "stoch",
+       "sma_smma",
+       "macd",
+       "triple",
+       "rsi"
+      ],
+      "readings": {
+       "price": 0.4167,
+       "sma9": 0.42783333333333334,
+       "smma7": 0.42833229467745587,
+       "stoch_k": 18.872853929748086,
+       "stoch_d": 16.716200885472862,
+       "rsi": 23.989774129643806,
+       "rsi6": 13.215249560446935,
+       "rsi12": 22.575096421463442,
+       "rsi24": 25.519383764834444,
+       "macd": -0.003956011500844403,
+       "macd_signal": -0.0029828332920718028
+      },
+      "note": "Entry conditions only. Not a signal, not a position size, and not advice to take or skip a trade.",
+      "as_of": "2026-10-23T22:00:00.000Z",
+      "level_id": "TP2",
+      "at": "2026-10-23T22:53:00.000Z",
+      "frozen": true,
+      "frozen_at": "2026-10-23T22:53:00.000Z"
      }
     ]
    }
@@ -6541,16 +6755,16 @@
    "trigger_readiness": {
     "direction": "long",
     "stack": {
-     "sma9": 0.00000479,
-     "smma7": 0.000004754179982651924,
-     "ema9": 0.000004747578402907645,
-     "ema20": 0.000004734052779098302,
-     "ema50": 0.000004634470443872698,
-     "ema200": 0.000004364935613150732
+     "sma9": 0.0000047333333333333335,
+     "smma7": 0.000004725011413701649,
+     "ema9": 0.000004708062722326116,
+     "ema20": 0.000004716523942993701,
+     "ema50": 0.000004631157877446317,
+     "ema200": 0.0000043667770498358
     },
-    "floor": 0.00000479,
-    "price": 0.00000465,
-    "distance_pct": 2.9227557411273386,
+    "floor": 0.0000047333333333333335,
+    "price": 0.00000455,
+    "distance_pct": 3.873239436619729,
     "cleared": false
    },
    "confirmation_strength": {
@@ -6747,16 +6961,16 @@
    "trigger_readiness": {
     "direction": "short",
     "stack": {
-     "sma9": 0.00000479,
-     "smma7": 0.000004754179982651924,
-     "ema9": 0.000004747578402907645,
-     "ema20": 0.000004734052779098302,
-     "ema50": 0.0000046344704227154505,
-     "ema200": 0.000004365677045630154
+     "sma9": 0.0000047333333333333335,
+     "smma7": 0.000004725011413701649,
+     "ema9": 0.000004708062722326116,
+     "ema20": 0.000004716523942993701,
+     "ema50": 0.0000046311578571187664,
+     "ema200": 0.000004367511104877615
     },
-    "floor": 0.000004754179982651924,
-    "price": 0.00000465,
-    "distance_pct": 2.1913344263801062,
+    "floor": 0.000004725011413701649,
+    "price": 0.00000455,
+    "distance_pct": 3.703936316304959,
     "cleared": true
    },
    "confirmation_strength": {
@@ -6910,8 +7124,8 @@
      "ema200": 0.1075241047920698
     },
     "floor": 0.09865119655189737,
-    "price": 0.09106,
-    "distance_pct": 7.694986799175693,
+    "price": 0.08918,
+    "distance_pct": 9.600691003190082,
     "cleared": false
    },
    "confirmation_strength": {
@@ -7236,8 +7450,8 @@
      "ema200": 1.9913010915492388
     },
     "floor": 2.144888888888888,
-    "price": 1.752,
-    "distance_pct": 18.317447161210083,
+    "price": 1.718,
+    "distance_pct": 19.90261085785327,
     "cleared": false
    },
    "confirmation_strength": {
@@ -7393,8 +7607,8 @@
      "ema200": 0.07144258280532591
     },
     "floor": 0.06672343102089417,
-    "price": 0.05756,
-    "distance_pct": 13.733452972501794,
+    "price": 0.05505,
+    "distance_pct": 17.495249932873932,
     "cleared": false
    },
    "confirmation_strength": {
@@ -7525,8 +7739,8 @@
     "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "TRIGGERED",
-    "state_since": "2026-10-23T11:04:38.367Z",
+    "state": "STOP_BOUNDARY_REACHED",
+    "state_since": "2026-10-23T23:04:52.896Z",
     "published_at": "2026-10-23T09:38:05.000Z",
     "trigger": {
      "level_id": "TRIGGER_1",
@@ -7571,36 +7785,51 @@
      "completed_at": null
     },
     "extended": null,
-    "stop_boundary": null,
-    "evidence_grade": null,
-    "confirm": null,
-    "terminal_at": null,
+    "stop_boundary": {
+     "level_id": "STOP",
+     "kind": "stop",
+     "zone": {
+      "low": 0.00000478,
+      "high": 0.00000496
+     },
+     "reached_at": "2026-10-23T22:47:00.000Z",
+     "in_trade": true,
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
+    },
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-10-23T22:48:00.000Z",
+     "close": 0.00000494,
+     "level_id": "STOP"
+    },
+    "terminal_at": "2026-10-23T22:47:00.000Z",
     "later_evidence": null,
     "voided": null,
     "retired": null,
     "trigger_ordering": null,
     "public_display": {
-     "kind": null,
-     "ready": false,
-     "evidence_grade": null,
+     "kind": "STOP_BOUNDARY",
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
      "blockers": [],
-     "outcome": null,
+     "outcome": "STOPPED",
      "tps_reached_before_stop": []
     }
    },
    "trigger_readiness": {
     "direction": "long",
     "stack": {
-     "sma9": 0.000005081111111111111,
-     "smma7": 0.000005066168593937383,
-     "ema9": 0.0000050652333204834745,
-     "ema20": 0.000005062213502811995,
-     "ema50": 0.000005059491963656798,
-     "ema200": 0.0000050966380178455885
+     "sma9": 0.0000050588888888888885,
+     "smma7": 0.000005045287366232043,
+     "ema9": 0.00000503618665638678,
+     "ema20": 0.000005048669359687044,
+     "ema50": 0.000005054021690572218,
+     "ema200": 0.00000509488042562822
     },
-    "floor": 0.000005081111111111111,
-    "price": 0.00000505,
-    "distance_pct": 0.6122895254756155,
+    "floor": 0.0000050588888888888885,
+    "price": 0.00000494,
+    "distance_pct": 2.350098835932343,
     "cleared": false
    },
    "confirmation_strength": {
@@ -7654,8 +7883,8 @@
     "class": "WATCHING"
    },
    "lifecycle": {
-    "state": "TRIGGERED",
-    "state_since": "2026-10-23T19:04:52.764Z",
+    "state": "TARGETS_IN_PROGRESS",
+    "state_since": "2026-10-23T23:04:52.896Z",
     "published_at": "2026-10-23T11:16:10.000Z",
     "trigger": {
      "level_id": "TRIGGER_1",
@@ -7673,7 +7902,7 @@
        "low": 102.99,
        "high": 102.99
       },
-      "reached_at": null
+      "reached_at": "2026-10-23T22:33:00.000Z"
      },
      {
       "level_id": "TP2",
@@ -7694,7 +7923,7 @@
     ],
     "objectives": {
      "defined": 3,
-     "reached": 0,
+     "reached": 1,
      "all_reached": false,
      "ladder_problems": [],
      "completed_at": null
@@ -7720,16 +7949,16 @@
    "trigger_readiness": {
     "direction": "short",
     "stack": {
-     "sma9": 104.32777777777775,
-     "smma7": 104.18787224655776,
-     "ema9": 104.10678928381348,
-     "ema20": 104.27051955753987,
-     "ema50": 104.66211186451329,
-     "ema200": 105.51466173415548
+     "sma9": 104.02666666666666,
+     "smma7": 103.92246192562095,
+     "ema9": 103.75143142705079,
+     "ema20": 104.0857081711075,
+     "ema50": 104.57065649727748,
+     "ema200": 105.48297355769623
     },
-    "floor": 104.18787224655776,
-    "price": 103.84,
-    "distance_pct": 0.3338893856422425,
+    "floor": 103.92246192562095,
+    "price": 102.52,
+    "distance_pct": 1.3495272337030664,
     "cleared": true
    },
    "confirmation_strength": {
@@ -7767,7 +7996,46 @@
     "as_of": "2026-10-23T19:00:00.000Z",
     "frozen": true,
     "frozen_at": "2026-10-23T19:00:00.000Z",
-    "milestones": []
+    "milestones": [
+     {
+      "schema_version": 1,
+      "word": "Mixed",
+      "gate": true,
+      "votes": {
+       "stoch": false,
+       "macd": true,
+       "triple": true,
+       "rsi": true
+      },
+      "count": 3,
+      "order": [
+       "stoch",
+       "sma_smma",
+       "macd",
+       "triple",
+       "rsi"
+      ],
+      "readings": {
+       "price": 102.33,
+       "sma9": 104.02666666666666,
+       "smma7": 103.92229087990177,
+       "stoch_k": 18.884818884818873,
+       "stoch_d": 18.02427032312094,
+       "rsi": 29.451978860091543,
+       "rsi6": 17.90377112583481,
+       "rsi12": 28.065963051625715,
+       "rsi24": 31.240932324616608,
+       "macd": -0.3420021274662872,
+       "macd_signal": -0.20089367358018959
+      },
+      "note": "Entry conditions only. Not a signal, not a position size, and not advice to take or skip a trade.",
+      "as_of": "2026-10-23T22:00:00.000Z",
+      "level_id": "TP1",
+      "at": "2026-10-23T22:33:00.000Z",
+      "frozen": true,
+      "frozen_at": "2026-10-23T22:33:00.000Z"
+     }
+    ]
    }
   },
   "SSV": {
@@ -7878,8 +8146,8 @@
      "ema200": 3.0347220608585226
     },
     "floor": 2.8283522025543903,
-    "price": 2.552,
-    "distance_pct": 9.770784639367273,
+    "price": 2.518,
+    "distance_pct": 10.97289801015941,
     "cleared": false
    },
    "confirmation_strength": {
@@ -8042,8 +8310,8 @@
      "ema200": 0.3928249848393571
     },
     "floor": 0.42636666666666667,
-    "price": 0.3209,
-    "distance_pct": 24.736142600265808,
+    "price": 0.3102,
+    "distance_pct": 27.245719646626544,
     "cleared": false
    },
    "confirmation_strength": {
@@ -8217,16 +8485,16 @@
    "trigger_readiness": {
     "direction": "long",
     "stack": {
-     "sma9": 0.985988888888889,
-     "smma7": 0.9851667692415271,
-     "ema9": 0.9832496790287034,
-     "ema20": 0.9869621799210112,
-     "ema50": 0.9935550525958975,
-     "ema200": 1.0137327310116033
+     "sma9": 0.9804555555555555,
+     "smma7": 0.9801143736355947,
+     "ema9": 0.9765597432229628,
+     "ema20": 0.9834229246904387,
+     "ema50": 0.9918391681803721,
+     "ema200": 1.0130965844343733
     },
-    "floor": 0.985988888888889,
-    "price": 0.9776,
-    "distance_pct": 0.850809677819234,
+    "floor": 0.9804555555555555,
+    "price": 0.9519,
+    "distance_pct": 2.9124783264015597,
     "cleared": false
    },
    "confirmation_strength": {
@@ -8345,29 +8613,29 @@
    "trigger_readiness": {
     "direction": "short",
     "stack": {
-     "sma9": 259.73333333333335,
-     "smma7": 259.69751810923947,
-     "ema9": 259.3826598554725,
-     "ema20": 260.06414201814266,
-     "ema50": 262.17074049065764,
-     "ema200": 266.9080233106569
+     "sma9": 258.67777777777775,
+     "smma7": 258.6121583793481,
+     "ema9": 257.92612788437805,
+     "ema20": 259.3056523021291,
+     "ema50": 261.775809491024,
+     "ema200": 266.760679795128
     },
-    "floor": 259.69751810923947,
-    "price": 259.1,
-    "distance_pct": 0.23008233331983727,
+    "floor": 258.6121583793481,
+    "price": 253.3,
+    "distance_pct": 2.054102333253757,
     "cleared": true
    },
    "confirmation_strength": {
     "schema_version": 1,
-    "word": "Mixed",
+    "word": "Very strong",
     "gate": true,
     "votes": {
-     "stoch": false,
+     "stoch": true,
      "macd": true,
-     "triple": false,
+     "triple": true,
      "rsi": true
     },
-    "count": 2,
+    "count": 4,
     "order": [
      "stoch",
      "sma_smma",
@@ -8376,20 +8644,20 @@
      "rsi"
     ],
     "readings": {
-     "price": 259,
-     "sma9": 259.44444444444446,
-     "smma7": 259.5968505655438,
-     "stoch_k": 38.45887445887423,
-     "stoch_d": 34.542256782997335,
-     "rsi": 42.622198886325044,
-     "rsi6": 45.16604236581592,
-     "rsi12": 43.63192199182031,
-     "rsi24": 37.345997306804314,
-     "macd": -0.8808040701022719,
-     "macd_signal": -0.7916651430098205
+     "price": 253.2,
+     "sma9": 257.94444444444446,
+     "smma7": 257.83696193427545,
+     "stoch_k": 27.95262685226751,
+     "stoch_d": 29.528453921471257,
+     "rsi": 31.54647573286941,
+     "rsi6": 25.325860294884748,
+     "rsi12": 30.714773168456475,
+     "rsi24": 32.21018987281931,
+     "macd": -1.689292989349326,
+     "macd_signal": -0.9881453873562407
     },
     "note": "Entry conditions only. Not a signal, not a position size, and not advice to take or skip a trade.",
-    "as_of": "2026-10-23T22:00:00.000Z",
+    "as_of": "2026-10-23T23:00:00.000Z",
     "frozen": false,
     "milestones": []
    }
@@ -8545,8 +8813,8 @@
      "ema200": 0.4685345080582743
     },
     "floor": 0.49842222222222227,
-    "price": 0.5473,
-    "distance_pct": 9.806500512729048,
+    "price": 0.5318,
+    "distance_pct": 6.696687324446031,
     "cleared": true
    },
    "confirmation_strength": null
@@ -8630,17 +8898,17 @@
    "trigger_readiness": {
     "direction": "long",
     "stack": {
-     "sma9": 0.33003333333333335,
-     "smma7": 0.33002049535336975,
-     "ema9": 0.33006952458501176,
-     "ema20": 0.32995717009439274,
-     "ema50": 0.33014052346329253,
-     "ema200": 0.3311406064234267
+     "sma9": 0.32996666666666663,
+     "smma7": 0.3299747103028884,
+     "ema9": 0.32999561966800944,
+     "ema20": 0.32993267770445056,
+     "ema50": 0.33012324803335946,
+     "ema200": 0.3311262720311538
     },
-    "floor": 0.33003333333333335,
-    "price": 0.3303,
-    "distance_pct": 0.0807999192000719,
-    "cleared": true
+    "floor": 0.3299747103028884,
+    "price": 0.3298,
+    "distance_pct": 0.05294657361106079,
+    "cleared": false
    },
    "confirmation_strength": {
     "schema_version": 1,
@@ -8780,8 +9048,8 @@
      "ema200": 0.0010131521052138325
     },
     "floor": 0.0009448605909336767,
-    "price": 0.000853,
-    "distance_pct": 9.722131689597024,
+    "price": 0.000832,
+    "distance_pct": 11.94468178868081,
     "cleared": false
    },
    "confirmation_strength": {
@@ -8916,16 +9184,16 @@
    "trigger_readiness": {
     "direction": "long",
     "stack": {
-     "sma9": 7.124222222222222,
-     "smma7": 7.128253523104662,
-     "ema9": 7.119811981788487,
-     "ema20": 7.135805217872932,
-     "ema50": 7.182031892505453,
-     "ema200": 7.27804243764749
+     "sma9": 7.091222222222222,
+     "smma7": 7.08978873408971,
+     "ema9": 7.06764958543079,
+     "ema20": 7.109442816170748,
+     "ema50": 7.169363975152298,
+     "ema200": 7.273872861153485
     },
-    "floor": 7.128253523104662,
-    "price": 7.109,
-    "distance_pct": 0.27010154790729207,
+    "floor": 7.091222222222222,
+    "price": 6.876,
+    "distance_pct": 3.0350511587095093,
     "cleared": false
    },
    "confirmation_strength": {
@@ -9048,29 +9316,29 @@
    "trigger_readiness": {
     "direction": "short",
     "stack": {
-     "sma9": 7.124222222222222,
-     "smma7": 7.128253523104662,
-     "ema9": 7.119811981788487,
-     "ema20": 7.135805217872932,
-     "ema50": 7.18203226628849,
-     "ema200": 7.281007497255723
+     "sma9": 7.091222222222222,
+     "smma7": 7.08978873408971,
+     "ema9": 7.06764958543079,
+     "ema20": 7.109442816170748,
+     "ema50": 7.169364334277177,
+     "ema200": 7.276808417681039
     },
-    "floor": 7.124222222222222,
-    "price": 7.109,
-    "distance_pct": 0.21366854861348492,
+    "floor": 7.08978873408971,
+    "price": 6.876,
+    "distance_pct": 3.015445764437991,
     "cleared": true
    },
    "confirmation_strength": {
     "schema_version": 1,
-    "word": "Mixed",
+    "word": "Very strong",
     "gate": true,
     "votes": {
-     "stoch": false,
+     "stoch": true,
      "macd": true,
-     "triple": false,
+     "triple": true,
      "rsi": true
     },
-    "count": 2,
+    "count": 4,
     "order": [
      "stoch",
      "sma_smma",
@@ -9079,20 +9347,20 @@
      "rsi"
     ],
     "readings": {
-     "price": 7.109,
-     "sma9": 7.119,
-     "smma7": 7.1254807022081,
-     "stoch_k": 38.097950311486876,
-     "stoch_d": 34.13120214198093,
-     "rsi": 44.421195470142436,
-     "rsi6": 46.50593537565963,
-     "rsi12": 45.30376675764375,
-     "rsi24": 39.74411002721484,
-     "macd": -0.01980028728832739,
-     "macd_signal": -0.015298250038439366
+     "price": 6.875,
+     "sma9": 7.064000000000001,
+     "smma7": 7.059050799575415,
+     "stoch_k": 18.964047162134825,
+     "stoch_d": 25.313393379522527,
+     "rsi": 29.89036565598215,
+     "rsi6": 20.940785386755294,
+     "rsi12": 28.52623705230714,
+     "rsi24": 32.41697348079447,
+     "macd": -0.05181501199487659,
+     "macd_signal": -0.02360094860828596
     },
     "note": "Entry conditions only. Not a signal, not a position size, and not advice to take or skip a trade.",
-    "as_of": "2026-10-23T22:00:00.000Z",
+    "as_of": "2026-10-23T23:00:00.000Z",
     "frozen": false,
     "milestones": []
    }
@@ -9176,16 +9444,16 @@
    "trigger_readiness": {
     "direction": "long",
     "stack": {
-     "sma9": 25.60508888888889,
-     "smma7": 25.629340286044616,
-     "ema9": 25.50667705934088,
-     "ema20": 25.786387604367423,
-     "ema50": 26.021707366121255,
-     "ema200": 24.898915418634765
+     "sma9": 25.32981111111111,
+     "smma7": 25.420266332604207,
+     "ema9": 25.264633317978166,
+     "ema20": 25.615935884754283,
+     "ema50": 25.931832059229965,
+     "ema200": 24.89806428784821
     },
-    "floor": 25.629340286044616,
-    "price": 25.2642,
-    "distance_pct": 1.4246963908136152,
+    "floor": 25.420266332604207,
+    "price": 24.6725,
+    "distance_pct": 2.9416148628038465,
     "cleared": false
    },
    "confirmation_strength": {
@@ -9371,8 +9639,8 @@
      "ema200": 0.5488355189834511
     },
     "floor": 0.5546243984562519,
-    "price": 0.511,
-    "distance_pct": 7.865575077056931,
+    "price": 0.479,
+    "distance_pct": 13.635245522329301,
     "cleared": true
    },
    "confirmation_strength": null
@@ -9490,8 +9758,8 @@
      "ema200": 0.21096448930041084
     },
     "floor": 0.19312286169721382,
-    "price": 0.1752,
-    "distance_pct": 9.28054894159245,
+    "price": 0.1722,
+    "distance_pct": 10.833964199441896,
     "cleared": false
    },
    "confirmation_strength": {
@@ -9698,7 +9966,18 @@
      "completed_at": null
     },
     "extended": null,
-    "stop_boundary": null,
+    "stop_boundary": {
+     "level_id": "STOP",
+     "kind": "stop",
+     "zone": {
+      "low": 1.2744,
+      "high": 1.2939
+     },
+     "reached_at": "2026-10-23T22:00:00.000Z",
+     "in_trade": false,
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
+    },
     "evidence_grade": null,
     "confirm": null,
     "terminal_at": null,
@@ -9718,16 +9997,16 @@
    "trigger_readiness": {
     "direction": "long",
     "stack": {
-     "sma9": 1.3109,
-     "smma7": 1.3120280431127347,
-     "ema9": 1.310266101597677,
-     "ema20": 1.314485789157427,
-     "ema50": 1.3220838509428545,
-     "ema200": 1.3319776245194481
+     "sma9": 1.3073222222222223,
+     "smma7": 1.3088668940966297,
+     "ema9": 1.3061928812781418,
+     "ema20": 1.3121442854281484,
+     "ema50": 1.320821739141174,
+     "ema200": 1.3315589416884088
     },
-    "floor": 1.3120280431127347,
-    "price": 1.3089,
-    "distance_pct": 0.23841282426506497,
+    "floor": 1.3088668940966297,
+    "price": 1.2918,
+    "distance_pct": 1.303944211103994,
     "cleared": false
    },
    "confirmation_strength": {
@@ -9735,12 +10014,12 @@
     "word": "Weak",
     "gate": false,
     "votes": {
-     "stoch": true,
-     "macd": true,
-     "triple": true,
+     "stoch": false,
+     "macd": false,
+     "triple": false,
      "rsi": false
     },
-    "count": 3,
+    "count": 0,
     "order": [
      "stoch",
      "sma_smma",
@@ -9749,20 +10028,20 @@
      "rsi"
     ],
     "readings": {
-     "price": 1.3089,
-     "sma9": 1.3094333333333334,
-     "smma7": 1.311579260915977,
-     "stoch_k": 26.558240100123175,
-     "stoch_d": 22.184271520614903,
-     "rsi": 39.74918761620664,
-     "rsi6": 44.1779971650945,
-     "rsi12": 40.89240571793869,
-     "rsi24": 33.97739614602001,
-     "macd": -0.005665835378622086,
-     "macd_signal": -0.005669032292191504
+     "price": 1.2915,
+     "sma9": 1.3047444444444443,
+     "smma7": 1.306380098266773,
+     "stoch_k": 20.018393623543854,
+     "stoch_d": 20.50301269577098,
+     "rsi": 29.421883481126656,
+     "rsi6": 22.775563260555955,
+     "rsi12": 28.70608817569176,
+     "rsi24": 29.128038193134643,
+     "macd": -0.00782679703829725,
+     "macd_signal": -0.006141321354857775
     },
     "note": "Entry conditions only. Not a signal, not a position size, and not advice to take or skip a trade.",
-    "as_of": "2026-10-23T22:00:00.000Z",
+    "as_of": "2026-10-23T23:00:00.000Z",
     "frozen": false,
     "milestones": []
    }
@@ -9846,16 +10125,16 @@
    "trigger_readiness": {
     "direction": "short",
     "stack": {
-     "sma9": 1.3109,
-     "smma7": 1.3120280431127347,
-     "ema9": 1.310266101597677,
-     "ema20": 1.314485789157427,
-     "ema50": 1.3220838509428545,
-     "ema200": 1.3319776245194481
+     "sma9": 1.3073222222222223,
+     "smma7": 1.3088668940966297,
+     "ema9": 1.3061928812781418,
+     "ema20": 1.3121442854281484,
+     "ema50": 1.320821739141174,
+     "ema200": 1.3315589416884088
     },
-    "floor": 1.3109,
-    "price": 1.3089,
-    "distance_pct": 0.15256693874437424,
+    "floor": 1.3073222222222223,
+    "price": 1.2918,
+    "distance_pct": 1.1873294860571646,
     "cleared": true
    },
    "confirmation_strength": {
@@ -10258,12 +10537,12 @@
     "word": "Weak",
     "gate": false,
     "votes": {
-     "stoch": true,
+     "stoch": false,
      "macd": false,
      "triple": false,
      "rsi": false
     },
-    "count": 1,
+    "count": 0,
     "order": [
      "stoch",
      "sma_smma",
@@ -10272,20 +10551,20 @@
      "rsi"
     ],
     "readings": {
-     "price": 1.753,
-     "sma9": 1.7723333333333333,
-     "smma7": 1.773398781176818,
-     "stoch_k": 20.175438596491208,
-     "stoch_d": 15.728702634328789,
-     "rsi": 38.11061807713485,
-     "rsi6": 36.84110462725013,
-     "rsi12": 38.248768502093,
-     "rsi24": 35.64820090187321,
-     "macd": -0.022350789153842365,
-     "macd_signal": -0.01936974344752156
+     "price": 1.692,
+     "sma9": 1.7495555555555555,
+     "smma7": 1.752701145393079,
+     "stoch_k": 13.630556974961673,
+     "stoch_d": 14.711811612504107,
+     "rsi": 30.00329643568685,
+     "rsi6": 22.396478806373082,
+     "rsi12": 28.924220818275273,
+     "rsi24": 31.639188776362687,
+     "macd": -0.031238079382071238,
+     "macd_signal": -0.022223041269508383
     },
     "note": "Entry conditions only. Not a signal, not a position size, and not advice to take or skip a trade.",
-    "as_of": "2026-10-23T22:00:00.000Z",
+    "as_of": "2026-10-23T23:00:00.000Z",
     "frozen": false,
     "milestones": []
    }
@@ -10308,6 +10587,841 @@
   }
  },
  "receipts": [
+  {
+   "receipt_id": "rcpt_010a350e4d561611fab0dc4c82be",
+   "asset": "ETH",
+   "setup_instance_key": "ETH|1792748292000|0221d84aae67dc1f82520dc21dce",
+   "setup_fingerprint": "0221d84aae67dc1f82520dc21dce",
+   "outcome": "STOP_BOUNDARY_REACHED",
+   "opened_at": "2026-10-23T23:04:52.896Z",
+   "superseded": false,
+   "superseded_at": null,
+   "voided": false,
+   "voided_at": null,
+   "voided_reason": null,
+   "voided_evidence": null,
+   "snapshot": {
+    "setup_published_at": "2026-10-23T09:38:12.000Z",
+    "setup_timestamp_text": "10/23/2026 5:38:12",
+    "direction": "long",
+    "sheet_status_at_open": {
+     "text": "Watching",
+     "class": "WATCHING"
+    },
+    "levels": [
+     {
+      "id": "TRIGGER_1",
+      "kind": "trigger",
+      "label": "Trigger 1",
+      "zone": {
+       "low": 2441,
+       "high": 2441
+      },
+      "raw": "Entry Zone: $2441"
+     },
+     {
+      "id": "TP1",
+      "kind": "tp",
+      "label": "TP1",
+      "zone": {
+       "low": 2526,
+       "high": 2526
+      },
+      "raw": "TP1: $2526 | TP2: $2688 | TP3: $2801"
+     },
+     {
+      "id": "TP2",
+      "kind": "tp",
+      "label": "TP2",
+      "zone": {
+       "low": 2688,
+       "high": 2688
+      },
+      "raw": "TP1: $2526 | TP2: $2688 | TP3: $2801"
+     },
+     {
+      "id": "TP3",
+      "kind": "tp",
+      "label": "TP3",
+      "zone": {
+       "low": 2801,
+       "high": 2801
+      },
+      "raw": "TP1: $2526 | TP2: $2688 | TP3: $2801"
+     },
+     {
+      "id": "STOP",
+      "kind": "stop",
+      "label": "Stop",
+      "zone": {
+       "low": 2320,
+       "high": 2357
+      },
+      "raw": "2320 - 2357"
+     }
+    ],
+    "published_text": {
+     "headline": "ETH — Long Watch — Inverted Head & Shoulders Breaking Key Support",
+     "why": "Setup/Pattern: ETH is just about to get above major key support and is in an inverted head and shoulders.",
+     "warning": "Invalidation: 2305",
+     "triggers": [
+      "Entry Zone: $2441",
+      "",
+      ""
+     ],
+     "targets": "TP1: $2526 | TP2: $2688 | TP3: $2801",
+     "stop": "2320 - 2357",
+     "safety": ""
+    }
+   },
+   "lifecycle": {
+    "state": "STOP_BOUNDARY_REACHED",
+    "state_since": "2026-10-23T23:04:52.896Z",
+    "published_at": "2026-10-23T09:38:12.000Z",
+    "trigger": {
+     "level_id": "TRIGGER_1",
+     "zone": {
+      "low": 2441,
+      "high": 2441
+     },
+     "reached_at": "2026-10-23T12:00:00.000Z",
+     "basis": "open"
+    },
+    "targets": [
+     {
+      "level_id": "TP1",
+      "zone": {
+       "low": 2526,
+       "high": 2526
+      },
+      "reached_at": null
+     },
+     {
+      "level_id": "TP2",
+      "zone": {
+       "low": 2688,
+       "high": 2688
+      },
+      "reached_at": null
+     },
+     {
+      "level_id": "TP3",
+      "zone": {
+       "low": 2801,
+       "high": 2801
+      },
+      "reached_at": null
+     }
+    ],
+    "objectives": {
+     "defined": 3,
+     "reached": 0,
+     "all_reached": false,
+     "ladder_problems": [],
+     "completed_at": null
+    },
+    "extended": null,
+    "stop_boundary": {
+     "level_id": "STOP",
+     "kind": "stop",
+     "zone": {
+      "low": 2320,
+      "high": 2357
+     },
+     "reached_at": "2026-10-23T22:53:00.000Z",
+     "in_trade": true,
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
+    },
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-10-23T22:55:00.000Z",
+     "close": 2355.8,
+     "level_id": "STOP"
+    },
+    "terminal_at": "2026-10-23T22:53:00.000Z",
+    "later_evidence": null,
+    "voided": null,
+    "retired": null,
+    "trigger_ordering": null,
+    "public_display": {
+     "kind": "STOP_BOUNDARY",
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
+     "blockers": [],
+     "outcome": "STOPPED",
+     "tps_reached_before_stop": []
+    }
+   }
+  },
+  {
+   "receipt_id": "rcpt_0d8409a8e459ee0451e139c5c522",
+   "asset": "BTC",
+   "setup_instance_key": "BTC|1792750191000|1517e5428b96660ee965031b3bd6",
+   "setup_fingerprint": "1517e5428b96660ee965031b3bd6",
+   "outcome": "STOP_BOUNDARY_REACHED",
+   "opened_at": "2026-10-23T23:04:52.896Z",
+   "superseded": false,
+   "superseded_at": null,
+   "voided": false,
+   "voided_at": null,
+   "voided_reason": null,
+   "voided_evidence": null,
+   "snapshot": {
+    "setup_published_at": "2026-10-23T10:09:51.000Z",
+    "setup_timestamp_text": "10/23/2026 6:09:51",
+    "direction": "long",
+    "sheet_status_at_open": {
+     "text": "Watching",
+     "class": "WATCHING"
+    },
+    "levels": [
+     {
+      "id": "TRIGGER_1",
+      "kind": "trigger",
+      "label": "Trigger 1",
+      "zone": {
+       "low": 82392,
+       "high": 82392
+      },
+      "raw": "One-hour holds the SMA and Smooth moving average (bull flag) + Entry Zone: $82392"
+     },
+     {
+      "id": "TP1",
+      "kind": "tp",
+      "label": "TP1",
+      "zone": {
+       "low": 82917,
+       "high": 82917
+      },
+      "raw": "TP1: $82917 | TP2: $84314 | TP3: $86209"
+     },
+     {
+      "id": "TP2",
+      "kind": "tp",
+      "label": "TP2",
+      "zone": {
+       "low": 84314,
+       "high": 84314
+      },
+      "raw": "TP1: $82917 | TP2: $84314 | TP3: $86209"
+     },
+     {
+      "id": "TP3",
+      "kind": "tp",
+      "label": "TP3",
+      "zone": {
+       "low": 86209,
+       "high": 86209
+      },
+      "raw": "TP1: $82917 | TP2: $84314 | TP3: $86209"
+     },
+     {
+      "id": "STOP",
+      "kind": "stop",
+      "label": "Stop",
+      "zone": {
+       "low": 80273,
+       "high": 80832
+      },
+      "raw": "80832 - 80273"
+     }
+    ],
+    "published_text": {
+     "headline": "BTC — Long Watch — Bull Flag Back Inside Diamond",
+     "why": "Setup/Pattern: BTC has gotten back inside the diamond, and if the one-hour holds the SMA and the Smooth moving average, there's a little bull flag that could bring it up.",
+     "warning": "Invalidation: 80427",
+     "triggers": [
+      "One-hour holds the SMA and Smooth moving average (bull flag) + Entry Zone: $82392",
+      "",
+      ""
+     ],
+     "targets": "TP1: $82917 | TP2: $84314 | TP3: $86209",
+     "stop": "80832 - 80273",
+     "safety": ""
+    }
+   },
+   "lifecycle": {
+    "state": "STOP_BOUNDARY_REACHED",
+    "state_since": "2026-10-23T23:04:52.896Z",
+    "published_at": "2026-10-23T10:09:51.000Z",
+    "trigger": {
+     "level_id": "TRIGGER_1",
+     "zone": {
+      "low": 82392,
+      "high": 82392
+     },
+     "reached_at": "2026-10-23T14:00:00.000Z",
+     "basis": "open"
+    },
+    "targets": [
+     {
+      "level_id": "TP1",
+      "zone": {
+       "low": 82917,
+       "high": 82917
+      },
+      "reached_at": null
+     },
+     {
+      "level_id": "TP2",
+      "zone": {
+       "low": 84314,
+       "high": 84314
+      },
+      "reached_at": null
+     },
+     {
+      "level_id": "TP3",
+      "zone": {
+       "low": 86209,
+       "high": 86209
+      },
+      "reached_at": null
+     }
+    ],
+    "objectives": {
+     "defined": 3,
+     "reached": 0,
+     "all_reached": false,
+     "ladder_problems": [],
+     "completed_at": null
+    },
+    "extended": null,
+    "stop_boundary": {
+     "level_id": "STOP",
+     "kind": "stop",
+     "zone": {
+      "low": 80273,
+      "high": 80832
+     },
+     "reached_at": "2026-10-23T22:51:00.000Z",
+     "in_trade": true,
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
+    },
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-10-23T22:52:00.000Z",
+     "close": 80787.69,
+     "level_id": "STOP"
+    },
+    "terminal_at": "2026-10-23T22:51:00.000Z",
+    "later_evidence": null,
+    "voided": null,
+    "retired": null,
+    "trigger_ordering": null,
+    "public_display": {
+     "kind": "STOP_BOUNDARY",
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
+     "blockers": [],
+     "outcome": "STOPPED",
+     "tps_reached_before_stop": []
+    }
+   }
+  },
+  {
+   "receipt_id": "rcpt_1c19835d3bb6fb022d43730439a1",
+   "asset": "LINK",
+   "setup_instance_key": "LINK|1792663490000|17480840c9b3c81a6a7e2fe07910",
+   "setup_fingerprint": "17480840c9b3c81a6a7e2fe07910",
+   "outcome": "STOP_BOUNDARY_REACHED",
+   "opened_at": "2026-10-23T23:04:52.896Z",
+   "superseded": false,
+   "superseded_at": null,
+   "voided": false,
+   "voided_at": null,
+   "voided_reason": null,
+   "voided_evidence": null,
+   "snapshot": {
+    "setup_published_at": "2026-10-22T10:04:50.000Z",
+    "setup_timestamp_text": "10/22/2026 6:04:50",
+    "direction": "long",
+    "sheet_status_at_open": {
+     "text": "Watching",
+     "class": "WATCHING"
+    },
+    "levels": [
+     {
+      "id": "TRIGGER_1",
+      "kind": "trigger",
+      "label": "Trigger 1",
+      "zone": {
+       "low": 12.73,
+       "high": 12.73
+      },
+      "raw": "Entry Zone: $12.73"
+     },
+     {
+      "id": "TP1",
+      "kind": "tp",
+      "label": "TP1",
+      "zone": {
+       "low": 12.8,
+       "high": 12.8
+      },
+      "raw": "TP1: $12.80 | TP2: $13.50 | TP3: $14.20"
+     },
+     {
+      "id": "TP2",
+      "kind": "tp",
+      "label": "TP2",
+      "zone": {
+       "low": 13.5,
+       "high": 13.5
+      },
+      "raw": "TP1: $12.80 | TP2: $13.50 | TP3: $14.20"
+     },
+     {
+      "id": "TP3",
+      "kind": "tp",
+      "label": "TP3",
+      "zone": {
+       "low": 14.2,
+       "high": 14.2
+      },
+      "raw": "TP1: $12.80 | TP2: $13.50 | TP3: $14.20"
+     },
+     {
+      "id": "STOP",
+      "kind": "stop",
+      "label": "Stop",
+      "zone": {
+       "low": 11.75,
+       "high": 11.75
+      },
+      "raw": "$11.75"
+     }
+    ],
+    "published_text": {
+     "headline": "LINK — Long Watch — Descending Channel Bullish Resistance Breakout",
+     "why": "Setup/Pattern: Descending Channel | Bullish Resistance Breakout\nWhat I'm Watching: LINK is developing a potential bullish reversal within its descending channel. Watching for buyers to break above the major $12.72 resistance and reclaim the moving-average bundle, potentially opening the door toward higher resistance.",
+     "warning": "Invalidation: $11.35",
+     "triggers": [
+      "Entry Zone: $12.73",
+      "",
+      ""
+     ],
+     "targets": "TP1: $12.80 | TP2: $13.50 | TP3: $14.20",
+     "stop": "$11.75",
+     "safety": ""
+    }
+   },
+   "lifecycle": {
+    "state": "STOP_BOUNDARY_REACHED",
+    "state_since": "2026-10-23T23:04:52.896Z",
+    "published_at": "2026-10-22T10:04:50.000Z",
+    "trigger": {
+     "level_id": "TRIGGER_1",
+     "zone": {
+      "low": 12.73,
+      "high": 12.73
+     },
+     "reached_at": "2026-10-23T01:00:00.000Z",
+     "basis": "open"
+    },
+    "targets": [
+     {
+      "level_id": "TP1",
+      "zone": {
+       "low": 12.8,
+       "high": 12.8
+      },
+      "reached_at": null
+     },
+     {
+      "level_id": "TP2",
+      "zone": {
+       "low": 13.5,
+       "high": 13.5
+      },
+      "reached_at": null
+     },
+     {
+      "level_id": "TP3",
+      "zone": {
+       "low": 14.2,
+       "high": 14.2
+      },
+      "reached_at": null
+     }
+    ],
+    "objectives": {
+     "defined": 3,
+     "reached": 0,
+     "all_reached": false,
+     "ladder_problems": [],
+     "completed_at": null
+    },
+    "extended": null,
+    "stop_boundary": {
+     "level_id": "STOP",
+     "kind": "stop",
+     "zone": {
+      "low": 11.75,
+      "high": 11.75
+     },
+     "reached_at": "2026-10-23T22:47:00.000Z",
+     "in_trade": true,
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
+    },
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-10-23T22:50:00.000Z",
+     "close": 11.714,
+     "level_id": "STOP"
+    },
+    "terminal_at": "2026-10-23T22:47:00.000Z",
+    "later_evidence": null,
+    "voided": null,
+    "retired": null,
+    "trigger_ordering": null,
+    "public_display": {
+     "kind": "STOP_BOUNDARY",
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
+     "blockers": [],
+     "outcome": "STOPPED",
+     "tps_reached_before_stop": []
+    }
+   }
+  },
+  {
+   "receipt_id": "rcpt_02baae275fb40f18eba0812ac51b",
+   "asset": "SHIB",
+   "setup_instance_key": "SHIB|1792748285000|1f35ae0eaea9380e4670bcd3318f",
+   "setup_fingerprint": "1f35ae0eaea9380e4670bcd3318f",
+   "outcome": "STOP_BOUNDARY_REACHED",
+   "opened_at": "2026-10-23T23:04:52.896Z",
+   "superseded": false,
+   "superseded_at": null,
+   "voided": false,
+   "voided_at": null,
+   "voided_reason": null,
+   "voided_evidence": null,
+   "snapshot": {
+    "setup_published_at": "2026-10-23T09:38:05.000Z",
+    "setup_timestamp_text": "10/23/2026 5:38:05",
+    "direction": "long",
+    "sheet_status_at_open": {
+     "text": "Watching",
+     "class": "WATCHING"
+    },
+    "levels": [
+     {
+      "id": "TRIGGER_1",
+      "kind": "trigger",
+      "label": "Trigger 1",
+      "zone": {
+       "low": 0.00000523,
+       "high": 0.00000523
+      },
+      "raw": "Entry Zone: $0.00000523"
+     },
+     {
+      "id": "TP1",
+      "kind": "tp",
+      "label": "TP1",
+      "zone": {
+       "low": 0.00000552,
+       "high": 0.00000552
+      },
+      "raw": "TP1: $0.00000552 | TP2: $0.00000618 | TP3: $0.00000765"
+     },
+     {
+      "id": "TP2",
+      "kind": "tp",
+      "label": "TP2",
+      "zone": {
+       "low": 0.00000618,
+       "high": 0.00000618
+      },
+      "raw": "TP1: $0.00000552 | TP2: $0.00000618 | TP3: $0.00000765"
+     },
+     {
+      "id": "TP3",
+      "kind": "tp",
+      "label": "TP3",
+      "zone": {
+       "low": 0.00000765,
+       "high": 0.00000765
+      },
+      "raw": "TP1: $0.00000552 | TP2: $0.00000618 | TP3: $0.00000765"
+     },
+     {
+      "id": "STOP",
+      "kind": "stop",
+      "label": "Stop",
+      "zone": {
+       "low": 0.00000478,
+       "high": 0.00000496
+      },
+      "raw": "0.00000478 - 0.00000496"
+     }
+    ],
+    "published_text": {
+     "headline": "SHIB — Long Watch — SMA Bundle Momentum Turn",
+     "why": "Setup/Pattern: SHIB is sitting right above the one-hour SMA bundle. Stoch, RSI, and MACD look like they want to roll up on the four-hour, eight-hour, and twelve-hour.",
+     "warning": "Invalidation: 0.00000470",
+     "triggers": [
+      "Entry Zone: $0.00000523",
+      "",
+      ""
+     ],
+     "targets": "TP1: $0.00000552 | TP2: $0.00000618 | TP3: $0.00000765",
+     "stop": "0.00000478 - 0.00000496",
+     "safety": ""
+    }
+   },
+   "lifecycle": {
+    "state": "STOP_BOUNDARY_REACHED",
+    "state_since": "2026-10-23T23:04:52.896Z",
+    "published_at": "2026-10-23T09:38:05.000Z",
+    "trigger": {
+     "level_id": "TRIGGER_1",
+     "zone": {
+      "low": 0.00000523,
+      "high": 0.00000523
+     },
+     "reached_at": "2026-10-23T10:00:00.000Z",
+     "basis": "open"
+    },
+    "targets": [
+     {
+      "level_id": "TP1",
+      "zone": {
+       "low": 0.00000552,
+       "high": 0.00000552
+      },
+      "reached_at": null
+     },
+     {
+      "level_id": "TP2",
+      "zone": {
+       "low": 0.00000618,
+       "high": 0.00000618
+      },
+      "reached_at": null
+     },
+     {
+      "level_id": "TP3",
+      "zone": {
+       "low": 0.00000765,
+       "high": 0.00000765
+      },
+      "reached_at": null
+     }
+    ],
+    "objectives": {
+     "defined": 3,
+     "reached": 0,
+     "all_reached": false,
+     "ladder_problems": [],
+     "completed_at": null
+    },
+    "extended": null,
+    "stop_boundary": {
+     "level_id": "STOP",
+     "kind": "stop",
+     "zone": {
+      "low": 0.00000478,
+      "high": 0.00000496
+     },
+     "reached_at": "2026-10-23T22:47:00.000Z",
+     "in_trade": true,
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
+    },
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-10-23T22:48:00.000Z",
+     "close": 0.00000494,
+     "level_id": "STOP"
+    },
+    "terminal_at": "2026-10-23T22:47:00.000Z",
+    "later_evidence": null,
+    "voided": null,
+    "retired": null,
+    "trigger_ordering": null,
+    "public_display": {
+     "kind": "STOP_BOUNDARY",
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
+     "blockers": [],
+     "outcome": "STOPPED",
+     "tps_reached_before_stop": []
+    }
+   }
+  },
+  {
+   "receipt_id": "rcpt_19e71c6c9b479d10bf32cef41d91",
+   "asset": "HYPE",
+   "setup_instance_key": "HYPE|1792663520000|1a39816ef4728603a05482c35be2",
+   "setup_fingerprint": "1a39816ef4728603a05482c35be2",
+   "outcome": "STOP_BOUNDARY_REACHED",
+   "opened_at": "2026-10-23T23:04:52.896Z",
+   "superseded": false,
+   "superseded_at": null,
+   "voided": false,
+   "voided_at": null,
+   "voided_reason": null,
+   "voided_evidence": null,
+   "snapshot": {
+    "setup_published_at": "2026-10-22T10:05:20.000Z",
+    "setup_timestamp_text": "10/22/2026 6:05:20",
+    "direction": "long",
+    "sheet_status_at_open": {
+     "text": "Watching",
+     "class": "WATCHING"
+    },
+    "levels": [
+     {
+      "id": "TRIGGER_1",
+      "kind": "trigger",
+      "label": "Trigger 1",
+      "zone": {
+       "low": 80.55,
+       "high": 80.55
+      },
+      "raw": "Entry Zone: $80.55"
+     },
+     {
+      "id": "TP1",
+      "kind": "tp",
+      "label": "TP1",
+      "zone": {
+       "low": 82.8,
+       "high": 82.8
+      },
+      "raw": "TP1: $82.80 | TP2: $85.85 | TP3: $88.50"
+     },
+     {
+      "id": "TP2",
+      "kind": "tp",
+      "label": "TP2",
+      "zone": {
+       "low": 85.85,
+       "high": 85.85
+      },
+      "raw": "TP1: $82.80 | TP2: $85.85 | TP3: $88.50"
+     },
+     {
+      "id": "TP3",
+      "kind": "tp",
+      "label": "TP3",
+      "zone": {
+       "low": 88.5,
+       "high": 88.5
+      },
+      "raw": "TP1: $82.80 | TP2: $85.85 | TP3: $88.50"
+     },
+     {
+      "id": "STOP",
+      "kind": "stop",
+      "label": "Stop",
+      "zone": {
+       "low": 77.1,
+       "high": 77.1
+      },
+      "raw": "$77.10"
+     }
+    ],
+    "published_text": {
+     "headline": "HYPE — Long Watch — Double Bottom Bullish Reclaim",
+     "why": "Setup/Pattern: Double Bottom | Bullish Reclaim\nWhat I'm Watching: HYPE is testing support following its rejection from higher resistance. Watching for a potential double bottom, a momentum reversal, and a reclaim of the moving-average bundle.",
+     "warning": "Invalidation: $75.15",
+     "triggers": [
+      "Entry Zone: $80.55",
+      "",
+      ""
+     ],
+     "targets": "TP1: $82.80 | TP2: $85.85 | TP3: $88.50",
+     "stop": "$77.10",
+     "safety": ""
+    }
+   },
+   "lifecycle": {
+    "state": "STOP_BOUNDARY_REACHED",
+    "state_since": "2026-10-23T23:04:52.896Z",
+    "published_at": "2026-10-22T10:05:20.000Z",
+    "trigger": {
+     "level_id": "TRIGGER_1",
+     "zone": {
+      "low": 80.55,
+      "high": 80.55
+     },
+     "reached_at": "2026-10-23T03:00:00.000Z",
+     "basis": "open"
+    },
+    "targets": [
+     {
+      "level_id": "TP1",
+      "zone": {
+       "low": 82.8,
+       "high": 82.8
+      },
+      "reached_at": null
+     },
+     {
+      "level_id": "TP2",
+      "zone": {
+       "low": 85.85,
+       "high": 85.85
+      },
+      "reached_at": null
+     },
+     {
+      "level_id": "TP3",
+      "zone": {
+       "low": 88.5,
+       "high": 88.5
+      },
+      "reached_at": null
+     }
+    ],
+    "objectives": {
+     "defined": 3,
+     "reached": 0,
+     "all_reached": false,
+     "ladder_problems": [],
+     "completed_at": null
+    },
+    "extended": null,
+    "stop_boundary": {
+     "level_id": "STOP",
+     "kind": "stop",
+     "zone": {
+      "low": 77.1,
+      "high": 77.1
+     },
+     "reached_at": "2026-10-23T22:36:00.000Z",
+     "in_trade": true,
+     "relation_to_final_tp": null,
+     "tps_reached_before_stop": []
+    },
+    "evidence_grade": "CLOSE_CONFIRMED",
+    "confirm": {
+     "at": "2026-10-23T22:37:00.000Z",
+     "close": 76.98,
+     "level_id": "STOP"
+    },
+    "terminal_at": "2026-10-23T22:36:00.000Z",
+    "later_evidence": null,
+    "voided": null,
+    "retired": null,
+    "trigger_ordering": null,
+    "public_display": {
+     "kind": "STOP_BOUNDARY",
+     "ready": true,
+     "evidence_grade": "CLOSE_CONFIRMED",
+     "blockers": [],
+     "outcome": "STOPPED",
+     "tps_reached_before_stop": []
+    }
+   }
+  },
   {
    "receipt_id": "rcpt_0af6211916934a18faff050a48b5",
    "asset": "SUI",
