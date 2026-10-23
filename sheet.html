@@ -301,15 +301,49 @@ function diffLevels(a,b){if(!b)return[];const out=[];
   [["TARGETS",tpRaw],["STOP",r=>get(r,"stop")],["SAFETY",r=>get(r,"safety")],["TRIGGER 1",r=>get(r,"trigger 1")],["TRIGGER 2",r=>get(r,"trigger 2")],["TRIGGER 3",r=>get(r,"trigger 3")]]
    .forEach(([k,f])=>{if(f(a)!==f(b))out.push(k.toLowerCase());});return out;}
 
+let MECH=null;   /* monitor-feed.json, read once before render purely to order a two-sided setup - see pairedSides() */
 async function load(){
   let text="";
   if(SHEET_CSV){try{const r=await fetch(SHEET_CSV+(SHEET_CSV.includes("?")?"&":"?")+"t="+Date.now());text=await r.text();}catch(e){}}
+  /* Best-effort and time-boxed. A missing, slow or malformed feed leaves MECH null and the page orders a pair
+     exactly as it did before. The detail page must never fail to render because a supplementary file was late;
+     the mech-feed addon below does its own independent fetch for everything else it shows. */
+  try{
+    MECH=await Promise.race([
+      fetch('monitor-feed.json?t='+Date.now()).then(r=>r.ok?r.json():null),
+      new Promise(res=>setTimeout(()=>res(null),2500))
+    ]);
+  }catch(e){MECH=null;}
   if(!text){$("#app").innerHTML=`<div class="empty">Can't read the setup sheet. Share it as <b>Anyone with the link → Viewer</b>.</div>`;return;}
   const rows=objs(parseCSV(text)).filter(r=>get(r,"asset").toUpperCase()===ASSET);
   if(!rows.length){$("#app").innerHTML=`<div class="empty">No setup on file for <b>${esc(ASSET)}</b> yet.</div>`;return;}
   rows.sort((a,b)=>rowTs(a)-rowTs(b));
   const auth=rows.filter(r=>!isPC(r)&&get(r,"status"));
-  const cur=auth[auth.length-1]||rows[rows.length-1],prevAuth=auth[auth.length-2];
+  /* AND THE STATUS ROW TOO (2026-10-23). A pair has two status rows, one per side. Taking the later one by the
+     clock gave BTC the retired long, two seconds newer than the short that actually triggered. Searches `rows`
+     rather than `setupRows`, because setupRows is derived from cur and so cannot be used to choose it. */
+  const mechSide=(d)=>{try{return (MECH&&MECH.assets&&MECH.assets[ASSET+"|"+String(d).toUpperCase()])||null;}catch(e){return null;}};
+  const sideTriggered=(d)=>{const lc=(mechSide(d)||{}).lifecycle;return !!(lc&&lc.trigger&&lc.trigger.reached_at&&!lc.retired);};
+  const sideRetired=(d)=>{const lc=(mechSide(d)||{}).lifecycle;return !!(lc&&lc.retired);};
+  const mechLiveRow=()=>{
+    try{
+      const Core=(typeof window!=="undefined"&&window.LevelUpCore)||null;
+      if(!Core||!Core.buildAll||!MECH)return null;
+      const entry=Core.buildAll(text)[ASSET];
+      if(!entry||!entry.sides)return null;
+      const dirs=Object.keys(entry.sides);
+      if(dirs.length!==2)return null;
+      const live=dirs.filter(sideTriggered), open=dirs.filter(d=>!sideRetired(d));
+      const want=(live.length===1?live[0]:null)||(open.length===1?open[0]:null);
+      if(!want)return null;
+      const pt=entry.sides[want].published_text||{};
+      const ts=pt.timestamp_text||"", t1=(pt.triggers||[])[0]||"";
+      if(!ts)return null;
+      return rows.find(r=>get(r,"timestamp")===ts&&get(r,"trigger 1")===t1)||rows.find(r=>get(r,"timestamp")===ts)||null;
+    }catch(e){return null;}
+  };
+  const liveRow=mechLiveRow();
+  const cur=(liveRow&&auth.indexOf(liveRow)>=0?liveRow:(auth[auth.length-1]||rows[rows.length-1])),prevAuth=auth[auth.length-2];
   const upto=rows.slice(0,rows.indexOf(cur)+1).reverse();
   const setupRows=upto.filter(r=>!isPC(r));
   // 2026-10-04: this script's own S-selection had never picked up the T-07 fix already applied to the shared
@@ -318,7 +352,16 @@ async function load(){
   // level-bearing Chelsea setup row right behind it, so the ladder vanished and the H1/headline showed the
   // correction's own wording instead of the real setup. Split into two clauses, same priority order as T-07:
   // a leveled CHELSEA SETUP row always wins over a WHY-only one.
-  const S=setupRows.find(r=>srcType(r)==="CHELSEA SETUP"&&hasLevels(r))||setupRows.find(r=>srcType(r)==="CHELSEA SETUP"&&get(r,"why"))||setupRows.find(hasLevels)||setupRows.find(r=>get(r,"why"))||cur;
+  /* THE WHOLE PAGE FOLLOWS THE LIVE SIDE (2026-10-23, Angela: "btc shows long when it is a short trigger").
+     On a two-sided setup the row picked here decides the H1, the status banner, the published-setup stamp, the
+     levels diff and the media - not just the ladder. BTC|SHORT triggered; BTC|LONG was retired by that very
+     sibling; and the LONG led the page because Chelsea had submitted it two seconds later and the choice below
+     is recency-based. Mechanical evidence outranks the clock, so it is applied HERE rather than downstream,
+     which keeps everything derived from S consistent by construction.
+
+     Degrades silently: no feed, no LevelUpCore, or no pair -> mechLiveRow() returns null and S is exactly what
+     it has always been. */
+  const S=(liveRow&&setupRows.indexOf(liveRow)>=0?liveRow:null)||setupRows.find(r=>srcType(r)==="CHELSEA SETUP"&&hasLevels(r))||setupRows.find(r=>srcType(r)==="CHELSEA SETUP"&&get(r,"why"))||setupRows.find(hasLevels)||setupRows.find(r=>get(r,"why"))||cur;
   const carried=S!==cur;
   const [bcls,btxt]=STATUS(get(cur,"status"));const closed=/closed|invalid/i.test(get(cur,"status"));const paused=/watch|no trade/i.test(get(cur,"status"));
   const L=levels(S);const img=chartImg(get(S,"chart image"),get(S,"chart link"));const vm=driveId(get(S,"voice"));
@@ -404,7 +447,13 @@ async function load(){
       const byDir={};Object.keys(entry.sides).forEach(d=>{const row=rowFor(entry.sides[d]);if(row)byDir[d]=row;});
       const dirs=Object.keys(byDir);
       if(dirs.length!==2)return null;
-      const pDir=dirs.find(d=>byDir[d]===S)||entry.primary_side||dirs[0];
+      /* THE LIVE SIDE LEADS. Recency decided this until now, which on BTC meant a side retired by its own
+         sibling led the page by a two-second publication margin. Mechanical evidence outranks the clock:
+         a side that triggered and has not been retired is the trade a member is actually in. */
+      const liveDirs=dirs.filter(sideTriggered);
+      const notRetired=dirs.filter(d=>!sideRetired(d));
+      const byEvidence=(liveDirs.length===1?liveDirs[0]:null)||(notRetired.length===1?notRetired[0]:null);
+      const pDir=byEvidence||dirs.find(d=>byDir[d]===S)||entry.primary_side||dirs[0];
       const qDir=dirs.find(d=>d!==pDir);
       return {primary:{dir:pDir,row:byDir[pDir]},quiet:{dir:qDir,row:byDir[qDir]}};
     }catch(err){return null;}
