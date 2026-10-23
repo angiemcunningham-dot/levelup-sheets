@@ -2347,6 +2347,27 @@ details.sideflip{counter-reset:sect}
       var cap = row.querySelector('.rp small');
       if (cap) { var w = done ? 'closed' : 'live'; if (cap.textContent !== w) cap.textContent = w; }
     }
+    /* THE PAGE TITLE STOPS SAYING "WATCH" ONCE THE SETUP HAS FIRED (Angela, 2026-10-23: "the card when
+       opened says short watch... they all do"). The status banner was already hidden and replaced by the
+       mechanical headline when a setup resolved; the hero title was never part of that, so the biggest text
+       on the page kept Chelsea's pre-trigger wording for a trade that had been running since yesterday.
+       Her headline still governs right up to the trigger, and the Why text is untouched regardless. */
+    function ensureHeroState() {
+      var em = document.querySelector('h1 em'); if (!em) return;
+      if (!em.dataset.chelsea) em.dataset.chelsea = em.textContent;   // keep her wording to fall back to
+      var m = mechanicalFor(ASSET_, directionAsset === ASSET_ ? currentInstanceKey : null);
+      var word = null;
+      if (m && m.triggered) {
+        if (m.stopped) word = 'STOPPED';
+        else if (m.complete) word = 'COMPLETE';
+        else {
+          var dir = directionFor(ASSET_);
+          word = dir === 'SHORT' ? 'ACTIVE SHORT' : dir === 'LONG' ? 'ACTIVE LONG' : null;
+        }
+      }
+      var want = word || em.dataset.chelsea;
+      if (em.textContent !== want) em.textContent = want;
+    }
     function ensureLadderHits() {
       var ladder = document.getElementById('ladder'); if (!ladder) return;
       Array.prototype.forEach.call(ladder.querySelectorAll('.mech-hit'), function (n) { n.remove(); });
@@ -2491,7 +2512,7 @@ details.sideflip{counter-reset:sect}
       if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(el, anchor.nextSibling);
       else { var app2 = document.getElementById('app'); if (app2) app2.appendChild(el); }
     }
-    function applyAll() { ensure(); ensureHeadline(); ensureReadiness(); ensureSixLineFlag(); ensureSideTruth(); ensureStrengthMeter(); ensureLadderHits(); ensureNowRowTruth(); suppressStaleChip(); ensureAttnChip(); loadLivePrice(); loadReadinessPrice(); }
+    function applyAll() { ensure(); ensureHeadline(); ensureReadiness(); ensureSixLineFlag(); ensureSideTruth(); ensureStrengthMeter(); ensureLadderHits(); ensureNowRowTruth(); ensureHeroState(); suppressStaleChip(); ensureAttnChip(); loadLivePrice(); loadReadinessPrice(); }
     var obs = new MutationObserver(function () { obs.disconnect(); applyAll(); obs.observe(app, { childList: true }); });
     function load() { return fetchFeed().then(function (f) { feed = f; applyAll(); }); }
     load();

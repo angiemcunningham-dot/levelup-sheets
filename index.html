@@ -1807,12 +1807,19 @@ load();setInterval(load,60000);
       var isStale = function (it) { return !!it.status_iso && (now - Date.parse(it.status_iso)) >= STALE_ACTIVE_MS; };
       var freshList = list.filter(function (it) { return !isStale(it); });
       var staleList = list.filter(isStale);
+      /* AN ACTIVE NOW CARD SAYS WHEN IT FIRED (Angela, 2026-10-23, on HYPE). The slot existed but filled only
+         from Chelsea's Sheet status time, which is null for every setup that reached this section through the
+         mechanical backfill - so the cards that most needed a date were the ones that had none. Prefers the
+         mechanical trigger, falls back to the status time. */
       var cardHtmlActive = function (it) {
         var px = fresh ? ps.prices[it.asset] : null;
+        var mech = mf && mf.mechanicalFor(it.asset, mf.currentInstanceKeyFor(it.asset));
+        var whenText = (mech && mech.triggerAt) ? 'triggered ' + esc(etStamp(mech.triggerAt))
+          : (it.status_iso ? 'status set ' + esc(etStamp(it.status_iso)) : '');
         return '<a class="act-card side-' + it.side + '" href="sheet.html?asset=' + encodeURIComponent(it.asset) + '" data-asset="' + esc(it.asset) + '" data-side="' + it.side + '">' +
           '<div class="att-top"><span class="att-asset">' + esc(it.asset) + '</span></div>' +
           '<div class="act-status">' + esc(it.label) + '</div><span class="act-tag">Triggered</span>' +
-          '<div class="att-meta">' + (px ? 'LIVE $' + A.fmtPrice(px) + ' (' + (srcName[ps.sources[it.asset]] || 'live') + ')<br>' : '') + (it.status_iso ? 'status set ' + esc(etStamp(it.status_iso)) : '') + '</div></a>';
+          '<div class="att-meta">' + (px ? 'LIVE $' + A.fmtPrice(px) + ' (' + (srcName[ps.sources[it.asset]] || 'live') + ')<br>' : '') + whenText + '</div></a>';
       };
       // 2026-10-06 (Angela, explicit, "Option A" mockup approved): longs and shorts in their own column, divided
       // by a vertical rule - never mixed in one grid. A side with nothing in it contributes no column/divider at
@@ -2262,7 +2269,9 @@ load();setInterval(load,60000);
       var tp = (lc.targets || []).filter(function (t) { return /^TP[0-9]+$/.test(t.level_id); })
         .sort(function (x, y) { return x.level_id.localeCompare(y.level_id, undefined, { numeric: true }); })
         .map(function (t) { return !!t.reached_at; });
-      return { triggered: true, tp: tp, stopped: lc.state === 'STOP_BOUNDARY_REACHED', complete: lc.state === 'OBJECTIVES_EXHAUSTED', outcome: (lc.public_display && lc.public_display.outcome) || null, tpsBeforeStop: (lc.stop_boundary && lc.stop_boundary.tps_reached_before_stop) || [] };
+      /* triggerAt added 2026-10-23: Active Now cards say WHEN they fired, and this is the only place that
+         knows. sheet.html's copy of mechanicalFor has carried it since the trigger marker was built. */
+      return { triggered: true, tp: tp, stopped: lc.state === 'STOP_BOUNDARY_REACHED', complete: lc.state === 'OBJECTIVES_EXHAUSTED', outcome: (lc.public_display && lc.public_display.outcome) || null, tpsBeforeStop: (lc.stop_boundary && lc.stop_boundary.tps_reached_before_stop) || [], triggerAt: lc.trigger.reached_at };
     }
     /* CURRENT-STATE RECONCILIATION (staging). Turns the same instance-safe mechanicalFor() facts above into ONE
        reconciled current-state headline, shared by this grid, Active Now here, and sheet.html's copy of this same
