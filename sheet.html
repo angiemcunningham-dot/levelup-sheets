@@ -1535,6 +1535,19 @@ details.sideflip{counter-reset:sect}
    stays. Its colour still comes from Chelsea's word, so it can never disagree with the word beside it. */
 .mech-str-bar{background:#E6E0D4}
 .mech-str-bar .mech-str-seg{background:#fff}
+/* UP THE LADDER - the milestone stamps. Same ruled list and same tone inks as the readings above them. */
+.mech-rung-title{font-family:Archivo,sans-serif;font-weight:900;font-size:11px;letter-spacing:.12em;
+  text-transform:uppercase;color:#111114;margin:16px 0 7px}
+.mech-rungs{border:2px solid #111114;background:#fff}
+.mech-rung{display:flex;align-items:center;gap:11px;padding:9px 12px;border-bottom:1px solid #DDE1E6}
+.mech-rung:last-child{border-bottom:none}
+.mech-rung .lv{font-family:Archivo,sans-serif;font-weight:900;font-size:13px;letter-spacing:.06em;
+  text-transform:uppercase;color:#111114;width:74px;flex:none}
+.mech-rung .wh{font-family:"JetBrains Mono",monospace;font-size:11px;color:#3A424D;flex:1 1 0}
+.mech-rung .wd{font-family:Archivo,sans-serif;font-weight:900;font-size:13px}
+.mech-rung .ct{font-family:"JetBrains Mono",monospace;font-size:11px;font-weight:700;letter-spacing:.05em;
+  text-transform:uppercase;color:#3A424D;width:52px;text-align:right;flex:none}
+@media(max-width:640px){.mech-rung{flex-wrap:wrap;gap:6px 10px}.mech-rung .wh{flex:1 1 100%;order:3}}
 </style>
 <script id="mech-feed">
 /* MECHANICAL FEED (staging addon). Reads the published monitor feed - durable trigger/TP/stop facts computed from
@@ -2250,6 +2263,30 @@ details.sideflip{counter-reset:sect}
       return { cleared: cleared, price: px, floor: r.floor, direction: r.direction,
                distance_pct: Math.abs(px - r.floor) / r.floor * 100 };
     }
+    /* UP THE LADDER (Angela, 2026-10-23). One row per rung the move has reached, each a reading frozen at
+       that rung's own candle - never recomputed, so the stack is a record rather than a live gauge.
+       Chelsea's five are four indicator votes plus the Simple+Smooth gate, so a stamp counts out of 5 the
+       same way the entry reading does. */
+    function milestonesHtml(r) {
+      var ms = (r && r.milestones) || [];
+      if (!ms.length) return '';
+      var TONE = { 'Weak': 'mech-str-weak', 'Mixed': 'mech-str-mixed', 'Strong': 'mech-str-strong', 'Very strong': 'mech-str-vstrong' };
+      var NAME = { TP1: 'TP1', TP2: 'TP2', TP3: 'TP3', EXTENDED: 'Extended' };
+      var rows = ms.map(function (m) {
+        var n = (m.count || 0) + (m.gate ? 1 : 0);
+        return '<div class="mech-rung">'
+          + '<span class="lv">' + escH(NAME[m.level_id] || m.level_id) + '</span>'
+          + '<span class="wh">' + escH(fmtEt(m.at)) + '</span>'
+          + '<span class="wd ' + (TONE[m.word] || 'mech-str-mixed') + '">' + escH(m.word) + '</span>'
+          + '<span class="ct">' + n + ' of 5</span></div>';
+      }).join('');
+      return '<div class="mech-rung-title">Up the ladder</div>'
+        + '<div class="mech-rungs">' + rows + '</div>'
+        + '<p class="mech-str-note"><b>These are readings, not instructions.</b> Each one is how the '
+        + 'conditions looked at that rung. Some trades read stronger as they run and some read softer because '
+        + 'the move has extended - both happen, and neither ends a trade. Only Chelsea&#39;s listed targets '
+        + 'being reached, or the stop being hit, does that.</p>';
+    }
     function ensureStrengthMeter() {
       /* A is bound locally in five other functions here and was NOT in scope in this one - referencing it
          would have thrown the moment a live reading rendered. Same shape as the 2026-10-21 TDZ outage, so
@@ -2308,6 +2345,7 @@ details.sideflip{counter-reset:sect}
               + '<span class="mech-str-live">Live &middot; not triggered yet</span>')
         + '</div>'
         + '<div class="mech-str-reads">' + voteHtml + '</div>'
+        + milestonesHtml(r)
         + '<p class="mech-str-note"><b>The word is not a headcount.</b> Chelsea ranks Stochastics first, so a reading can tick four of these five boxes and still read Mixed when Stochastics is the one that disagrees.</p>'
         + (r.frozen
             ? '<p class="mech-str-note"><b>Read at the trigger and held there.</b> This is how the conditions looked when the setup fired' + (r.frozen_at ? ' (' + escH(fmtEt(r.frozen_at)) + ')' : '') + ', kept for reference. It is not re-measured as the trade runs, so it will not change and it will not disappear if price pulls back through the moving averages - watching that is yours to do. Only all of Chelsea&#39;s listed targets being reached, or the stop being hit, ends a trade.</p>'
