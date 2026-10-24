@@ -2487,6 +2487,15 @@ details.sideflip{counter-reset:sect}
       var picked = feedEntryFor(ASSET_);
       var r = picked && picked.entry && picked.entry.confirmation_strength;
       if (!r || !r.word) return;
+      /* 2026-10-24: a retired setup has no entry left to measure the strength of, and this panel was the one
+         thing on the page still saying 'Live - not triggered yet' underneath a headline that said the setup
+         was over, with a gate line refreshing the distance to the moving averages every few seconds. The
+         readiness panel and the six-line flag already stand down on their own (both gated on
+         resolveCurrentState); this one was not. Nothing Chelsea published is affected - her Why, her levels
+         and her ladder all still render. A FROZEN reading is deliberately exempt: that is a snapshot of a
+         real entry and belongs to the trade's history. A retirement can never carry one, since it never
+         triggered, but the rule is stated rather than assumed. */
+      if (!r.frozen && expiredFor(ASSET_, directionAsset === ASSET_ ? currentInstanceKey : null)) return;
       var cls = { 'Weak': 'mech-str-weak', 'Mixed': 'mech-str-mixed', 'Strong': 'mech-str-strong', 'Very strong': 'mech-str-vstrong' }[r.word] || 'mech-str-mixed';
       /* Chelsea's own order of importance, with Simple+Smooth shown as a CONDITION rather than a hidden
          precondition - she ranked it second, and Angela's instruction is that the panel shows which boxes
@@ -2566,7 +2575,7 @@ details.sideflip{counter-reset:sect}
        check on its own short interval - it is two DOM reads and a class toggle. */
     setInterval(ensureNowRowTruth, 2000);
     obs.observe(app, { childList: true });
-    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, getCurrentInstanceKey: function () { return currentInstanceKey; }, resolveCurrentState: resolveCurrentState, directionFor: directionFor, ensure: ensure, ensureHeadline: ensureHeadline, suppressStaleChip: suppressStaleChip, attnTarget: attnTarget, attnChipHtml: attnChipHtml, ensureAttnChip: ensureAttnChip, loadLivePrice: loadLivePrice, coinEligible: coinEligible, coinBadgeHtml: coinBadgeHtml, ensureCoinHero: ensureCoinHero, triggerMarkerHtml: triggerMarkerHtml, conditionalTrigger: conditionalTrigger, readinessHtml: readinessHtml, ensureReadiness: ensureReadiness, loadReadinessPrice: loadReadinessPrice, panelHtml: panelHtml, sixLineReadinessFor: sixLineReadinessFor, ensureSixLineFlag: ensureSixLineFlag, expiredFor: expiredFor, ensureHeroState: ensureHeroState, ensureNowRowTruth: ensureNowRowTruth };   // test hook (read-only)
+    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, getCurrentInstanceKey: function () { return currentInstanceKey; }, resolveCurrentState: resolveCurrentState, directionFor: directionFor, ensure: ensure, ensureHeadline: ensureHeadline, suppressStaleChip: suppressStaleChip, attnTarget: attnTarget, attnChipHtml: attnChipHtml, ensureAttnChip: ensureAttnChip, loadLivePrice: loadLivePrice, coinEligible: coinEligible, coinBadgeHtml: coinBadgeHtml, ensureCoinHero: ensureCoinHero, triggerMarkerHtml: triggerMarkerHtml, conditionalTrigger: conditionalTrigger, readinessHtml: readinessHtml, ensureReadiness: ensureReadiness, loadReadinessPrice: loadReadinessPrice, panelHtml: panelHtml, sixLineReadinessFor: sixLineReadinessFor, ensureSixLineFlag: ensureSixLineFlag, expiredFor: expiredFor, ensureHeroState: ensureHeroState, ensureNowRowTruth: ensureNowRowTruth, ensureStrengthMeter: ensureStrengthMeter };   // test hook (read-only)
   } catch (e) { if (window.console) console.warn('mechanical feed addon disabled:', e); }
 })();
 </script>

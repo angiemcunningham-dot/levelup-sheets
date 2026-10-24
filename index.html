@@ -2401,6 +2401,9 @@ load();setInterval(load,60000);
       var picked = feedEntryFor(asset);
       var r = picked && picked.entry && picked.entry.confirmation_strength;
       if (!r || !r.word) return '';
+      /* 2026-10-24: same rule as sheet.html's full panel - a live entry-strength reading on a retired card
+         contradicts the NO TRADE line sitting directly above it. A frozen reading is exempt (see there). */
+      if (!r.frozen && expiredFor(asset, currentInstanceKeyFor(asset))) return '';
       var votes = Object.assign({ sma_smma: !!r.gate }, r.votes || {});
       var shown = STR_ORDER.filter(function (k) { return votes[k] != null; });
       var met = shown.filter(function (k) { return votes[k] === true; });
@@ -2691,7 +2694,7 @@ load();setInterval(load,60000);
     load();
     setInterval(load, 60000);
     obs.observe(grid.parentNode, { childList: true, subtree: true });
-    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, currentInstanceKeyFor: currentInstanceKeyFor, resolveCurrentState: resolveCurrentState, directionFor: directionFor, decorate: decorate, decorateActiveNow: decorateActiveNow, coinEligible: coinEligible, badgeHtml: badgeHtml, expiredFor: expiredFor, expiredBadgeHtml: expiredBadgeHtml };   // test hook (read-only)
+    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, currentInstanceKeyFor: currentInstanceKeyFor, resolveCurrentState: resolveCurrentState, directionFor: directionFor, decorate: decorate, decorateActiveNow: decorateActiveNow, coinEligible: coinEligible, badgeHtml: badgeHtml, expiredFor: expiredFor, expiredBadgeHtml: expiredBadgeHtml, strengthStripFor: strengthStripFor };   // test hook (read-only)
   } catch (e) { if (window.console) console.warn('mechanical feed addon disabled:', e); }
 })();
 </script>
