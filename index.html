@@ -2184,12 +2184,53 @@ load();setInterval(load,60000);
       }
       return out;
     }
+    /* WHICH SIDE OF A PAIR THIS SURFACE SPEAKS FOR - ONE ORDER, THREE IMPLEMENTATIONS (2026-10-24).
+       index.html's card, sheet.html's mech-feed and sheet.html's own base render each have to make this
+       choice, and until today they made it differently: the mech layers ranked by "did it fire" and broke
+       ties on the earliest trigger, while the base render asked whether a side was retired and otherwise took
+       the newest publication. Pair retirement was removed from the engine, so that second rule became pure
+       recency, the two drifted apart, and the page contradicted itself - BTC drew the stopped long's ladder
+       under the running short's headline, ADA printed STOPPED over the running short's ladder. The order is
+       now the same everywhere, and this comment is repeated at each site so no one of them gets changed alone.
+
+         1  STILL RUNNING  triggered and not finished.  Among several, the EARLIEST trigger - the trade a
+                           member has actually been in longest.
+         2  STILL OPEN     not finished, not yet triggered.  Among several, the NEWEST publication.
+         3  FINISHED       stopped, all targets reached, exited back through the six lines, or retired without
+                           ever triggering.  Among several, the earliest trigger; one with no trigger defers.
+         4  NOTHING KNOWN  no lifecycle in the feed at all (an asset whose Sheet status is Closed, whose facts
+                           come from a receipt instead).
+
+       A finished side never outranks a live one. That is the whole point: whatever the long did yesterday, if
+       the short is still running then the short is the trade. */
+    var SIDE_FINISHED_STATES = { STOP_BOUNDARY_REACHED: 1, OBJECTIVES_EXHAUSTED: 1, SIX_LINE_EXIT: 1, EXPIRED_UNTRIGGERED: 1 };
+    /* lc.retired is still honoured for an older cached feed; nothing sets it any more. */
+    function sideFinished(lc) { return !!(lc && (lc.retired || SIDE_FINISHED_STATES[lc.state])); }
     function activityRank(entry) {
       var lc = entry && entry.lifecycle;
       if (!lc) return 0;
-      if (lc.trigger && lc.trigger.reached_at) return 2;   // it actually fired
-      if (lc.state && lc.state !== 'WAITING_FOR_TRIGGER') return 1;
-      return 0;
+      if (sideFinished(lc)) return 1;
+      return (lc.trigger && lc.trigger.reached_at) ? 3 : 2;
+    }
+    function entryTrigMs(entry) {
+      var lc = entry && entry.lifecycle;
+      var t = (lc && lc.trigger && lc.trigger.reached_at) ? Date.parse(lc.trigger.reached_at) : NaN;
+      return isFinite(t) ? t : null;
+    }
+    function entryPubMs(entry) {
+      var t = (entry && entry.instance_published_at) ? Date.parse(entry.instance_published_at) : NaN;
+      return isFinite(t) ? t : null;
+    }
+    /* Preferred within the SAME rank, per the tie-breaks above. */
+    function beatsAtRank(a, b, rank) {
+      if (rank === 3 || rank === 1) {
+        var ta = entryTrigMs(a), tb = entryTrigMs(b);
+        if (ta !== null && tb !== null) return ta < tb;
+        if (ta !== null) return true;
+        if (tb !== null) return false;
+      }
+      var pa = entryPubMs(a), pb = entryPubMs(b);
+      return (pa !== null && pb !== null) ? pa > pb : false;
     }
     /* Only the CURRENT batch counts. Chelsea republishes one side without the other all the time: on
        2026-10-21 AVAX's long was that morning's fresh call (waiting) while its short was the previous day's,
@@ -2226,11 +2267,7 @@ load();setInterval(load,60000);
       for (var i = 0; i < all.length; i++) {
         var r = activityRank(all[i].entry);
         if (!best || r > best.rank) { best = { rank: r, item: all[i] }; continue; }
-        if (r === best.rank && r === 2) {
-          var t = Date.parse(all[i].entry.lifecycle.trigger.reached_at);
-          var bt = Date.parse(best.item.entry.lifecycle.trigger.reached_at);
-          if (isFinite(t) && isFinite(bt) && t < bt) best = { rank: r, item: all[i] };
-        }
+        if (r === best.rank && beatsAtRank(all[i].entry, best.item.entry, r)) best = { rank: r, item: all[i] };
       }
       return best ? best.item : null;   // the chosen side; the trigger check downstream still decides
     }

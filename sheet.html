@@ -330,10 +330,53 @@ async function load(){
      input at all and quietly fell back to recency, which put BTC's stopped long over its running short. */
   const SIDE_OVER_STATES={STOP_BOUNDARY_REACHED:1,OBJECTIVES_EXHAUSTED:1,SIX_LINE_EXIT:1,EXPIRED_UNTRIGGERED:1};
   const sideOver=(d)=>{const lc=(mechSide(d)||{}).lifecycle;return !!(lc&&(lc.retired||SIDE_OVER_STATES[lc.state]));};
-  /* "Triggered" here means the trade a member is actually in right now, which is why a finished side does not
-     qualify however real its trigger was. */
-  const sideTriggered=(d)=>{const lc=(mechSide(d)||{}).lifecycle;return !!(lc&&lc.trigger&&lc.trigger.reached_at&&!sideOver(d));};
-  const sideRetired=(d)=>sideOver(d);
+  /* WHICH SIDE OF A PAIR THIS SURFACE SPEAKS FOR - ONE ORDER, THREE IMPLEMENTATIONS (2026-10-24).
+     index.html's card, sheet.html's mech-feed and sheet.html's own base render each have to make this
+     choice, and until today they made it differently: the mech layers ranked by "did it fire" and broke
+     ties on the earliest trigger, while the base render asked whether a side was retired and otherwise took
+     the newest publication. Pair retirement was removed from the engine, so that second rule became pure
+     recency, the two drifted apart, and the page contradicted itself - BTC drew the stopped long's ladder
+     under the running short's headline, ADA printed STOPPED over the running short's ladder. The order is
+     now the same everywhere, and this comment is repeated at each site so no one of them gets changed alone.
+
+       1  STILL RUNNING  triggered and not finished.  Among several, the EARLIEST trigger - the trade a
+                         member has actually been in longest.
+       2  STILL OPEN     not finished, not yet triggered.  Among several, the NEWEST publication.
+       3  FINISHED       stopped, all targets reached, exited back through the six lines, or retired without
+                         ever triggering.  Among several, the earliest trigger; one with no trigger defers.
+       4  NOTHING KNOWN  no lifecycle in the feed at all (an asset whose Sheet status is Closed, whose facts
+                         come from a receipt instead).
+
+     A finished side never outranks a live one. That is the whole point: whatever the long did yesterday, if
+     the short is still running then the short is the trade. */
+  const sideRank=(d)=>{const lc=(mechSide(d)||{}).lifecycle;if(!lc)return 0;if(sideOver(d))return 1;return (lc.trigger&&lc.trigger.reached_at)?3:2;};
+  const sideTrigMs=(d)=>{const lc=(mechSide(d)||{}).lifecycle;const t=(lc&&lc.trigger&&lc.trigger.reached_at)?Date.parse(lc.trigger.reached_at):NaN;return isFinite(t)?t:null;};
+  const sidePubMs=(d)=>{const e=mechSide(d);const t=(e&&e.instance_published_at)?Date.parse(e.instance_published_at):NaN;return isFinite(t)?t:null;};
+  const haveMech=(dirs)=>dirs.some(d=>!!((mechSide(d)||{}).lifecycle));
+  /* ONLY THE CURRENT BATCH IS A CANDIDATE TO LEAD (2026-10-24). The same two-hour pair window the mech layers
+     apply in currentBatch(), for the same reason set out there: Chelsea republishes one side without the
+     other all the time, and yesterday's side has no business leading today's page. LINK is the live case -
+     its long is 2026-10-22 and its short 2026-10-23, both finished, and without this the detail page led with
+     the long while the card reported the short. The out-of-batch side is NOT dropped; it still renders in the
+     disclosure, because nothing Chelsea published is ever removed. */
+  const BATCH_WINDOW_MS_=2*60*60*1000;
+  const currentBatchDirs=(dirs)=>{const ts=dirs.map(sidePubMs).filter(t=>t!==null);if(!ts.length)return dirs;
+    const newest=Math.max.apply(null,ts);
+    const keep=dirs.filter(d=>{const t=sidePubMs(d);return t===null||(newest-t)<=BATCH_WINDOW_MS_;});
+    return keep.length?keep:dirs;};
+  const pickSide=(dirs)=>{let best=null;
+    dirs.forEach(d=>{
+      if(!best){best=d;return;}
+      const r=sideRank(d),rb=sideRank(best);
+      if(r>rb){best=d;return;}
+      if(r<rb)return;
+      if(r===3||r===1){const t=sideTrigMs(d),tb=sideTrigMs(best);
+        if(t!==null&&tb!==null){if(t<tb)best=d;return;}
+        if(t!==null){best=d;return;}
+        if(tb!==null)return;}
+      const p=sidePubMs(d),pb=sidePubMs(best);
+      if(p!==null&&pb!==null&&p>pb)best=d;});
+    return best;};
   const mechLiveRow=()=>{
     try{
       const Core=(typeof window!=="undefined"&&window.LevelUpCore)||null;
@@ -342,8 +385,9 @@ async function load(){
       if(!entry||!entry.sides)return null;
       const dirs=Object.keys(entry.sides);
       if(dirs.length!==2)return null;
-      const live=dirs.filter(sideTriggered), open=dirs.filter(d=>!sideRetired(d));
-      const want=(live.length===1?live[0]:null)||(open.length===1?open[0]:null);
+      /* 2026-10-24: one call to the shared order above, replacing two ad-hoc "exactly one of these"
+         questions that could not separate ADA's two triggered sides at all. */
+      const want=haveMech(dirs)?pickSide(currentBatchDirs(dirs)):null;
       if(!want)return null;
       const pt=entry.sides[want].published_text||{};
       const ts=pt.timestamp_text||"", t1=(pt.triggers||[])[0]||"";
@@ -456,12 +500,10 @@ async function load(){
       const byDir={};Object.keys(entry.sides).forEach(d=>{const row=rowFor(entry.sides[d]);if(row)byDir[d]=row;});
       const dirs=Object.keys(byDir);
       if(dirs.length!==2)return null;
-      /* THE LIVE SIDE LEADS. Recency decided this until now, which on BTC meant a side retired by its own
-         sibling led the page by a two-second publication margin. Mechanical evidence outranks the clock:
-         a side that triggered and has not been retired is the trade a member is actually in. */
-      const liveDirs=dirs.filter(sideTriggered);
-      const notRetired=dirs.filter(d=>!sideRetired(d));
-      const byEvidence=(liveDirs.length===1?liveDirs[0]:null)||(notRetired.length===1?notRetired[0]:null);
+      /* THE LIVE SIDE LEADS. Recency decided this until 2026-10-24, which on BTC meant a stopped side led
+         the page by a two-second publication margin. Mechanical evidence outranks the clock, and the order
+         it uses is the shared one documented above - not a second opinion about it. */
+      const byEvidence=haveMech(dirs)?pickSide(currentBatchDirs(dirs)):null;
       const pDir=byEvidence||dirs.find(d=>byDir[d]===S)||entry.primary_side||dirs[0];
       const qDir=dirs.find(d=>d!==pDir);
       return {primary:{dir:pDir,row:byDir[pDir]},quiet:{dir:qDir,row:byDir[qDir]}};
@@ -1729,12 +1771,53 @@ details.sideflip{counter-reset:sect}
       }
       return out;
     }
+    /* WHICH SIDE OF A PAIR THIS SURFACE SPEAKS FOR - ONE ORDER, THREE IMPLEMENTATIONS (2026-10-24).
+       index.html's card, sheet.html's mech-feed and sheet.html's own base render each have to make this
+       choice, and until today they made it differently: the mech layers ranked by "did it fire" and broke
+       ties on the earliest trigger, while the base render asked whether a side was retired and otherwise took
+       the newest publication. Pair retirement was removed from the engine, so that second rule became pure
+       recency, the two drifted apart, and the page contradicted itself - BTC drew the stopped long's ladder
+       under the running short's headline, ADA printed STOPPED over the running short's ladder. The order is
+       now the same everywhere, and this comment is repeated at each site so no one of them gets changed alone.
+
+         1  STILL RUNNING  triggered and not finished.  Among several, the EARLIEST trigger - the trade a
+                           member has actually been in longest.
+         2  STILL OPEN     not finished, not yet triggered.  Among several, the NEWEST publication.
+         3  FINISHED       stopped, all targets reached, exited back through the six lines, or retired without
+                           ever triggering.  Among several, the earliest trigger; one with no trigger defers.
+         4  NOTHING KNOWN  no lifecycle in the feed at all (an asset whose Sheet status is Closed, whose facts
+                           come from a receipt instead).
+
+       A finished side never outranks a live one. That is the whole point: whatever the long did yesterday, if
+       the short is still running then the short is the trade. */
+    var SIDE_FINISHED_STATES = { STOP_BOUNDARY_REACHED: 1, OBJECTIVES_EXHAUSTED: 1, SIX_LINE_EXIT: 1, EXPIRED_UNTRIGGERED: 1 };
+    /* lc.retired is still honoured for an older cached feed; nothing sets it any more. */
+    function sideFinished(lc) { return !!(lc && (lc.retired || SIDE_FINISHED_STATES[lc.state])); }
     function activityRank(entry) {
       var lc = entry && entry.lifecycle;
       if (!lc) return 0;
-      if (lc.trigger && lc.trigger.reached_at) return 2;   // it actually fired
-      if (lc.state && lc.state !== 'WAITING_FOR_TRIGGER') return 1;
-      return 0;
+      if (sideFinished(lc)) return 1;
+      return (lc.trigger && lc.trigger.reached_at) ? 3 : 2;
+    }
+    function entryTrigMs(entry) {
+      var lc = entry && entry.lifecycle;
+      var t = (lc && lc.trigger && lc.trigger.reached_at) ? Date.parse(lc.trigger.reached_at) : NaN;
+      return isFinite(t) ? t : null;
+    }
+    function entryPubMs(entry) {
+      var t = (entry && entry.instance_published_at) ? Date.parse(entry.instance_published_at) : NaN;
+      return isFinite(t) ? t : null;
+    }
+    /* Preferred within the SAME rank, per the tie-breaks above. */
+    function beatsAtRank(a, b, rank) {
+      if (rank === 3 || rank === 1) {
+        var ta = entryTrigMs(a), tb = entryTrigMs(b);
+        if (ta !== null && tb !== null) return ta < tb;
+        if (ta !== null) return true;
+        if (tb !== null) return false;
+      }
+      var pa = entryPubMs(a), pb = entryPubMs(b);
+      return (pa !== null && pb !== null) ? pa > pb : false;
     }
     /* Only the CURRENT batch counts. Chelsea republishes one side without the other all the time: on
        2026-10-21 AVAX's long was that morning's fresh call (waiting) while its short was the previous day's,
@@ -1771,11 +1854,7 @@ details.sideflip{counter-reset:sect}
       for (var i = 0; i < all.length; i++) {
         var r = activityRank(all[i].entry);
         if (!best || r > best.rank) { best = { rank: r, item: all[i] }; continue; }
-        if (r === best.rank && r === 2) {
-          var t = Date.parse(all[i].entry.lifecycle.trigger.reached_at);
-          var bt = Date.parse(best.item.entry.lifecycle.trigger.reached_at);
-          if (isFinite(t) && isFinite(bt) && t < bt) best = { rank: r, item: all[i] };
-        }
+        if (r === best.rank && beatsAtRank(all[i].entry, best.item.entry, r)) best = { rank: r, item: all[i] };
       }
       return best ? best.item : null;   // the chosen side; the trigger check downstream still decides
     }
