@@ -1997,11 +1997,18 @@ details.sideflip{counter-reset:sect}
       var nextIdx = hitIdx + 1;
       if (nextIdx >= m.tp.length) return null;   // every defined TP already hit - should already be `complete`, but never invent a phantom next level
       var dir = directionFor(asset); if (!dir) return null;
-      var s = directionAsset === asset ? currentSetup : null; if (!s || !s.levels) return null;
       var targetId = 'TP' + (nextIdx + 1);
-      var level = s.levels.filter(function (l) { return l.id === targetId && l.zone; })[0];
-      if (!level) return null;
-      return { level_id: targetId, level: level, dir: dir.toLowerCase() };
+      /* 2026-10-24: the zone used to come from currentSetup.levels - att-core's primary side for the asset -
+         while nextIdx came from mechanicalFor(), which reports the side with activity. On BTC those were two
+         different trades, so the chip measured the short's progress against the LONG's $86,209 TP3 and read
+         "0.0% TO TP3" with price 7.9% away in the wrong direction. The feed entry that supplied the index
+         supplies the zone now, so the two cannot disagree. C.edges() needs only kind + zone. */
+      var picked = feedEntryFor(asset);
+      var plc = picked && picked.entry && picked.entry.lifecycle;
+      var tgt = plc && (plc.targets || []).filter(function (t) { return t.level_id === targetId; })[0];
+      var z = tgt && tgt.zone;
+      if (!z || z.low == null || z.high == null) return null;
+      return { level_id: targetId, level: { id: targetId, kind: 'tp', zone: z }, dir: dir.toLowerCase() };
     }
     /* Same near/far-edge + distance-band math triggerProximity() uses internally (att-module:800-812), just applied
        to ONE arbitrary level (a TP) instead of "nearest not-yet-passed trigger among several". Uses the SAME
@@ -2287,6 +2294,48 @@ details.sideflip{counter-reset:sect}
        describing opposite directions, with the short's trigger and TP1 both on the wrong side of the live
        price. The shown side was also retired and the page never said so. Full case: scratchpad/side-truth.js.
        Additive and idempotent, like every other ensure* here: removes its own node and rebuilds from the feed. */
+    /* WHICH SIDE'S LADDER IS ACTUALLY ON THE PAGE (2026-10-24). Returns 'LONG', 'SHORT' or null.
+       currentInstanceKey cannot answer this: att-core resolves it from the asset's primary row, which is a
+       different decision from the one the render makes now that the live side leads. On BTC the key said LONG
+       while the page showed the short's ladder, and every reader that trusted the key described the wrong
+       trade. The ladder's own TRIGGER 1 price is the unarguable answer - whichever side's published trigger
+       zone contains it is the side a member is looking at. Falls back to the key when there is no ladder to
+       read (a No-Trade page has none), which is the behaviour this replaces. */
+    function shownSideFor(asset) {
+      if (!feed || !feed.assets) return null;
+      var sides = {};
+      ['LONG', 'SHORT'].forEach(function (d) { var e = feed.assets[asset + '|' + d]; if (e) sides[d] = e; });
+      var dirs = Object.keys(sides);
+      if (!dirs.length) return null;
+      var ladder = document.getElementById('ladder');
+      var trigPrice = null;
+      if (ladder) {
+        Array.prototype.forEach.call(ladder.querySelectorAll('.row'), function (row) {
+          if (trigPrice != null) return;
+          var rl = row.querySelector('.rl'); if (!rl) return;
+          /* indexOf rather than equality: ensureLadderHits() appends its mark inside this same node. */
+          if ((rl.textContent || '').trim().toUpperCase().indexOf('TRIGGER 1') !== 0) return;
+          var p = parseFloat(row.getAttribute('data-p'));
+          if (isFinite(p)) trigPrice = p;
+        });
+      }
+      var found = null;
+      if (trigPrice != null) {
+        dirs.forEach(function (d) {
+          if (found) return;
+          var lc = sides[d].lifecycle;
+          var z = lc && lc.trigger && lc.trigger.zone;
+          if (!z || z.low == null || z.high == null) return;
+          var lo = Math.min(z.low, z.high), hi = Math.max(z.low, z.high);
+          var tol = Math.max(Math.abs(hi), Math.abs(lo), 1) * 1e-6;
+          if (trigPrice >= lo - tol && trigPrice <= hi + tol) found = d;
+        });
+      }
+      if (!found && currentInstanceKey) {
+        dirs.forEach(function (d) { if (!found && sides[d].setup_instance_key === currentInstanceKey) found = d; });
+      }
+      return found;
+    }
     function ensureSideTruth() {
       var old = document.getElementById('mech-sidetruth'); if (old) old.remove();
       var oldFlip = document.getElementById('sideflip-retired'); if (oldFlip) oldFlip.remove();
@@ -2295,10 +2344,7 @@ details.sideflip{counter-reset:sect}
       ['LONG', 'SHORT'].forEach(function (d) { var e = feed.assets[ASSET_ + '|' + d]; if (e) sides[d] = e; });
       if (!sides.LONG || !sides.SHORT) return;              // single-sided asset: nothing to disambiguate
 
-      var shown = null;
-      ['LONG', 'SHORT'].forEach(function (d) {
-        if (currentInstanceKey && sides[d].setup_instance_key === currentInstanceKey) shown = d;
-      });
+      var shown = shownSideFor(ASSET_);
       var reported = pairDirectionFor(ASSET_);
       /* Same correction as sideOver() in the base script above: a side is over because its own state says so,
          not because a flag nothing sets any more says so. These messages had stopped appearing entirely. */
@@ -2614,7 +2660,7 @@ details.sideflip{counter-reset:sect}
        check on its own short interval - it is two DOM reads and a class toggle. */
     setInterval(ensureNowRowTruth, 2000);
     obs.observe(app, { childList: true });
-    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, getCurrentInstanceKey: function () { return currentInstanceKey; }, resolveCurrentState: resolveCurrentState, directionFor: directionFor, ensure: ensure, ensureHeadline: ensureHeadline, suppressStaleChip: suppressStaleChip, attnTarget: attnTarget, attnChipHtml: attnChipHtml, ensureAttnChip: ensureAttnChip, loadLivePrice: loadLivePrice, coinEligible: coinEligible, coinBadgeHtml: coinBadgeHtml, ensureCoinHero: ensureCoinHero, triggerMarkerHtml: triggerMarkerHtml, conditionalTrigger: conditionalTrigger, readinessHtml: readinessHtml, ensureReadiness: ensureReadiness, loadReadinessPrice: loadReadinessPrice, panelHtml: panelHtml, sixLineReadinessFor: sixLineReadinessFor, ensureSixLineFlag: ensureSixLineFlag, ensureLadderHits: ensureLadderHits, expiredFor: expiredFor, ensureHeroState: ensureHeroState, ensureNowRowTruth: ensureNowRowTruth, ensureStrengthMeter: ensureStrengthMeter };   // test hook (read-only)
+    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, getCurrentInstanceKey: function () { return currentInstanceKey; }, resolveCurrentState: resolveCurrentState, directionFor: directionFor, ensure: ensure, ensureHeadline: ensureHeadline, suppressStaleChip: suppressStaleChip, attnTarget: attnTarget, attnChipHtml: attnChipHtml, ensureAttnChip: ensureAttnChip, loadLivePrice: loadLivePrice, coinEligible: coinEligible, coinBadgeHtml: coinBadgeHtml, ensureCoinHero: ensureCoinHero, triggerMarkerHtml: triggerMarkerHtml, conditionalTrigger: conditionalTrigger, readinessHtml: readinessHtml, ensureReadiness: ensureReadiness, loadReadinessPrice: loadReadinessPrice, panelHtml: panelHtml, sixLineReadinessFor: sixLineReadinessFor, ensureSixLineFlag: ensureSixLineFlag, ensureLadderHits: ensureLadderHits, shownSideFor: shownSideFor, ensureSideTruth: ensureSideTruth, expiredFor: expiredFor, ensureHeroState: ensureHeroState, ensureNowRowTruth: ensureNowRowTruth, ensureStrengthMeter: ensureStrengthMeter };   // test hook (read-only)
   } catch (e) { if (window.console) console.warn('mechanical feed addon disabled:', e); }
 })();
 </script>
