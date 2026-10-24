@@ -2632,7 +2632,14 @@ load();setInterval(load,60000);
              listed - a setup that is over has no business in a section of things still being watched. It
              arrives with Chelsea's status still reading Watching, which is precisely why load()'s own
              Sheet-driven partition leaves it in #grid-watching and this has to move it. */
-          if (resolved && (resolved.kind === 'stopped' || resolved.kind === 'complete' || resolved.kind === 'expired') && (c.parentNode === grid || c.parentNode === watchGridForMove)) {
+          /* 2026-10-24, second pass: the membership test is CONTAINMENT, not a direct parent match.
+             Currently Watching nests an 'Older watches' <details> with its own inner <div class="grid"> for
+             anything published more than two weeks ago, and TAO - the card this whole change is about - was
+             sitting in exactly that, so a direct parentNode comparison left it behind with the right headline
+             in the wrong section. Verified live: the other four retirements relocated, TAO did not. */
+          var inWatching = c.parentNode === grid || c.parentNode === watchGridForMove
+            || !!(watchGridForMove && watchGridForMove.contains && watchGridForMove.contains(c));
+          if (resolved && (resolved.kind === 'stopped' || resolved.kind === 'complete' || resolved.kind === 'expired') && inWatching) {
             if (histGrid) {
               var histEmpty = histGrid.querySelector('.empty'); if (histEmpty) histEmpty.remove();
               c.style.display = ''; // clear any display:none a prior cycle set while this was still a near/triggered card in #grid
