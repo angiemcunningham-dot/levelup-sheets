@@ -323,8 +323,17 @@ async function load(){
      clock gave BTC the retired long, two seconds newer than the short that actually triggered. Searches `rows`
      rather than `setupRows`, because setupRows is derived from cur and so cannot be used to choose it. */
   const mechSide=(d)=>{try{return (MECH&&MECH.assets&&MECH.assets[ASSET+"|"+String(d).toUpperCase()])||null;}catch(e){return null;}};
-  const sideTriggered=(d)=>{const lc=(mechSide(d)||{}).lifecycle;return !!(lc&&lc.trigger&&lc.trigger.reached_at&&!lc.retired);};
-  const sideRetired=(d)=>{const lc=(mechSide(d)||{}).lifecycle;return !!(lc&&lc.retired);};
+  /* 2026-10-24: both of these used to ask lifecycle.retired, and pair retirement no longer exists - each side
+     of a pair now lives and dies on its own (Angela: "once the long was stopped... the short should then become
+     active again"). So the question "is this side over?" is answered by its terminal STATE instead. lc.retired
+     is still honoured so an older published feed keeps working. Without this, "the live side leads" below had no
+     input at all and quietly fell back to recency, which put BTC's stopped long over its running short. */
+  const SIDE_OVER_STATES={STOP_BOUNDARY_REACHED:1,OBJECTIVES_EXHAUSTED:1,SIX_LINE_EXIT:1,EXPIRED_UNTRIGGERED:1};
+  const sideOver=(d)=>{const lc=(mechSide(d)||{}).lifecycle;return !!(lc&&(lc.retired||SIDE_OVER_STATES[lc.state]));};
+  /* "Triggered" here means the trade a member is actually in right now, which is why a finished side does not
+     qualify however real its trigger was. */
+  const sideTriggered=(d)=>{const lc=(mechSide(d)||{}).lifecycle;return !!(lc&&lc.trigger&&lc.trigger.reached_at&&!sideOver(d));};
+  const sideRetired=(d)=>sideOver(d);
   const mechLiveRow=()=>{
     try{
       const Core=(typeof window!=="undefined"&&window.LevelUpCore)||null;
@@ -2291,14 +2300,22 @@ details.sideflip{counter-reset:sect}
         if (currentInstanceKey && sides[d].setup_instance_key === currentInstanceKey) shown = d;
       });
       var reported = pairDirectionFor(ASSET_);
-      var isRetired = function (d) { return !!(sides[d].lifecycle && sides[d].lifecycle.retired); };
+      /* Same correction as sideOver() in the base script above: a side is over because its own state says so,
+         not because a flag nothing sets any more says so. These messages had stopped appearing entirely. */
+      var OVER = { STOP_BOUNDARY_REACHED: 1, OBJECTIVES_EXHAUSTED: 1, SIX_LINE_EXIT: 1, EXPIRED_UNTRIGGERED: 1 };
+      var isRetired = function (d) { var lc = sides[d].lifecycle; return !!(lc && (lc.retired || OVER[lc.state])); };
+      var didTrigger = function (d) { var lc = sides[d].lifecycle; return !!(lc && lc.trigger && lc.trigger.reached_at); };
 
       var msgs = [];
       if (shown && isRetired(shown)) {
         var winner = shown === 'LONG' ? 'SHORT' : 'LONG';
-        msgs.push('<b>The levels on this page are the ' + shown + ' side, and that side is retired.</b> Chelsea'
-          + ' published both directions on ' + ASSET_ + '; the ' + winner + ' triggered first, so the monitor'
-          + ' stopped tracking this one. These levels are no longer live.');
+        /* The old sentence said the other side "triggered first, so the monitor stopped tracking this one".
+           That described pair retirement, which is gone - the two sides are tracked independently now, and
+           saying otherwise would explain this page with a rule the board no longer follows. */
+        msgs.push('<b>The levels on this page are the ' + shown + ' side, and that trade is over.</b> Chelsea'
+          + ' published both directions on ' + ASSET_ + ', and each one is followed on its own - one of them'
+          + ' ending has no effect on the other. For the ' + winner + " side, open \u201cThe other side of this"
+          + " setup\u201d further down.");
       }
       if (shown && reported && reported !== shown) {
         msgs.push('<b>Read the direction carefully: the state at the top of this page is the ' + reported
@@ -2326,9 +2343,12 @@ details.sideflip{counter-reset:sect}
         if (body) {
           var n = document.createElement('div');
           n.id = 'sideflip-retired'; n.className = 'sideflip-retired';
-          n.innerHTML = '<b>This side is retired.</b> It never triggered, and the ' + shown + ' side above'
-            + ' fired first, so the monitor stopped tracking it. Shown because Chelsea published it and nothing'
-            + ' published is ever deleted - not because these levels are live.';
+          n.innerHTML = didTrigger(otherDir)
+            ? '<b>This side is over.</b> It triggered and has since finished - the state at the top of this page'
+              + ' is the other side. Shown because Chelsea published it and nothing published is ever deleted -'
+              + ' not because these levels are live.'
+            : '<b>This side never triggered.</b> Chelsea published it, and the condition was never met before it'
+              + ' was retired. Shown because nothing published is ever deleted - not because these levels are live.';
           body.insertBefore(n, body.firstChild);
         }
       }
@@ -2424,15 +2444,34 @@ details.sideflip{counter-reset:sect}
       /* The TRIGGER row too (2026-10-22). It was left out of this map, so the one row a member looks at
          first - Chelsea's own level - was the only reached level with no mark on it. Its marker reads
          'Met' rather than 'Reached': the level's name stays Trigger 1, but nothing declares. */
-      if (lc.trigger && lc.trigger.reached_at) hits['TRIGGER 1'] = { at: lc.trigger.reached_at, kind: 'tp' };
-      (lc.targets || []).forEach(function (t) { if (t.reached_at) hits[t.level_id] = { at: t.reached_at, kind: 'tp' }; });
-      if (lc.extended && lc.extended.reached_at) hits.EXTENDED = { at: lc.extended.reached_at, kind: 'tp' };
-      if (lc.stop_boundary && lc.stop_boundary.reached_at) hits.STOP = { at: lc.stop_boundary.reached_at, kind: 'stop' };
+      if (lc.trigger && lc.trigger.reached_at) hits['TRIGGER 1'] = { at: lc.trigger.reached_at, kind: 'tp', zone: lc.trigger.zone };
+      (lc.targets || []).forEach(function (t) { if (t.reached_at) hits[t.level_id] = { at: t.reached_at, kind: 'tp', zone: t.zone }; });
+      if (lc.extended && lc.extended.reached_at) hits.EXTENDED = { at: lc.extended.reached_at, kind: 'tp', zone: lc.extended.zone };
+      if (lc.stop_boundary && lc.stop_boundary.reached_at) hits.STOP = { at: lc.stop_boundary.reached_at, kind: 'stop', zone: lc.stop_boundary.zone };
       if (!Object.keys(hits).length) return;
       Array.prototype.forEach.call(ladder.querySelectorAll('.row'), function (row) {
         var rl = row.querySelector('.rl'); if (!rl) return;
         var label = (rl.textContent || '').trim().toUpperCase();
         var h = hits[label]; if (!h) return;
+        /* THE MARK HAS TO MATCH THE ROW'S PRICE, NOT JUST ITS NAME (2026-10-24, Angela: "please check the
+           ladder on BTC ... it is a short active and the ladder is going up and not correct").
+           Matching on the level id alone meant a two-sided setup could stamp one side's reached_at onto the
+           other side's prices, because both sides call their levels TP1/TP2/TP3. BTC did exactly that: the
+           short's trigger, TP1 and TP2 timestamps landed on the long's $82,392 / $82,917 / $84,314 rows, so
+           the page reported two banked targets on a trade that reached neither and stopped out. A fabricated
+           win on a losing trade is the worst thing this board can print.
+           data-p is the row's own published price, so the zone the monitor actually reached either contains
+           it or belongs to a different ladder. No instance keys, no side bookkeeping, and no second copy of
+           the pairing rule - and when the ladder IS the reported side, every number matches and every real
+           mark still appears. A feed with no zone on a level falls through unchanged. */
+        if (h.zone && h.zone.low != null && h.zone.high != null) {
+          var p = parseFloat(row.getAttribute('data-p'));
+          if (isFinite(p)) {
+            var lo = Math.min(h.zone.low, h.zone.high), hi = Math.max(h.zone.low, h.zone.high);
+            var tol = Math.max(Math.abs(hi), Math.abs(lo), 1) * 1e-6;   // float noise only, never a real gap
+            if (p < lo - tol || p > hi + tol) return;
+          }
+        }
         var tag = document.createElement('span');
         tag.className = 'mech-hit' + (h.kind === 'stop' ? ' stop' : '');
         /* "Hit", per OptionD.dc.html, which draws both the Trigger row and the TP rows as "&#10003; Hit".
@@ -2575,7 +2614,7 @@ details.sideflip{counter-reset:sect}
        check on its own short interval - it is two DOM reads and a class toggle. */
     setInterval(ensureNowRowTruth, 2000);
     obs.observe(app, { childList: true });
-    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, getCurrentInstanceKey: function () { return currentInstanceKey; }, resolveCurrentState: resolveCurrentState, directionFor: directionFor, ensure: ensure, ensureHeadline: ensureHeadline, suppressStaleChip: suppressStaleChip, attnTarget: attnTarget, attnChipHtml: attnChipHtml, ensureAttnChip: ensureAttnChip, loadLivePrice: loadLivePrice, coinEligible: coinEligible, coinBadgeHtml: coinBadgeHtml, ensureCoinHero: ensureCoinHero, triggerMarkerHtml: triggerMarkerHtml, conditionalTrigger: conditionalTrigger, readinessHtml: readinessHtml, ensureReadiness: ensureReadiness, loadReadinessPrice: loadReadinessPrice, panelHtml: panelHtml, sixLineReadinessFor: sixLineReadinessFor, ensureSixLineFlag: ensureSixLineFlag, expiredFor: expiredFor, ensureHeroState: ensureHeroState, ensureNowRowTruth: ensureNowRowTruth, ensureStrengthMeter: ensureStrengthMeter };   // test hook (read-only)
+    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, getCurrentInstanceKey: function () { return currentInstanceKey; }, resolveCurrentState: resolveCurrentState, directionFor: directionFor, ensure: ensure, ensureHeadline: ensureHeadline, suppressStaleChip: suppressStaleChip, attnTarget: attnTarget, attnChipHtml: attnChipHtml, ensureAttnChip: ensureAttnChip, loadLivePrice: loadLivePrice, coinEligible: coinEligible, coinBadgeHtml: coinBadgeHtml, ensureCoinHero: ensureCoinHero, triggerMarkerHtml: triggerMarkerHtml, conditionalTrigger: conditionalTrigger, readinessHtml: readinessHtml, ensureReadiness: ensureReadiness, loadReadinessPrice: loadReadinessPrice, panelHtml: panelHtml, sixLineReadinessFor: sixLineReadinessFor, ensureSixLineFlag: ensureSixLineFlag, ensureLadderHits: ensureLadderHits, expiredFor: expiredFor, ensureHeroState: ensureHeroState, ensureNowRowTruth: ensureNowRowTruth, ensureStrengthMeter: ensureStrengthMeter };   // test hook (read-only)
   } catch (e) { if (window.console) console.warn('mechanical feed addon disabled:', e); }
 })();
 </script>
