@@ -1347,6 +1347,7 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
 .mech-headline.mech-stopped{background:rgba(239,68,68,.10);color:#B91C1C}
 .mech-headline.mech-closed{background:rgba(107,114,128,.10);color:#374151}
 .mech-headline.mech-complete{background:rgba(250,3,152,.06);color:#FA0398}
+.mech-headline.mech-expired{background:rgba(107,114,128,.10);color:#374151}
 .mech-headline-sub{font-family:Inter,sans-serif;font-weight:600;font-size:12px;letter-spacing:.02em;text-transform:none;opacity:.85}
 /* Hides the stale "% TO TRIGGER" chip - any variant except the already-correct ACTIVE_LONG/SHORT one - once the
    current instance is mechanically resolved. Scoped via a body-level class (see suppressStaleChip()'s comment for
@@ -1807,6 +1808,27 @@ details.sideflip{counter-reset:sect}
         .map(function (t) { return !!t.reached_at; });
       return { triggered: true, tp: tp, stopped: lc.state === 'STOP_BOUNDARY_REACHED', complete: lc.state === 'OBJECTIVES_EXHAUSTED', outcome: (lc.public_display && lc.public_display.outcome) || null, tpsBeforeStop: (lc.stop_boundary && lc.stop_boundary.tps_reached_before_stop) || [], triggerAt: lc.trigger.reached_at, triggerZone: lc.trigger.zone };
     }
+    /* NO TRADE - RETIRED WITHOUT EVER TRIGGERING (2026-10-24). See index.html's copy of this function for
+       the full rationale; the short version is that mechanicalFor() above returns null whenever there is no
+       confirmed trigger, which is right for TP and stop ticks and exactly wrong for an ending that happens
+       BECAUSE nothing ever fired. Chelsea: "mark no trade and retire trade and do not reactivate until i put
+       another one". Gated on her own status, so an Active Long/Short cell is never overruled by a clock. */
+    function expiredFor(asset, currentInstanceKey) {
+      if (!feed) return null;
+      var picked = feedEntryFor(asset); if (!picked) return null;
+      var a = picked.entry, lc = a.lifecycle;
+      if (!lc || lc.voided) return null;
+      if (lc.state !== 'EXPIRED_UNTRIGGERED') return null;
+      if (lc.trigger && lc.trigger.reached_at) return null;
+      var cls = a.sheet_status && a.sheet_status.class;
+      if (cls && cls !== 'WATCHING' && cls !== 'NO_TRADE') return null;
+      if (currentInstanceKey) {
+        var validKeys = instanceKeysForCurrent(asset);
+        var keyOk = validKeys.length ? validKeys.indexOf(a.setup_instance_key) >= 0 : (a.setup_instance_key === currentInstanceKey);
+        if (!keyOk) return null;
+      }
+      return { expired: true, retiredAt: lc.terminal_at || null, publishedAt: a.instance_published_at || null };
+    }
     /* COMPLETION COIN eligibility (2026-09-29) - reuses mechanicalFor() as-is, so it inherits the same
        instance-safety for free and never names a ticker. Approved member-facing rule (explicit, final - 2026-09-29
        correction): TP1 + TP2 + TP3 all reached, exactly. Not "however many TPs are defined" - a setup that only
@@ -1907,6 +1929,15 @@ details.sideflip{counter-reset:sect}
       return null;
     }
     function resolveCurrentState(asset) {
+      /* Checked before mechanicalFor() because that function has nothing to return for this case by
+         design - no trigger, so no m at all. The `note` rides along for the headline's sub-line: a member
+         landing here deserves the sentence, not just the two words. */
+      var x = expiredFor(asset, directionAsset === asset ? currentInstanceKey : null);
+      if (x) {
+        return { text: 'NO TRADE\u00a0\u2014\u00a0CONDITION NEVER MET', kind: 'expired',
+          note: 'This setup waited a full day without the condition below ever being met, so it is retired. '
+            + 'Chelsea\u2019s levels stay on the page as published - nothing here is deleted - but nothing is being tracked against them any more.' };
+      }
       var m = mechanicalFor(asset, directionAsset === asset ? currentInstanceKey : null);
       if (!m || !m.triggered) return null;   // not mechanically confirmed yet - Sheet stays primary (SEI-shaped)
       if (m.stopped) {
@@ -2033,6 +2064,7 @@ details.sideflip{counter-reset:sect}
       // as a winner's badge instead of a tiny decorative icon next to a word.
       var html = '<div id="mech-headline" class="mech-headline mech-' + resolved.kind + '">'
         + '<span class="mech-headline-top"><span class="mech-headline-main">' + escH(resolved.text) + '</span></span>'
+        + (resolved.note ? '<small class="mech-headline-sub">' + escH(resolved.note) + '</small>' : '')
         + (sheetTxt ? '<small class="mech-headline-sub">Chelsea’s Sheet status: ' + escH(sheetTxt) + (pubAgo ? ' · published ' + pubAgo : '') + '</small>' : '')
         + '</div>';
       var d = document.createElement('div'); d.innerHTML = html;
@@ -2335,7 +2367,13 @@ details.sideflip{counter-reset:sect}
       var row = document.querySelector('#ladder .row.now'); if (!row) return;
       var picked = feedEntryFor(ASSET_);
       var lc = picked && picked.entry && picked.entry.lifecycle;
-      var done = !!(lc && (lc.state === 'STOP_BOUNDARY_REACHED' || lc.state === 'OBJECTIVES_EXHAUSTED'));
+      /* 2026-10-24: SIX_LINE_EXIT and the retirement join the two original terminal states here. Both were
+         added to the engine after this function was written, and a live-pulsing "Live price" row under a
+         finished setup is exactly the claim the comment above this function says the page must not make. The
+         retirement goes through expiredFor() rather than a raw state check so it inherits that function's
+         gate on Chelsea's own status. */
+      var done = !!(lc && (lc.state === 'STOP_BOUNDARY_REACHED' || lc.state === 'OBJECTIVES_EXHAUSTED' || lc.state === 'SIX_LINE_EXIT'))
+        || !!expiredFor(ASSET_, directionAsset === ASSET_ ? currentInstanceKey : null);
       row.classList.toggle('mech-now-closed', done);
       var note = row.querySelector('.rn');
       if (note) {
@@ -2357,7 +2395,10 @@ details.sideflip{counter-reset:sect}
       if (!em.dataset.chelsea) em.dataset.chelsea = em.textContent;   // keep her wording to fall back to
       var m = mechanicalFor(ASSET_, directionAsset === ASSET_ ? currentInstanceKey : null);
       var word = null;
-      if (m && m.triggered) {
+      /* 2026-10-24: the same reason the triggered states are here. TAO's page read "SHORT WATCH" in the
+         largest text on it for a setup the engine retired weeks ago. */
+      if (expiredFor(ASSET_, directionAsset === ASSET_ ? currentInstanceKey : null)) word = 'NO TRADE';
+      else if (m && m.triggered) {
         if (m.stopped) word = 'STOPPED';
         else if (m.complete) word = 'COMPLETE';
         else {
@@ -2525,7 +2566,7 @@ details.sideflip{counter-reset:sect}
        check on its own short interval - it is two DOM reads and a class toggle. */
     setInterval(ensureNowRowTruth, 2000);
     obs.observe(app, { childList: true });
-    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, getCurrentInstanceKey: function () { return currentInstanceKey; }, resolveCurrentState: resolveCurrentState, directionFor: directionFor, ensure: ensure, ensureHeadline: ensureHeadline, suppressStaleChip: suppressStaleChip, attnTarget: attnTarget, attnChipHtml: attnChipHtml, ensureAttnChip: ensureAttnChip, loadLivePrice: loadLivePrice, coinEligible: coinEligible, coinBadgeHtml: coinBadgeHtml, ensureCoinHero: ensureCoinHero, triggerMarkerHtml: triggerMarkerHtml, conditionalTrigger: conditionalTrigger, readinessHtml: readinessHtml, ensureReadiness: ensureReadiness, loadReadinessPrice: loadReadinessPrice, panelHtml: panelHtml, sixLineReadinessFor: sixLineReadinessFor, ensureSixLineFlag: ensureSixLineFlag };   // test hook (read-only)
+    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, getCurrentInstanceKey: function () { return currentInstanceKey; }, resolveCurrentState: resolveCurrentState, directionFor: directionFor, ensure: ensure, ensureHeadline: ensureHeadline, suppressStaleChip: suppressStaleChip, attnTarget: attnTarget, attnChipHtml: attnChipHtml, ensureAttnChip: ensureAttnChip, loadLivePrice: loadLivePrice, coinEligible: coinEligible, coinBadgeHtml: coinBadgeHtml, ensureCoinHero: ensureCoinHero, triggerMarkerHtml: triggerMarkerHtml, conditionalTrigger: conditionalTrigger, readinessHtml: readinessHtml, ensureReadiness: ensureReadiness, loadReadinessPrice: loadReadinessPrice, panelHtml: panelHtml, sixLineReadinessFor: sixLineReadinessFor, ensureSixLineFlag: ensureSixLineFlag, expiredFor: expiredFor, ensureHeroState: ensureHeroState, ensureNowRowTruth: ensureNowRowTruth };   // test hook (read-only)
   } catch (e) { if (window.console) console.warn('mechanical feed addon disabled:', e); }
 })();
 </script>

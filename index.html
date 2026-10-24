@@ -2055,6 +2055,7 @@ load();setInterval(load,60000);
 .mech-headline.mech-stopped{color:var(--red-d)}
 .mech-headline.mech-closed{color:var(--gray)}
 .mech-headline.mech-complete{color:var(--pink)}
+.mech-headline.mech-expired{color:var(--gray)}
 /* COMPLETION COIN (2026-09-29) - see sheet.html's copy of this comment for the full rationale. Base .mech-coin is
    the small inline badge still used by Active Now (unchanged). The main grid card instead gets .mech-coin-card
    (2026-09-29, Angela-approved): pulled out of the headline text and absolutely positioned in the blank white
@@ -2273,6 +2274,48 @@ load();setInterval(load,60000);
          knows. sheet.html's copy of mechanicalFor has carried it since the trigger marker was built. */
       return { triggered: true, tp: tp, stopped: lc.state === 'STOP_BOUNDARY_REACHED', complete: lc.state === 'OBJECTIVES_EXHAUSTED', outcome: (lc.public_display && lc.public_display.outcome) || null, tpsBeforeStop: (lc.stop_boundary && lc.stop_boundary.tps_reached_before_stop) || [], triggerAt: lc.trigger.reached_at };
     }
+    /* NO TRADE - RETIRED WITHOUT EVER TRIGGERING (2026-10-24, Angela: "Lets fix TAO (currently watching)").
+       Chelsea, 2026-10-23, on a watch that just sits there: "mark no trade and retire trade and do not
+       reactivate until i put another one". The engine does that now - a setup that goes 24 hours past
+       publication without its condition being met becomes EXPIRED_UNTRIGGERED - but the board never heard
+       about it, because mechanicalFor() above returns null the instant there is no confirmed trigger. That
+       guard is correct for what it guards (TP and stop ticks ahead of a trigger would be a lie) and exactly
+       wrong here, where the ending happens PRECISELY BECAUSE nothing ever fired. TAO was published
+       2026-09-29, expired in the engine, and still read "Watching" on this board 604 hours later.
+
+       Same identity rules as mechanicalFor - same feedEntryFor() side pick, same instance-key check, same
+       withdrawal on a voided observation - so an OLD expired instance can never retire a NEW current one.
+       Deliberately NOT read from receipts: a receipt exists to preserve a ready:true display, and nothing
+       about never triggering was ever displayed.
+
+       GATED ON CHELSEA'S OWN STATUS. If her status cell says Active Long/Short she is telling members she is
+       in the trade, and no mechanical clock gets to put "NO TRADE" over the top of that. Watching and No
+       Trade are the only statuses this speaks for, which is all eight of the setups currently in this state. */
+    function expiredFor(asset, currentInstanceKey) {
+      if (!feed) return null;
+      var picked = feedEntryFor(asset); if (!picked) return null;
+      var a = picked.entry, lc = a.lifecycle;
+      if (!lc || lc.voided) return null;
+      if (lc.state !== 'EXPIRED_UNTRIGGERED') return null;
+      if (lc.trigger && lc.trigger.reached_at) return null;   // belt and braces: an expiry cannot carry a trigger
+      var cls = a.sheet_status && a.sheet_status.class;
+      if (cls && cls !== 'WATCHING' && cls !== 'NO_TRADE') return null;
+      if (currentInstanceKey) {
+        var valid = instanceKeysFor(asset);
+        var ok = valid.length ? valid.indexOf(a.setup_instance_key) >= 0 : (a.setup_instance_key === currentInstanceKey);
+        if (!ok) return null;
+      }
+      return { expired: true, retiredAt: lc.terminal_at || null, publishedAt: a.instance_published_at || null };
+    }
+    /* The ladder badge's counterpart for a retirement: one plain tick, no TP circles. Showing an empty TP
+       ladder here would invite the reading that the targets were missed, when the trade was never entered. */
+    function expiredBadgeHtml(x) {
+      if (!x) return '';
+      return '<div class="mech-row" title="Observation of Chelsea’s published levels - not a signal, not the Sheet status">'
+        + '<span class="mech-tick">&#9675; CONDITION NEVER MET</span>'
+        + (x.retiredAt ? '<span class="mech-tick">RETIRED ' + fmtAgo(x.retiredAt).toUpperCase() + '</span>' : '')
+        + '</div>';
+    }
     /* CURRENT-STATE RECONCILIATION (staging). Turns the same instance-safe mechanicalFor() facts above into ONE
        reconciled current-state headline, shared by this grid, Active Now here, and sheet.html's copy of this same
        script for the detail-page banner - so the two surfaces can never again show CAKE-style contradictory current
@@ -2300,6 +2343,10 @@ load();setInterval(load,60000);
       return null;
     }
     function resolveCurrentState(asset) {
+      /* The retirement is checked FIRST, because the case it covers is the one where mechanicalFor() has
+         nothing to say by design (no trigger, so no m at all). See expiredFor() above. */
+      var x = expiredFor(asset, currentInstanceKeyFor(asset));
+      if (x) return { text: 'NO TRADE\u00a0\u2014\u00a0CONDITION NEVER MET', kind: 'expired' };
       var m = mechanicalFor(asset, currentInstanceKeyFor(asset));
       if (!m || !m.triggered) return null;   // not mechanically confirmed yet - Sheet stays primary (SEI-shaped)
       if (m.stopped) {
@@ -2335,6 +2382,11 @@ load();setInterval(load,60000);
         if (!origApplicable(setup, opts2)) return false;
         var m = mechanicalFor(setup.asset, currentInstanceKeyFor(setup.asset));
         if (m && m.triggered) return false;
+        /* 2026-10-24: a retired, never-triggered setup is the definition of "not a live consideration" -
+           the client-side 14-day age cap in pastAttentionCap() was a guess at this exact case, and the
+           engine now has the authoritative answer, so it leads. The card itself is never removed; it is
+           relocated into Previous Calls by decorate() below, because Chelsea published it. */
+        if (expiredFor(setup.asset, currentInstanceKeyFor(setup.asset))) return false;
         return true;
       };
       window.LevelUpAttention.__mechWrapped = true;
@@ -2550,7 +2602,8 @@ load();setInterval(load,60000);
               pill.classList.remove('mech-demoted');
             }
           }
-          var html = badgeHtml(mechanicalFor(asset, currentInstanceKeyFor(asset)));
+          var html = badgeHtml(mechanicalFor(asset, currentInstanceKeyFor(asset)))
+            || expiredBadgeHtml(expiredFor(asset, currentInstanceKeyFor(asset)));
           if (html) { var d = document.createElement('div'); d.innerHTML = html; if (pill && pill.parentNode) pill.parentNode.insertBefore(d.firstChild, pill.nextSibling); }
           /* OPTION D: the strip goes under the state line, after the TP ladder badge. Removed and rebuilt
              each pass so it cannot double up when load() re-renders the card. */
@@ -2572,7 +2625,11 @@ load();setInterval(load,60000);
              places at once.
           */
           var histGrid = document.getElementById('grid-history'), watchGridForMove = document.getElementById('grid-watching');
-          if (resolved && (resolved.kind === 'stopped' || resolved.kind === 'complete') && (c.parentNode === grid || c.parentNode === watchGridForMove)) {
+          /* 2026-10-24: 'expired' joins the terminal kinds here for the same reason the other two are
+             listed - a setup that is over has no business in a section of things still being watched. It
+             arrives with Chelsea's status still reading Watching, which is precisely why load()'s own
+             Sheet-driven partition leaves it in #grid-watching and this has to move it. */
+          if (resolved && (resolved.kind === 'stopped' || resolved.kind === 'complete' || resolved.kind === 'expired') && (c.parentNode === grid || c.parentNode === watchGridForMove)) {
             if (histGrid) {
               var histEmpty = histGrid.querySelector('.empty'); if (histEmpty) histEmpty.remove();
               c.style.display = ''; // clear any display:none a prior cycle set while this was still a near/triggered card in #grid
@@ -2634,7 +2691,7 @@ load();setInterval(load,60000);
     load();
     setInterval(load, 60000);
     obs.observe(grid.parentNode, { childList: true, subtree: true });
-    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, currentInstanceKeyFor: currentInstanceKeyFor, resolveCurrentState: resolveCurrentState, directionFor: directionFor, decorate: decorate, decorateActiveNow: decorateActiveNow, coinEligible: coinEligible, badgeHtml: badgeHtml };   // test hook (read-only)
+    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, currentInstanceKeyFor: currentInstanceKeyFor, resolveCurrentState: resolveCurrentState, directionFor: directionFor, decorate: decorate, decorateActiveNow: decorateActiveNow, coinEligible: coinEligible, badgeHtml: badgeHtml, expiredFor: expiredFor, expiredBadgeHtml: expiredBadgeHtml };   // test hook (read-only)
   } catch (e) { if (window.console) console.warn('mechanical feed addon disabled:', e); }
 })();
 </script>
