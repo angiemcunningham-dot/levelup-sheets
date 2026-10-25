@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>What Your Exit Rule Does — Level Up</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%E2%9A%A1%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+  :root{
+    --ink:#16161D; --ink-2:#3A3A47; --ink-3:#6A6A79;
+    --paper:#FBF9FA; --card:#FFFFFF; --rule:#E8DFE5; --rule-2:#F3ECF0;
+    --pink:#FA0398; --pink-wash:#FFF0F8;
+    --keep:#0F6B46; --keep-wash:#E6F6ED; --keep-rule:#BCE3CE;
+    --lost:#A81B33; --lost-wash:#FCEDEF; --lost-rule:#F0C8CF;
+    --amber:#8A5A00; --amber-wash:#FDF4E3;
+    --track:#EDE6EA;
+    --shadow:0 1px 2px rgba(22,22,29,.04), 0 8px 24px rgba(22,22,29,.06);
+  }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+    --ink:#F2EFF1; --ink-2:#C5C1C9; --ink-3:#938E99;
+    --paper:#141318; --card:#1C1B22; --rule:#32303A; --rule-2:#26242E;
+    --pink:#FF4FB5; --pink-wash:#2A1324;
+    --keep:#5FD2A0; --keep-wash:#12241C; --keep-rule:#2B4D3C;
+    --lost:#F2889B; --lost-wash:#2A161B; --lost-rule:#4D2831;
+    --amber:#E0B264; --amber-wash:#2A2213;
+    --track:#2B2933;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }}
+  :root[data-theme="dark"]{
+    --ink:#F2EFF1; --ink-2:#C5C1C9; --ink-3:#938E99;
+    --paper:#141318; --card:#1C1B22; --rule:#32303A; --rule-2:#26242E;
+    --pink:#FF4FB5; --pink-wash:#2A1324;
+    --keep:#5FD2A0; --keep-wash:#12241C; --keep-rule:#2B4D3C;
+    --lost:#F2889B; --lost-wash:#2A161B; --lost-rule:#4D2831;
+    --amber:#E0B264; --amber-wash:#2A2213;
+    --track:#2B2933;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  body{background:var(--paper); color:var(--ink); font-family:Inter,system-ui,sans-serif;
+       font-size:16px; line-height:1.65; padding-left:20px; padding-right:20px}
+  .wrap{max-width:860px; margin:0 auto; padding-block:46px 90px}
+  h1,h2,h3,.kicker,.lbl{font-family:Archivo,Inter,sans-serif}
+  p{margin:0 0 14px; max-width:66ch}
+  strong{font-weight:650}
+
+  .mast{border-bottom:3px solid var(--ink); padding-bottom:24px}
+  .kicker{font-size:11.5px; font-weight:900; letter-spacing:.2em; text-transform:uppercase; color:var(--pink); margin-bottom:12px}
+  h1{font-size:clamp(32px,6.5vw,52px); font-weight:900; line-height:1.02; letter-spacing:-.02em; margin:0 0 16px; text-wrap:balance}
+  .stand{font-size:18px; color:var(--ink-2); max-width:58ch; margin:0}
+
+  .yousaid{background:var(--pink-wash); border-left:4px solid var(--pink); border-radius:0 5px 5px 0;
+           padding:18px 22px; margin:32px 0}
+  .yousaid .lbl{font-size:10.5px; font-weight:900; letter-spacing:.14em; text-transform:uppercase; color:var(--pink); display:block; margin-bottom:6px}
+  .yousaid p{margin:0; font-size:17px; line-height:1.6}
+
+  h2{font-size:13px; font-weight:900; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3);
+     border-bottom:1px solid var(--rule); padding-bottom:9px; margin:56px 0 22px}
+  h3{font-size:20px; font-weight:800; margin:0 0 10px; letter-spacing:-.01em}
+
+  /* ---------- headline numbers ---------- */
+  .nums{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin:26px 0}
+  @media(max-width:600px){ .nums{grid-template-columns:1fr} }
+  .num{background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:18px; box-shadow:var(--shadow)}
+  .num .v{font-family:Archivo,sans-serif; font-weight:900; font-size:38px; line-height:1; letter-spacing:-.02em}
+  .num .k{font-size:13.5px; color:var(--ink-2); margin-top:8px; line-height:1.45}
+  .num.a .v{color:var(--ink)} .num.b .v{color:var(--lost)} .num.c .v{color:var(--keep)}
+
+  /* ---------- the trade bars ---------- */
+  .trade{margin:0 0 4px; padding:13px 0; border-bottom:1px solid var(--rule-2)}
+  .trade:last-child{border-bottom:none}
+  .thead{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:9px}
+  .tick{font-family:Archivo,sans-serif; font-weight:900; font-size:15px; letter-spacing:.04em}
+  .tdir{font-family:"JetBrains Mono",monospace; font-size:10.5px; font-weight:700; letter-spacing:.08em;
+        text-transform:uppercase; padding:2px 7px; border-radius:3px}
+  .tdir.long{background:var(--keep-wash); color:var(--keep)}
+  .tdir.short{background:var(--lost-wash); color:var(--lost)}
+  .thrs{font-family:"JetBrains Mono",monospace; font-size:11.5px; color:var(--ink-3); margin-left:auto}
+
+  .track{position:relative; height:30px; background:var(--track); border-radius:4px; overflow:hidden}
+  .seg{position:absolute; top:0; bottom:0; left:0; background:var(--keep-wash); border-right:3px solid var(--pink)}
+  .trackrow{display:flex; align-items:center; gap:10px}
+  .pills{display:flex; gap:6px; flex-wrap:wrap; margin-top:9px}
+  .pill{font-family:"JetBrains Mono",monospace; font-size:11px; font-weight:700; letter-spacing:.05em;
+        padding:4px 9px; border-radius:4px; border:1.5px solid}
+  .pill.keep{background:var(--keep-wash); border-color:var(--keep-rule); color:var(--keep)}
+  .pill.lost{background:var(--lost-wash); border-color:var(--lost-rule); color:var(--lost); text-decoration:line-through}
+  .pill.none{background:transparent; border-color:var(--rule); color:var(--ink-3)}
+  .pnote{font-size:12.5px; color:var(--ink-3); margin-top:7px}
+
+  .legend{display:flex; gap:16px; flex-wrap:wrap; font-size:12.5px; color:var(--ink-2); margin:0 0 20px}
+  .legend span{display:inline-flex; align-items:center; gap:6px}
+  .sw{width:13px; height:13px; border-radius:3px; border:1.5px solid}
+  .sw.k{background:var(--keep-wash); border-color:var(--keep-rule)}
+  .sw.l{background:var(--lost-wash); border-color:var(--lost-rule)}
+  .sw.e{background:var(--pink); border-color:var(--pink); width:4px; border-radius:1px}
+
+  .box{border:2px solid; border-radius:6px; padding:20px 22px; margin:24px 0}
+  .box.good{border-color:var(--keep-rule); background:var(--keep-wash)}
+  .box.warn{border-color:var(--amber); background:var(--amber-wash)}
+  .box h3{margin-top:0}
+  .box p:last-child{margin-bottom:0}
+
+  /* ---------- the question ---------- */
+  .ask{border:2px solid var(--ink); border-radius:6px; overflow:hidden; margin-top:26px; background:var(--card)}
+  .ask-h{background:var(--ink); color:var(--paper); padding:13px 20px; font-family:Archivo,sans-serif;
+         font-size:12.5px; font-weight:900; letter-spacing:.14em; text-transform:uppercase}
+  .ask-b{padding:6px 20px 20px}
+  .opt{border-top:1px solid var(--rule); padding:16px 0 4px}
+  .opt:first-child{border-top:none}
+  .opt label{display:flex; gap:11px; align-items:flex-start; cursor:pointer}
+  .opt input{margin-top:5px; width:17px; height:17px; accent-color:var(--pink); flex:none}
+  .opt b{font-family:Archivo,sans-serif; font-size:15.5px; font-weight:800; display:block; margin-bottom:3px}
+  .opt span{font-size:14.5px; color:var(--ink-2)}
+  textarea{display:block; width:100%; border:1px solid var(--rule); border-radius:5px; margin-top:16px;
+           padding:13px 15px; font:inherit; font-size:14.5px; background:var(--paper); color:var(--ink);
+           resize:vertical; min-height:92px}
+  textarea:focus{outline:2px solid var(--pink); outline-offset:-1px}
+
+  .btn{appearance:none; border:none; cursor:pointer; background:var(--ink); color:var(--paper);
+       font-family:Archivo,sans-serif; font-size:13.5px; font-weight:800; letter-spacing:.06em;
+       text-transform:uppercase; padding:13px 21px; border-radius:4px}
+  .btn:hover{background:var(--pink)}
+  .btn:focus-visible{outline:2px solid var(--pink); outline-offset:3px}
+  .btns{display:flex; gap:10px; flex-wrap:wrap; margin-top:22px}
+  #out{width:100%; margin-top:16px; min-height:150px; font-family:"JetBrains Mono",monospace; font-size:12px}
+  .said{font-size:13px; color:var(--ink-3); margin-top:10px; min-height:20px}
+  .asof{font-size:12.5px; color:var(--ink-3); margin:-6px 0 18px}
+  .howback{font-size:14px; color:var(--ink-2); margin-top:14px; line-height:1.6}
+  .foot{margin-top:40px; padding-top:18px; border-top:1px solid var(--rule)}
+  .foot p{font-size:12.5px; color:var(--ink-3); margin:0; line-height:1.6}
+  @media (prefers-reduced-motion:reduce){ *{transition:none!important} }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header class="mast">
+    <div class="kicker">Level Up Crypto · For Chelsea</div>
+    <h1>What your exit rule does</h1>
+    <p class="stand">You asked for one change. We ran it against every trade you've ever posted to see what it actually does — and it's bigger than it sounds. Here's the picture before we leave it switched on.</p>
+  </header>
+
+  <div class="yousaid">
+    <span class="lbl">What you wrote</span>
+    <p>"The trade setup stops and gets retired when a 1 hr candle opens below the simple and the smooth…it remains green in the trade history as a winning trade if at least 1 tp was hit"</p>
+  </div>
+
+  <p>That's now built exactly as written. A trade used to end only when every take-profit was reached or the stop was hit. Now it also ends the first time a 1-hour candle opens back through your two lines.</p>
+
+  <h2>What it does to your record</h2>
+
+  <div class="nums">
+    <div class="num a"><div class="v">46</div><div class="k">of your 52 triggered trades would have ended on this rule</div></div>
+    <div class="num b"><div class="v">14</div><div class="k">would lose take-profits they genuinely reached</div></div>
+    <div class="num c"><div class="v">35</div><div class="k">already-finished trades are safe — the record can't be rewritten</div></div>
+  </div>
+
+  <p class="asof">Counted on 23 October against every trade you have posted, using real 1-hour candles.</p>
+  <p>The rule can only act on the <strong>9 trades open right now</strong>, and anything you post from here on. Nothing in your history changes &mdash; once a trade has finished, the board cannot rewrite it. What your answer below decides is how the ending works from here.</p>
+
+  <h2>Where it works beautifully</h2>
+  <p>On a trade that runs cleanly, the exit arrives long after the targets — it just tidies up the ending instead of leaving the card open for days.</p>
+
+  <div class="legend">
+    <span><span class="sw k"></span> counted</span>
+    <span><span class="sw e"></span> the exit</span>
+    <span><span class="sw l"></span> no longer counts</span>
+  </div>
+
+  <div id="good"></div>
+
+  <div class="box good">
+    <h3>This is the rule doing its job</h3>
+    <p>COMP ran 39 hours and banked all three before the lines gave way. XLM and ZEC the same. Under the old rule these cards sat open long after the trade was effectively over. Now they close with everything intact.</p>
+  </div>
+
+  <h2>Where it cuts hard</h2>
+  <p>On a choppier trade the exit arrives early — sometimes within an hour — and the targets price reached afterwards no longer belong to the trade.</p>
+
+  <div id="bad"></div>
+
+  <div class="box warn">
+    <h3>These are the ones to look at</h3>
+    <p><strong>AERO and IMX</strong> both reached all three take-profits. Under this rule they end before any of them and record as flat — no win at all.</p>
+    <p><strong>INJ</strong> exits one hour after triggering, then goes on to TP1 and TP2 without them counting.</p>
+    <p>That's not a mistake in the build — it's the rule applied honestly. Price did open back through your lines first. The question is whether that's the answer you want on the board.</p>
+  </div>
+
+  <h2>The question</h2>
+  <p>You know how you actually trade these better than the board does. Three ways to go:</p>
+
+  <div class="ask">
+    <div class="ask-h">How should the exit work?</div>
+    <div class="ask-b">
+      <div class="opt"><label>
+        <input type="radio" name="verdict" value="as-is">
+        <span><b>Leave it exactly as I said</b>The trade is over the moment a 1-hour candle opens back through the lines. If price reaches a target after that, it wasn't my trade any more.</span>
+      </label></div>
+      <div class="opt"><label>
+        <input type="radio" name="verdict" value="keep-tps">
+        <span><b>End the trade, but keep targets it reaches that same day</b>The card closes on the exit, and anything price reaches afterwards still shows in the history as reached.</span>
+      </label></div>
+      <div class="opt"><label>
+        <input type="radio" name="verdict" value="after-tp1">
+        <span><b>Only let it exit once TP1 is in</b>Before the first target the trade keeps running to its stop, the way it used to. After TP1, the lines can close it.</span>
+      </label></div>
+      <div class="opt"><label>
+        <input type="radio" name="verdict" value="other">
+        <span><b>Something else</b>Tell us below.</span>
+      </label></div>
+      <textarea id="notes" placeholder="Anything you'd change, or what you were picturing when you wrote it…"></textarea>
+    </div>
+  </div>
+
+  <h2>Your other two changes</h2>
+
+  <div class="box good">
+    <h3>Both built &mdash; and you can see them on the board now</h3>
+    <p><strong>"Watching for 24 hours, then retire it."</strong> Done, and showing. Five old watches now read
+      <b>NO TRADE &mdash; CONDITION NEVER MET</b> and have moved into Previous Calls: TAO, ALGO, CRV, DASH and
+      ZRO. TAO was the worst of them &mdash; posted on 29 September and still sitting in Currently Watching
+      three and a half weeks later. Your levels are all still on each card; nothing was deleted.</p>
+    <p><strong>"Make these two separate trades."</strong> Done, and showing. A long and a short on the same
+      coin no longer cancel each other out, and the page now leads with whichever side is still running. BTC
+      was the test: its long stopped out and its short is up to TP2, so BTC opens on the short. Same on ADA and
+      XRP.</p>
+  </div>
+
+  <div class="btns">
+    <button class="btn" id="gather" type="button">Gather my answer</button>
+    <button class="btn" id="dl" type="button" hidden style="background:var(--pink)">Download as a file</button>
+  </div>
+  <div class="said" id="said"></div>
+  <textarea id="out" readonly placeholder="Your answer will appear here."></textarea>
+  <p class="howback">Press <b>Gather my answer</b> and it copies itself. Paste it straight back to Angela &mdash;
+    text, Skool, anywhere. Nothing you type here is sent anywhere on its own, and nothing is saved if you close
+    the page, so copy it before you go.</p>
+
+  <footer class="foot">
+    <p>A working page for Chelsea &mdash; not a member page, and not linked from the board. Trade numbers are
+      counted from Chelsea&rsquo;s own published levels against real market candles.</p>
+  </footer>
+
+</div>
+</body>
+</html>
+
+<script>
+(function(){
+  "use strict";
+
+  /* Measured 2026-10-23 against real Binance 1H candles, for every setup carrying a trigger.
+     hrs = hours from the trigger to the first candle that opened back through both lines. */
+  var GOOD = [
+    { a:'COMP',   d:'short', hrs:39, keep:['TP1','TP2','TP3'], lost:[] },
+    { a:'ZEC',    d:'short', hrs:18, keep:['TP1','TP2','TP3'], lost:[] },
+    { a:'XLM',    d:'long',  hrs:17, keep:['TP1','TP2','TP3'], lost:[] },
+    { a:'SEI',    d:'long',  hrs:24, keep:['TP1','TP2'],       lost:[] },
+    { a:'MORPHO', d:'long',  hrs:15, keep:['TP1','TP2'],       lost:[] },
+    { a:'PEPE',   d:'long',  hrs:14, keep:['TP1','TP2'],       lost:[] }
+  ];
+  var BAD = [
+    { a:'AERO', d:'long',  hrs:3,  keep:[], lost:['TP1','TP2','TP3'] },
+    { a:'IMX',  d:'long',  hrs:4,  keep:[], lost:['TP1','TP2','TP3'] },
+    { a:'INJ',  d:'long',  hrs:1,  keep:[], lost:['TP1','TP2'] },
+    { a:'TIA',  d:'long',  hrs:17, keep:['TP1'], lost:['TP2','TP3'] },
+    { a:'FIL',  d:'short', hrs:8,  keep:['TP1'], lost:['TP2','TP3'] },
+    { a:'WLD',  d:'short', hrs:22, keep:['TP1','TP2'], lost:['TP3'] },
+    { a:'BNB',  d:'long',  hrs:15, keep:['TP1'], lost:['TP2'] },
+    { a:'CAKE', d:'long',  hrs:22, keep:['TP1'], lost:['TP2'] },
+    { a:'NEAR', d:'short', hrs:1,  keep:[], lost:['TP1'] },
+    { a:'STX',  d:'long',  hrs:2,  keep:[], lost:['TP1'] },
+    { a:'BCH',  d:'long',  hrs:2,  keep:[], lost:['TP1'] },
+    { a:'FET',  d:'long',  hrs:5,  keep:[], lost:['TP1'] }
+  ];
+
+  var MAXH = 40;   /* the longest run in the data, so every bar reads on one scale */
+
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+  function row(t){
+    var pct = Math.max(4, Math.min(100, (t.hrs / MAXH) * 100));
+    var pills = t.keep.map(function(p){ return '<span class="pill keep">&#10003; ' + p + '</span>'; })
+      .concat(t.lost.map(function(p){ return '<span class="pill lost">' + p + '</span>'; }));
+    if(!pills.length) pills = ['<span class="pill none">no targets reached</span>'];
+    var note = t.lost.length
+      ? 'Price reached ' + t.lost.join(' and ') + ' after the exit — ' + (t.lost.length > 1 ? 'those no longer count' : 'that no longer counts') + '.'
+      : 'Everything it reached still counts.';
+    return '<div class="trade">' +
+      '<div class="thead"><span class="tick">' + esc(t.a) + '</span>' +
+        '<span class="tdir ' + t.d + '">' + t.d + '</span>' +
+        '<span class="thrs">exits ' + t.hrs + 'h after triggering</span></div>' +
+      '<div class="track"><div class="seg" style="width:' + pct.toFixed(1) + '%"></div></div>' +
+      '<div class="pills">' + pills.join('') + '</div>' +
+      '<div class="pnote">' + esc(note) + '</div>' +
+    '</div>';
+  }
+
+  document.getElementById('good').innerHTML = GOOD.map(row).join('');
+  document.getElementById('bad').innerHTML  = BAD.map(row).join('');
+
+  /* ---- answer ---- */
+  var LABEL = {
+    'as-is'    : 'Leave it exactly as I said',
+    'keep-tps' : 'End the trade, but keep targets it reaches that same day',
+    'after-tp1': 'Only let it exit once TP1 is in',
+    'other'    : 'Something else'
+  };
+  var saidEl = document.getElementById('said');
+  var dlBtn  = document.getElementById('dl');
+  var lastText = '';
+
+  /* 2026-10-25: this was Claude's own download namespace, which only exists inside an artifact - and an
+     artifact needs a Claude account to open, which is the whole reason this page exists. An object URL works
+     in every browser, phones included. Wrapped because a locked-down browser can refuse it, and in that case
+     the clipboard copy below is still the real path home. */
+  dlBtn.addEventListener('click', function(){
+    if(!lastText) return;
+    try {
+      var blob = new Blob([lastText], { type: 'text/plain;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'chelsea-exit-rule-' + new Date().toISOString().slice(0,10) + '.txt';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+      saidEl.textContent = 'Saved to your downloads.';
+    } catch (e) {
+      saidEl.textContent = 'Couldn’t save a file here — copy the text below instead.';
+      dlBtn.hidden = true;
+    }
+  });
+
+  document.getElementById('gather').addEventListener('click', function(){
+    var picked = document.querySelector('input[name="verdict"]:checked');
+    var notes = document.getElementById('notes').value.trim();
+    var text = [
+      'LEVEL UP — THE EXIT RULE',
+      "Chelsea's answer",
+      '',
+      'How the exit should work: ' + (picked ? LABEL[picked.value] : '(not chosen)'),
+      '',
+      notes ? 'Notes: ' + notes : '(no notes)'
+    ].join('\n');
+    lastText = text;
+    dlBtn.hidden = false;
+    var out = document.getElementById('out');
+    out.value = text; out.focus(); out.select();
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(
+        function(){ saidEl.textContent = 'Copied — send it to Angela.'; },
+        function(){ saidEl.textContent = 'Select the text below and copy it.'; });
+    } else { saidEl.textContent = 'Select the text below and copy it.'; }
+  });
+})();
+</script>
