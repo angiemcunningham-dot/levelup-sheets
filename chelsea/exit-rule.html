@@ -127,6 +127,15 @@
   .btns{display:flex; gap:10px; flex-wrap:wrap; margin-top:22px}
   #out{width:100%; margin-top:16px; min-height:150px; font-family:"JetBrains Mono",monospace; font-size:12px}
   .said{font-size:13px; color:var(--ink-3); margin-top:10px; min-height:20px}
+  .answered{margin:26px 0 8px; padding:18px 20px; border-radius:14px; background:var(--keep-wash);
+    border:1px solid var(--keep-rule); box-shadow:var(--shadow)}
+  .answered .albl{font-family:"JetBrains Mono",monospace; font-size:11px; font-weight:700; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--keep); display:block; margin-bottom:8px}
+  .answered h2{margin:0 0 10px; font-size:19px; color:var(--keep)}
+  .answered p{margin:0 0 10px; font-size:14.5px; color:var(--ink-2); line-height:1.65}
+  .answered p:last-child{margin-bottom:0}
+  .answered q{font-style:normal; font-weight:600; color:var(--ink)}
+  .closedq{opacity:.55; pointer-events:none}
   .asof{font-size:12.5px; color:var(--ink-3); margin:-6px 0 18px}
   .howback{font-size:14px; color:var(--ink-2); margin-top:14px; line-height:1.6}
   .foot{margin-top:40px; padding-top:18px; border-top:1px solid var(--rule)}
@@ -149,7 +158,24 @@
     <p>"The trade setup stops and gets retired when a 1 hr candle opens below the simple and the smooth…it remains green in the trade history as a winning trade if at least 1 tp was hit"</p>
   </div>
 
-  <p>That's now built exactly as written. A trade used to end only when every take-profit was reached or the stop was hit. Now it also ends the first time a 1-hour candle opens back through your two lines.</p>
+  <div class="answered">
+    <span class="albl">Answered &middot; 25 October 2026</span>
+    <h2>Chelsea read this and withdrew the change</h2>
+    <p><q>She does not want to change the original rule and she wants to leave the board as it was on that one
+      particular rule &mdash; the other changes are great.</q></p>
+    <p>So a trade still ends the way it always has: <strong>every take-profit reached, or the stop hit.</strong>
+      Nothing else closes it, and a trade that dips back through the moving averages keeps running. The exit
+      rule is switched off.</p>
+    <p><strong>Nothing on the board had to be undone.</strong> Because of a wiring fault on our side the rule
+      never actually ended a single trade in the two days it was live, so what members have been looking at is
+      already the board as it was. The nine trades open on the day she answered kept every target they had
+      banked.</p>
+    <p>The question below is kept as the record of why &mdash; and as a note on this page's own blind spot: it
+      offered three ways to <em>keep</em> the rule and never offered to put it back, which is exactly what she
+      wanted.</p>
+  </div>
+
+  <p>The rest of this page is what she was reading when she decided. It was built exactly as written. A trade used to end only when every take-profit was reached or the stop was hit. Now it also ends the first time a 1-hour candle opens back through your two lines.</p>
 
   <h2>What it does to your record</h2>
 
@@ -190,29 +216,29 @@
     <p>That's not a mistake in the build — it's the rule applied honestly. Price did open back through your lines first. The question is whether that's the answer you want on the board.</p>
   </div>
 
-  <h2>The question</h2>
-  <p>You know how you actually trade these better than the board does. Three ways to go:</p>
+  <h2>The question, as it was put</h2>
+  <p>Kept exactly as she saw it. Her answer was none of these three &mdash; it was to take the rule back out.</p>
 
-  <div class="ask">
-    <div class="ask-h">How should the exit work?</div>
+  <div class="ask closedq" aria-disabled="true">
+    <div class="ask-h">How should the exit work? &mdash; answered 25 October</div>
     <div class="ask-b">
       <div class="opt"><label>
-        <input type="radio" name="verdict" value="as-is">
+        <input type="radio" name="verdict" value="as-is" disabled>
         <span><b>Leave it exactly as I said</b>The trade is over the moment a 1-hour candle opens back through the lines. If price reaches a target after that, it wasn't my trade any more.</span>
       </label></div>
       <div class="opt"><label>
-        <input type="radio" name="verdict" value="keep-tps">
+        <input type="radio" name="verdict" value="keep-tps" disabled>
         <span><b>End the trade, but keep targets it reaches that same day</b>The card closes on the exit, and anything price reaches afterwards still shows in the history as reached.</span>
       </label></div>
       <div class="opt"><label>
-        <input type="radio" name="verdict" value="after-tp1">
+        <input type="radio" name="verdict" value="after-tp1" disabled>
         <span><b>Only let it exit once TP1 is in</b>Before the first target the trade keeps running to its stop, the way it used to. After TP1, the lines can close it.</span>
       </label></div>
       <div class="opt"><label>
-        <input type="radio" name="verdict" value="other">
+        <input type="radio" name="verdict" value="other" disabled>
         <span><b>Something else</b>Tell us below.</span>
       </label></div>
-      <textarea id="notes" placeholder="Anything you'd change, or what you were picturing when you wrote it…"></textarea>
+      <textarea id="notes" disabled placeholder="Anything you'd change, or what you were picturing when you wrote it…"></textarea>
     </div>
   </div>
 
@@ -230,15 +256,14 @@
       XRP.</p>
   </div>
 
-  <div class="btns">
+  <div class="btns" hidden>
     <button class="btn" id="gather" type="button">Gather my answer</button>
     <button class="btn" id="dl" type="button" hidden style="background:var(--pink)">Download as a file</button>
   </div>
   <div class="said" id="said"></div>
-  <textarea id="out" readonly placeholder="Your answer will appear here."></textarea>
-  <p class="howback">Press <b>Gather my answer</b> and it copies itself. Paste it straight back to Angela &mdash;
-    text, Skool, anywhere. Nothing you type here is sent anywhere on its own, and nothing is saved if you close
-    the page, so copy it before you go.</p>
+  <textarea id="out" readonly placeholder="Your answer will appear here." hidden></textarea>
+  <p class="howback">This one is settled &mdash; nothing to send. The rule is off and the board behaves the way
+    it did before, which is what she asked for.</p>
 
   <footer class="foot">
     <p>A working page for Chelsea &mdash; not a member page, and not linked from the board. Trade numbers are
