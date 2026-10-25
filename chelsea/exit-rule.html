@@ -350,11 +350,14 @@
     dlBtn.hidden = false;
     var out = document.getElementById('out');
     out.value = text; out.focus(); out.select();
+    /* Say something straight away, then upgrade it if the copy actually lands. The text is selected in the
+       box either way, so the instruction is true whether the clipboard cooperates or not. */
+    saidEl.textContent = 'Your answer is in the box below — copy it and send it to Angela.';
     if(navigator.clipboard && navigator.clipboard.writeText){
       navigator.clipboard.writeText(text).then(
         function(){ saidEl.textContent = 'Copied — send it to Angela.'; },
-        function(){ saidEl.textContent = 'Select the text below and copy it.'; });
-    } else { saidEl.textContent = 'Select the text below and copy it.'; }
+        function(){ /* the line above already tells her what to do */ });
+    }
   });
 })();
 </script>
