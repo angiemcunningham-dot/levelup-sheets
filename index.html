@@ -73,6 +73,10 @@ a.card.is-watch-short{border-color:var(--red)}
 /* TWO-SIDED SETUP (2026-10-21). A paired asset keeps the neutral pink border: a green "long" border on a card
    that also carries a published short is the board declaring a direction, which is exactly what it must not do. */
 a.card.is-both{border-color:var(--pink-line)}
+.sidechip{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:999px;
+  font-family:"JetBrains Mono",monospace;font-size:9px;font-weight:700;letter-spacing:.09em;vertical-align:middle}
+.sidechip.side-long{background:rgba(34,197,94,.12);color:#15803D}
+.sidechip.side-short{background:rgba(239,68,68,.10);color:#B91C1C}
 .bothchip{display:inline-block;margin-left:8px;padding:2px 8px;border-radius:999px;background:#fdf3e0;color:#8a5a00;
   font-family:"Archivo",sans-serif;font-weight:800;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
   vertical-align:middle;white-space:nowrap}
@@ -509,16 +513,25 @@ const fallbackWatchLabel=(a,r,all)=>{
 
    `pairDirs` comes from LevelUpCore, this page's own att-core block - the one implementation of the 2h window
    rule - and is empty if it has not loaded, in which case every card renders exactly as it did before. */
-function cardHtml(a,r,c,t,pc,all,watchDir,pairDirs){
+/* `side` ("long"/"short"/null) added 2026-10-28. When set, this card represents ONE side of a two-sided
+   asset: it links to that side's own detail page, wears that side's colour, and never shows the "Both sides"
+   chip - there is no longer a combined card for it to describe. null keeps every single-sided asset, which is
+   most of them, rendering byte-for-byte as before. */
+function cardHtml(a,r,c,t,pc,all,watchDir,pairDirs,side){
   const isLive=c==="b-active"||c==="b-short";const rawHl=get(r,"headline")||"";
-  const both=(pairDirs&&pairDirs[a])||null;
+  const both=side?null:((pairDirs&&pairDirs[a])||null);
   const watchHl=c==="b-watch"?(watchLabel(rawHl)||fallbackWatchLabel(a,r,all||{})):null;
-  const watchDirCls=watchDir&&watchHl&&!both?(/^Long/i.test(watchHl)?" is-watch-long":/^Short/i.test(watchHl)?" is-watch-short":""):"";
+  /* A side card's colour comes from the side itself, not from guessing at the headline wording - the headline
+     for a short is not reliably prefixed "Short". Single-sided cards keep the original heuristic. */
+  const sideCls=side?(side==="long"?" is-watch-long":" is-watch-short"):"";
+  const watchDirCls=side?sideCls:(watchDir&&watchHl&&!both?(/^Long/i.test(watchHl)?" is-watch-long":/^Short/i.test(watchHl)?" is-watch-short":""):"");
   const cardCls=isLive?` is-live${c==="b-short"?" is-short":""}`:(both?" is-both":watchDirCls);const pillCls=isLive?" pill-flash":"";const chk=pc[a]?` · last price check ${stamp(get(pc[a],"timestamp"))}`:"";
   const hl=c==="b-active"?"Long":c==="b-short"?"Short":c==="b-watch"?(watchHl||rawHl):rawHl;
-  const chip=both?`<span class="bothchip">Both sides</span>`:"";
+  /* The side's own name replaces "Both sides": this tile IS one of them now. */
+  const chip=side?`<span class="sidechip side-${side}">${side.toUpperCase()}</span>`
+    :(both?`<span class="bothchip">Both sides</span>`:"");
   const note=both?`<div class="bothnote">${both.map(d=>d.charAt(0).toUpperCase()+d.slice(1)).join(" and ")} both published · open for either side's levels</div>`:"";
-  return `<a class="card${cardCls}" href="${DETAIL}?asset=${encodeURIComponent(a)}"><div class="asset">${esc(a)}${chip}</div><span class="pill ${c}${pillCls}">${t}</span><div class="hl">${/no trade|closed|invalid/i.test(get(r,"status"))?`<small style="font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6B7280;font-size:10px">Status note · </small>`:""}${esc(hl)}</div>${note}<div class="meta">status set ${stamp(get(r,"timestamp"))}${chk}</div></a>`;
+  return `<a class="card${cardCls}" href="${DETAIL}?asset=${encodeURIComponent(a)}${side?"&side="+side:""}"><div class="asset">${esc(a)}${chip}</div><span class="pill ${c}${pillCls}">${t}</span><div class="hl">${/no trade|closed|invalid/i.test(get(r,"status"))?`<small style="font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6B7280;font-size:10px">Status note · </small>`:""}${esc(hl)}</div>${note}<div class="meta">status set ${stamp(get(r,"timestamp"))}${chk}</div></a>`;
 }
 function resetCardHtml(a,r){
   return `<a class="rw-card" href="${DETAIL}?asset=${encodeURIComponent(a)}"><div class="asset">${esc(a)}</div><span class="rw-tag">Potential setup · retest/reset required</span><div class="rw-headline">${esc(get(r,"headline")||get(r,"why")||"")}</div><div class="rw-foot">No trigger = no trade · set ${stamp(get(r,"timestamp"))}</div></a>`;
@@ -548,12 +561,44 @@ const isTodayBatch=a=>latestDay&&(all[a]||[]).some(r=>!isPC(r)&&get(r,"status")&
 const pairDirs=(()=>{try{const Core=(typeof window!=="undefined"&&window.LevelUpCore)||(typeof LevelUpCore!=="undefined"&&LevelUpCore)||null;
   if(!Core||!Core.buildAll)return {};const built=Core.buildAll(text);const out={};
   Object.keys(built).forEach(k=>{const e=built[k];if(e&&e.sides)out[k]=Object.keys(e.sides).sort();});return out;}catch(e){return {};}})();
-const cards=Object.entries(by).filter(([a])=>!CHELSEA_RECORD_EXCLUSIONS.includes(a)).map(([a,r])=>{const [c,t]=STATUS(get(r,"status"));return {a,r,c,t,isResolved:c==="b-active"||c==="b-short"||c==="b-invalid"||c==="b-closed",today:isTodayBatch(a)};});
+/* Each side's OWN most recent status row, matched back from LevelUpCore's parsed sides by published
+   timestamp + trigger text - the same technique sheet.html's pairedSides() uses, so the pairing rule has one
+   implementation. An asset only appears here when BOTH sides resolve to a real row; anything else falls
+   through to the single-card path below, exactly as the board behaved before. */
+const sideRows=(()=>{try{
+  const Core=(typeof window!=="undefined"&&window.LevelUpCore)||(typeof LevelUpCore!=="undefined"&&LevelUpCore)||null;
+  if(!Core||!Core.buildAll)return {};
+  const built=Core.buildAll(text);const out={};
+  Object.keys(built).forEach(k=>{
+    const e=built[k];if(!e||!e.sides)return;
+    const rowsFor=all[k]||[];const m={};
+    Object.keys(e.sides).forEach(d=>{
+      const pt=e.sides[d].published_text||{};
+      const ts=pt.timestamp_text||"",t1=(pt.triggers||[])[0]||"";
+      if(!ts)return;
+      const row=rowsFor.find(r=>get(r,"timestamp")===ts&&get(r,"trigger 1")===t1)||rowsFor.find(r=>get(r,"timestamp")===ts);
+      if(row&&get(row,"status"))m[d]=row;
+    });
+    if(Object.keys(m).length===2)out[k]=m;
+  });
+  return out;}catch(e){return {};}})();
+const mkCard=(a,r,side)=>{const [c,t]=STATUS(get(r,"status"));
+  return {a,r,c,t,side:side||null,
+    isResolved:c==="b-active"||c==="b-short"||c==="b-invalid"||c==="b-closed",
+    /* per SIDE, from its own publication date: AVAX's short is today's and its long is from the 23rd, and
+       they belong in different sections. Single-sided assets keep the asset-level answer. */
+    today:side?(dayKey(get(r,"timestamp"))===latestDay):isTodayBatch(a)};};
+const cards=Object.entries(by).filter(([a])=>!CHELSEA_RECORD_EXCLUSIONS.includes(a))
+  .reduce((acc,[a,r])=>{
+    const sides=sideRows[a];
+    if(sides)["long","short"].forEach(d=>{if(sides[d])acc.push(mkCard(a,sides[d],d));});
+    else acc.push(mkCard(a,r,null));
+    return acc;},[]);
 /* 2026-10-04 (Angela, explicit - INJ invalidation case): broadened from "isActive" to "isResolved" - an
    Invalidated or Closed setup is just as done as a live trade is, so it belongs in History, not sitting in
    "Today's Untriggered Setups" looking like it's still waiting. Same comment/intent as before, just no longer
    missing the other two terminal states. */
-const today=cards.filter(x=>x.today&&!x.isResolved).sort((x,y)=>x.a.localeCompare(y.a));
+const today=cards.filter(x=>x.today&&!x.isResolved).sort((x,y)=>x.a.localeCompare(y.a)||String(x.side||"").localeCompare(String(y.side||"")));
 /* 2026-10-06 (Angela, explicit: "something that we are watching, if truly it has not triggered and still meets
    the conditions of the trade, should [...] have its own section" - not lumped into Previous Calls/History just
    because it wasn't published today). A Watching setup from an earlier day that hasn't triggered and hasn't
@@ -566,14 +611,14 @@ const today=cards.filter(x=>x.today&&!x.isResolved).sort((x,y)=>x.a.localeCompar
 // "No Trade" is Chelsea explicitly declining the setup - a decided/closed-out record, not an open one, so it
 // stays in History (matches the sitewide default of treating only WATCHING as actionable - see opts.includeNoTrade
 // elsewhere on this page). Currently Watching is scoped to literal b-watch status only, never b-none.
-const watching=cards.filter(x=>!x.today&&x.c==="b-watch").sort((x,y)=>x.a.localeCompare(y.a));
-const rest=cards.filter(x=>!(x.today&&!x.isResolved)&&!(!x.today&&x.c==="b-watch")).sort((x,y)=>ORDER.indexOf(x.c)-ORDER.indexOf(y.c)||x.a.localeCompare(y.a));
+const watching=cards.filter(x=>!x.today&&x.c==="b-watch").sort((x,y)=>x.a.localeCompare(y.a)||String(x.side||"").localeCompare(String(y.side||"")));
+const rest=cards.filter(x=>!(x.today&&!x.isResolved)&&!(!x.today&&x.c==="b-watch")).sort((x,y)=>ORDER.indexOf(x.c)-ORDER.indexOf(y.c)||x.a.localeCompare(y.a)||String(x.side||"").localeCompare(String(y.side||"")));
 document.getElementById("today-sub").textContent=latestDay?("published "+latestDay):"";
 /* 2026-10-21 (Angela: "where did the red and green go for long and short distinction"): today's grid
    now gets the same direction colouring Currently Watching has always had. It was only ever passed for
    the watching grid, so the freshest setups of the day - the ones everyone opens the board to see - were
    the only ones rendered with no long/short colour at all. */
-document.getElementById("grid").innerHTML=today.map(({a,r,c,t})=>cardHtml(a,r,c,t,pc,all,true,pairDirs)).join("")||`<div class="empty">No current setups yet today — see history below, or Active Now above.</div>`;
+document.getElementById("grid").innerHTML=today.map(({a,r,c,t,side})=>cardHtml(a,r,c,t,pc,all,true,pairDirs,side)).join("")||`<div class="empty">No current setups yet today — see history below, or Active Now above.</div>`;
 const watchSec=document.getElementById("currently-watching"),watchGrid=document.getElementById("grid-watching");
 /* 2026-10-21 (Angela, explicit): "I do not want assets stuck there that have been in a loop for weeks and
    weeks and weeks". TAO had been sitting in Currently Watching since Sep 29 - twenty-two days - reading like
@@ -586,12 +631,12 @@ const STALE_WATCH_MS=14*24*60*60*1000;
 const watchAge=x=>{const ms=new Date(get(x.r,"timestamp")).getTime();return isNaN(ms)?0:Date.now()-ms;};
 const freshWatch=watching.filter(x=>watchAge(x)<STALE_WATCH_MS);
 const staleWatch=watching.filter(x=>watchAge(x)>=STALE_WATCH_MS);
-if(watchGrid){watchGrid.innerHTML=freshWatch.map(({a,r,c,t})=>cardHtml(a,r,c,t,pc,all,true,pairDirs)).join("")
+if(watchGrid){watchGrid.innerHTML=freshWatch.map(({a,r,c,t,side})=>cardHtml(a,r,c,t,pc,all,true,pairDirs,side)).join("")
   +(staleWatch.length?`<details class="hist-toggle" style="grid-column:1/-1;margin-top:4px"><summary>Older watches — published more than two weeks ago and still not triggered<span> (${staleWatch.length})</span></summary><div class="att-note">Still Chelsea&#39;s real published setups — nothing is deleted. Moved out of the current view because a watch this old is no longer a live consideration, and its levels may no longer reflect the chart. Not financial advice; do your own research.</div><div class="grid">`
-    +staleWatch.map(({a,r,c,t})=>cardHtml(a,r,c,t,pc,all,true,pairDirs)).join("")+`</div></details>`:"");}
+    +staleWatch.map(({a,r,c,t,side})=>cardHtml(a,r,c,t,pc,all,true,pairDirs,side)).join("")+`</div></details>`:"");}
 if(watchSec)watchSec.hidden=!watching.length;
 const histEl=document.getElementById("grid-history");
-if(histEl){histEl.innerHTML=rest.map(({a,r,c,t})=>cardHtml(a,r,c,t,pc,all,true,pairDirs)).join("")||`<div class="empty">Nothing here yet.</div>`;}
+if(histEl){histEl.innerHTML=rest.map(({a,r,c,t,side})=>cardHtml(a,r,c,t,pc,all,true,pairDirs,side)).join("")||`<div class="empty">Nothing here yet.</div>`;}
 const hc=document.getElementById("hist-count");if(hc)hc.textContent=" ("+rest.length+")";
 const rwEntries=Object.entries(rw).sort((x,y)=>x[0].localeCompare(y[0]));
 const rwSec=document.getElementById("reset-watch"),rwGrid=document.getElementById("grid-reset");
@@ -2257,7 +2302,16 @@ load();setInterval(load,60000);
         return t === null || (newest - t) <= BATCH_WINDOW_MS;
       });
     }
-    function feedEntryFor(asset) {
+    /* `side` (2026-10-28): the board now renders one tile per side, and a tile that names its own side has
+       nothing to choose between. Everything below this guard - the batch window, the activity rank, the
+       tie-breaks - exists purely to pick ONE side for ONE tile, so it is simply skipped. The picking path is
+       unchanged and still serves every single-sided asset and sheet.html. */
+    function feedEntryFor(asset, side) {
+      if (side) {
+        var sk = asset + '|' + String(side).toUpperCase();
+        var se = feed && feed.assets && feed.assets[sk];
+        return se ? { key: sk, entry: se } : null;
+      }
       var all = currentBatch(feedEntriesFor(asset));
       if (!all.length) return null;
       /* One candidate: hand it back untouched. Gating this on activity broke the receipt fallback - an
@@ -2283,9 +2337,9 @@ load();setInterval(load,60000);
       var m = /\|(LONG|SHORT)$/.exec(picked.key);
       return m ? m[1] : null;
     }
-    function mechanicalFor(asset, currentInstanceKey) {
+    function mechanicalFor(asset, currentInstanceKey, side) {
       if (!feed) return null;
-      var picked = feedEntryFor(asset); if (!picked) return null;
+      var picked = feedEntryFor(asset, side); if (!picked) return null;
       var a = picked.entry;
       if (currentInstanceKey) {
         var valid = instanceKeysFor(asset);
@@ -2331,9 +2385,9 @@ load();setInterval(load,60000);
        GATED ON CHELSEA'S OWN STATUS. If her status cell says Active Long/Short she is telling members she is
        in the trade, and no mechanical clock gets to put "NO TRADE" over the top of that. Watching and No
        Trade are the only statuses this speaks for, which is all eight of the setups currently in this state. */
-    function expiredFor(asset, currentInstanceKey) {
+    function expiredFor(asset, currentInstanceKey, side) {
       if (!feed) return null;
-      var picked = feedEntryFor(asset); if (!picked) return null;
+      var picked = feedEntryFor(asset, side); if (!picked) return null;
       var a = picked.entry, lc = a.lifecycle;
       if (!lc || lc.voided) return null;
       if (lc.state !== 'EXPIRED_UNTRIGGERED') return null;
@@ -2362,7 +2416,9 @@ load();setInterval(load,60000);
        states for the same setup_instance_key. Never fabricates a fact: if the trigger isn't mechanically confirmed
        yet (SEI-shaped), or direction can't be evidenced, this returns null and the existing Sheet-driven display is
        left exactly as it renders today - the Sheet stays primary until the mechanical facts say otherwise. */
-    function directionFor(asset) {
+    function directionFor(asset, side) {
+      /* A tile that names its side wears that side's colour, full stop - no inference needed. */
+      if (side) return String(side).toUpperCase();
       /* 2026-10-21: for a paired asset, the direction must come from the side being REPORTED, not from the
          board's primary row. BTC published a long at 09:36 and a short at 09:50; the long is what triggered,
          but the primary row is the short - so the card read "ACTIVE SHORT - TRIGGERED" over the long's
@@ -2382,12 +2438,12 @@ load();setInterval(load,60000);
       if (cls === 'ACTIVE_SHORT') return 'SHORT';
       return null;
     }
-    function resolveCurrentState(asset) {
+    function resolveCurrentState(asset, side) {
       /* The retirement is checked FIRST, because the case it covers is the one where mechanicalFor() has
          nothing to say by design (no trigger, so no m at all). See expiredFor() above. */
-      var x = expiredFor(asset, currentInstanceKeyFor(asset));
+      var x = expiredFor(asset, currentInstanceKeyFor(asset), side);
       if (x) return { text: 'NO TRADE\u00a0\u2014\u00a0CONDITION NEVER MET', kind: 'expired' };
-      var m = mechanicalFor(asset, currentInstanceKeyFor(asset));
+      var m = mechanicalFor(asset, currentInstanceKeyFor(asset), side);
       if (!m || !m.triggered) return null;   // not mechanically confirmed yet - Sheet stays primary (SEI-shaped)
       if (m.stopped) {
         // 2026-09-29 fix: a stop that already banked real TP progress (m.outcome/m.tpsBeforeStop, from the
@@ -2400,7 +2456,7 @@ load();setInterval(load,60000);
         return { text: 'STOPPED', kind: 'stopped' };
       }
       if (m.complete) return { text: 'COMPLETE', kind: 'complete' };
-      var dir = directionFor(asset);
+      var dir = directionFor(asset, side);
       if (!dir) return null;                  // never fabricate a direction we can't evidence
       var hit = -1;
       m.tp.forEach(function (v, i) { if (v) hit = i; });
@@ -2436,14 +2492,14 @@ load();setInterval(load,60000);
     var strOpen = {};   // which cards have their readings expanded, by asset
     var STR_LABEL = { stoch: 'Stochastics', sma_smma: 'Simple + Smooth', macd: 'MACD', triple: 'Triple RSI', rsi: 'RSI' };
     var STR_ORDER = ['stoch', 'sma_smma', 'macd', 'triple', 'rsi'];
-    function strengthStripFor(asset) {
+    function strengthStripFor(asset, side) {
       if (!feed || !feed.assets) return '';
-      var picked = feedEntryFor(asset);
+      var picked = feedEntryFor(asset, side);
       var r = picked && picked.entry && picked.entry.confirmation_strength;
       if (!r || !r.word) return '';
       /* 2026-10-24: same rule as sheet.html's full panel - a live entry-strength reading on a retired card
          contradicts the NO TRADE line sitting directly above it. A frozen reading is exempt (see there). */
-      if (!r.frozen && expiredFor(asset, currentInstanceKeyFor(asset))) return '';
+      if (!r.frozen && expiredFor(asset, currentInstanceKeyFor(asset), side)) return '';
       var votes = Object.assign({ sma_smma: !!r.gate }, r.votes || {});
       var shown = STR_ORDER.filter(function (k) { return votes[k] != null; });
       var met = shown.filter(function (k) { return votes[k] === true; });
@@ -2493,8 +2549,8 @@ load();setInterval(load,60000);
        rationale. Approved member-facing rule (explicit, final): TP1 + TP2 + TP3 all reached, exactly. Reuses
        mechanicalFor() as-is - never a second identity/lookup system - so an OLD completed instance can never
        decorate a NEW current setup. */
-    function coinEligible(asset) {
-      var m = mechanicalFor(asset, currentInstanceKeyFor(asset));
+    function coinEligible(asset, side) {
+      var m = mechanicalFor(asset, currentInstanceKeyFor(asset), side);
       return !!(m && m.complete && m.tp.length >= 3 && m.tp[0] && m.tp[1] && m.tp[2]);
     }
     function coinBadgeHtml() {
@@ -2668,20 +2724,26 @@ load();setInterval(load,60000);
         }
       } catch (e) { /* a warning must never break the page either */ }
         Array.prototype.forEach.call(document.querySelectorAll('a.card'), function (c) {
-          var m = /[?&]asset=([^&]+)/.exec(c.getAttribute('href') || ''); if (!m) return;
+          var href = c.getAttribute('href') || '';
+          var m = /[?&]asset=([^&]+)/.exec(href); if (!m) return;
           var asset = decodeURIComponent(m[1]).toUpperCase();
+          /* 2026-10-28: a per-side tile carries its side in its own link, so everything below describes THAT
+             trade. Without this both tiles of a pair would show the same headline and badges - the 10-24 BTC
+             bug, printed twice. */
+          var sm = /[?&]side=(long|short)/i.exec(href);
+          var side = sm ? sm[1].toLowerCase() : null;
           var old = c.querySelector('.mech-row'); if (old) old.remove();
           var oldCoin = c.querySelector('.mech-coin-card'); if (oldCoin) oldCoin.remove();
           var pill = c.querySelector('.pill');
           var oldHead = c.querySelector('.mech-headline'); if (oldHead) oldHead.remove();
           var oldLabel = c.querySelector('.mech-pill-label'); if (oldLabel) oldLabel.remove();
-          var resolved = resolveCurrentState(asset);
+          var resolved = resolveCurrentState(asset, side);
           if (pill) {
             if (resolved) {
               pill.classList.add('mech-demoted');
               // 2026-09-29 (Angela-approved): the Coin moves out of the inline headline text into the blank
               // white space beside the asset ticker instead - see .mech-coin-card above.
-              if (resolved.kind === 'complete' && coinEligible(asset)) {
+              if (resolved.kind === 'complete' && coinEligible(asset, side)) {
                 var coinWrap = document.createElement('span'); coinWrap.innerHTML = coinBadgeHtml();
                 var coinEl = coinWrap.firstChild; coinEl.classList.add('mech-coin-card');
                 c.appendChild(coinEl);
@@ -2695,14 +2757,14 @@ load();setInterval(load,60000);
               pill.classList.remove('mech-demoted');
             }
           }
-          var html = badgeHtml(mechanicalFor(asset, currentInstanceKeyFor(asset)))
-            || expiredBadgeHtml(expiredFor(asset, currentInstanceKeyFor(asset)));
+          var html = badgeHtml(mechanicalFor(asset, currentInstanceKeyFor(asset), side))
+            || expiredBadgeHtml(expiredFor(asset, currentInstanceKeyFor(asset), side));
           if (html) { var d = document.createElement('div'); d.innerHTML = html; if (pill && pill.parentNode) pill.parentNode.insertBefore(d.firstChild, pill.nextSibling); }
           /* OPTION D: the strip goes under the state line, after the TP ladder badge. Removed and rebuilt
              each pass so it cannot double up when load() re-renders the card. */
           var oldStrip = c.querySelector('.mech-str-strip'); if (oldStrip) oldStrip.remove();
           var oldFails = c.querySelector('.mech-str-fails'); if (oldFails) oldFails.remove();
-          var stripHtml = strengthStripFor(asset);
+          var stripHtml = strengthStripFor(asset, side);
           if (stripHtml && pill && pill.parentNode) {
             var sw = document.createElement('div'); sw.innerHTML = stripHtml;
             while (sw.firstChild) pill.parentNode.insertBefore(sw.firstChild, pill.nextSibling);

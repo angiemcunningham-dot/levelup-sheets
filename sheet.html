@@ -219,6 +219,11 @@ const LOGO_SRC  = "levelup_logo.png";
 
 const $=s=>document.querySelector(s);
 const q=new URLSearchParams(location.search); const ASSET=(q.get("asset")||"AAVE").toUpperCase();
+/* 2026-10-28: the board now renders one card per SIDE, and each card links to its own side. When the link
+   names one, it OVERRIDES the "live side leads" ordering below - the member clicked a specific trade and
+   must land on that trade, not on whichever side the board would otherwise have led with. An absent or
+   unrecognised side leaves the ordering exactly as it was, which is what every single-sided asset uses. */
+const WANT_SIDE=(function(){const v=(q.get("side")||"").toLowerCase();return v==="long"||v==="short"?v:null;})();
 
 function parseCSV(t){const rows=[];let row=[],cur="",inq=false;for(let i=0;i<t.length;i++){const c=t[i];if(inq){if(c==='"'){if(t[i+1]==='"'){cur+='"';i++;}else inq=false;}else cur+=c;}else{if(c==='"')inq=true;else if(c===","){row.push(cur);cur="";}else if(c==="\n"||c==="\r"){if(c==="\r"&&t[i+1]==="\n")i++;row.push(cur);rows.push(row);row=[];cur="";}else cur+=c;}}if(cur.length||row.length){row.push(cur);rows.push(row);}return rows.filter(r=>r.some(x=>x.trim()));}
 function objs(rows){const h=rows[0].map(x=>x.trim().toLowerCase());return rows.slice(1).map(r=>{const o={};h.forEach((k,i)=>o[k]=(r[i]||"").trim());return o;});}
@@ -387,7 +392,8 @@ async function load(){
       if(dirs.length!==2)return null;
       /* 2026-10-24: one call to the shared order above, replacing two ad-hoc "exactly one of these"
          questions that could not separate ADA's two triggered sides at all. */
-      const want=haveMech(dirs)?pickSide(currentBatchDirs(dirs)):null;
+      const asked=WANT_SIDE&&dirs.indexOf(WANT_SIDE)>=0?WANT_SIDE:null;
+      const want=asked||(haveMech(dirs)?pickSide(currentBatchDirs(dirs)):null);
       if(!want)return null;
       const pt=entry.sides[want].published_text||{};
       const ts=pt.timestamp_text||"", t1=(pt.triggers||[])[0]||"";
@@ -503,7 +509,8 @@ async function load(){
       /* THE LIVE SIDE LEADS. Recency decided this until 2026-10-24, which on BTC meant a stopped side led
          the page by a two-second publication margin. Mechanical evidence outranks the clock, and the order
          it uses is the shared one documented above - not a second opinion about it. */
-      const byEvidence=haveMech(dirs)?pickSide(currentBatchDirs(dirs)):null;
+      const asked=WANT_SIDE&&dirs.indexOf(WANT_SIDE)>=0?WANT_SIDE:null;
+      const byEvidence=asked||(haveMech(dirs)?pickSide(currentBatchDirs(dirs)):null);
       const pDir=byEvidence||dirs.find(d=>byDir[d]===S)||entry.primary_side||dirs[0];
       const qDir=dirs.find(d=>d!==pDir);
       return {primary:{dir:pDir,row:byDir[pDir]},quiet:{dir:qDir,row:byDir[qDir]}};
@@ -1841,7 +1848,19 @@ details.sideflip{counter-reset:sect}
         return t === null || (newest - t) <= BATCH_WINDOW_MS;
       });
     }
+    /* THE PAGE'S OWN SIDE WINS (2026-10-28). The board now links one card per side, and this page is
+       rendering whichever side the member clicked - the base script already picks that side's ladder. Every
+       reader in this layer must describe the SAME trade, or the page says COMPLETE (the long's state) over
+       the short's ladder, which is exactly what it did before this guard. Unlike index.html, where each card
+       carries its own side, this page renders one side at a time, so the side is read once from the URL and
+       applied here rather than threaded through every caller. No side in the link leaves the original
+       choosing path untouched, which is what every single-sided asset uses. */
     function feedEntryFor(asset) {
+      if (typeof WANT_SIDE !== 'undefined' && WANT_SIDE) {
+        var sk = asset + '|' + WANT_SIDE.toUpperCase();
+        var se = feed && feed.assets && feed.assets[sk];
+        if (se) return { key: sk, entry: se };
+      }
       var all = currentBatch(feedEntriesFor(asset));
       if (!all.length) return null;
       /* One candidate: hand it back untouched. Gating this on activity broke the receipt fallback - an
