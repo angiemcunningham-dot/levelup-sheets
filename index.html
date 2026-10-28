@@ -2050,6 +2050,9 @@ load();setInterval(load,60000);
 .whatsnew li{font-size:12.5px;line-height:1.55;padding-left:20px;position:relative;margin:7px 0;color:var(--ink)}
 .whatsnew li::before{content:"•";position:absolute;left:4px;color:var(--pink);font-weight:900}
 .whatsnew .wn-foot{margin-top:12px;padding-top:10px;border-top:1px solid var(--pink-line);font-size:12px;color:var(--gray);line-height:1.55}
+.mech-today-moved{margin:2px 0 0;padding:14px 16px;border:1px solid var(--line);border-radius:12px;
+  background:var(--card,#fff);font-family:"Inter",sans-serif;font-size:13.5px;line-height:1.6;color:var(--gray)}
+.mech-today-moved b{color:var(--ink,#16161D);font-weight:700}
 .mech-headline{font-family:"Archivo",sans-serif;font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;margin:2px 0 4px}
 .mech-headline.mech-active{color:var(--green-d)}
 .mech-headline.mech-stopped{color:var(--red-d)}
@@ -2525,6 +2528,56 @@ load();setInterval(load,60000);
         if (html && statusEl) { var d = document.createElement('div'); d.innerHTML = html; statusEl.parentNode.insertBefore(d.firstChild, statusEl.nextSibling); }
       });
     }
+    /* EVERY SETUP PUBLISHED TODAY CAN LEGITIMATELY BE HIDDEN AT ONCE (2026-10-28).
+       decorate() and the Live Attention wrapper each suppress a #grid card that is already shown somewhere
+       better - Active Now for a trade that has triggered, Live Attention for a watch near its trigger -
+       and neither knows about the other. load() writes its "nothing yet today" placeholder only when the day
+       has no setups at all. On a morning where all of Chelsea's calls are in one of those two states the
+       result is a dated heading over an empty grid, reading as though she posted nothing.
+
+       THE NOTE IS A SIBLING OF #grid, NEVER A CHILD. att-ui's observer watches #grid with
+       { childList: true }; adding a child wakes it, att-ui re-renders, that wakes mech-feed's own observer,
+       and the two rebuild each other until the tab locks up. The first version of this did exactly that on
+       the live board and was reverted (a2a2c33). The standing rule: mech-feed may hide a #grid child or
+       relocate one between grids, and may never add, remove or reorder one.
+
+       Counts come from the same resolveCurrentState() the suppression uses, so the note cannot contradict
+       the reason a card was hidden. Rebuilt each pass, so it removes itself once any card is visible. */
+    function ensureTodayNote() {
+      var grid = document.getElementById('grid'); if (!grid || !grid.parentNode) return;
+      var el = document.getElementById('mech-today-moved');
+      var cards = grid.querySelectorAll('a.card');
+      /* DROP THE NODE ONLY WHEN IT IS NO LONGER WANTED, AND NEVER REBUILD IT (2026-10-28).
+         The first version removed and re-inserted this node on EVERY decorate() pass. mech-feed observes
+         grid.parentNode with subtree:true, so two childList mutations per pass, forever, and the board hung.
+         decorate() is also what rebuilds every card's badges, so each spurious pass was ~45 cards of work.
+         The idiom here is the one #mech-note below and ensureNowRowTruth() in sheet.html already use: create
+         the node once, then write to it ONLY when the content actually changes. A steady state produces no
+         mutations at all, which is what stops the loop. */
+      var drop = function () { if (el) { el.remove(); el = null; } };
+      if (!cards.length) { drop(); return; }   // load()'s own empty-day placeholder is the right answer here
+      var hidden = 0, active = 0, elsewhere = 0;
+      Array.prototype.forEach.call(cards, function (c) {
+        if (c.style.display !== 'none') return;
+        hidden++;
+        var m = /[?&]asset=([^&]+)/.exec(c.getAttribute('href') || '');
+        var r = m ? resolveCurrentState(decodeURIComponent(m[1]).toUpperCase()) : null;
+        if (r && r.kind === 'active') active++; else elsewhere++;
+      });
+      if (hidden !== cards.length) { drop(); return; }   // something is still on show; nothing to explain
+      var where = [];
+      if (active) where.push('<b>' + active + '</b> in Active Now');
+      if (elsewhere) where.push('<b>' + elsewhere + '</b> in Live Attention');
+      var html = '<b>All ' + cards.length + ' of today&#39;s setups are already shown above</b> &mdash; '
+        + where.join(' and ') + '. Nothing has been removed; a setup is only listed once, in whichever '
+        + 'section describes it best right now.';
+      if (!el) {
+        el = document.createElement('div');
+        el.id = 'mech-today-moved'; el.className = 'mech-today-moved';
+        grid.parentNode.insertBefore(el, grid.nextSibling);
+      }
+      if (el.innerHTML !== html) el.innerHTML = html;   // the guard that keeps the steady state silent
+    }
     function decorate() {
       obs.disconnect();
       try {
@@ -2696,6 +2749,8 @@ load();setInterval(load,60000);
             c.style.display = (resolved && resolved.kind === 'active') ? 'none' : '';
           }
         });
+        /* last, so it sees the final visibility of every card this pass has hidden or relocated */
+        try { ensureTodayNote(); } catch (e) { /* a note is never worth breaking the page for */ }
         /* `why` reveals the readings that are NOT pointing the trade's way - the mockup's "failures on tap".
            The card is a link, so the click must not navigate. */
         Array.prototype.forEach.call(document.querySelectorAll('.swhy'), function (b) {
@@ -2738,7 +2793,7 @@ load();setInterval(load,60000);
     load();
     setInterval(load, 60000);
     obs.observe(grid.parentNode, { childList: true, subtree: true });
-    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, currentInstanceKeyFor: currentInstanceKeyFor, resolveCurrentState: resolveCurrentState, directionFor: directionFor, decorate: decorate, decorateActiveNow: decorateActiveNow, coinEligible: coinEligible, badgeHtml: badgeHtml, expiredFor: expiredFor, expiredBadgeHtml: expiredBadgeHtml, strengthStripFor: strengthStripFor };   // test hook (read-only)
+    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, currentInstanceKeyFor: currentInstanceKeyFor, resolveCurrentState: resolveCurrentState, directionFor: directionFor, decorate: decorate, decorateActiveNow: decorateActiveNow, coinEligible: coinEligible, badgeHtml: badgeHtml, expiredFor: expiredFor, expiredBadgeHtml: expiredBadgeHtml, strengthStripFor: strengthStripFor, ensureTodayNote: ensureTodayNote };   // test hook (read-only)
   } catch (e) { if (window.console) console.warn('mechanical feed addon disabled:', e); }
 })();
 </script>
