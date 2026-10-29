@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Six Things for Chelsea — Level Up</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%E2%9A%A1%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+  :root{
+    --ink:#16161D; --ink-2:#3C3C49; --muted:#5A5A68;
+    --paper:#FFFFFF; --panel:#F7F4F6; --rule:#E7DFE4; --rule-2:#F1EAEE;
+    --pink:#FA0398; --pink-wash:#FFF0F8;
+    --amber:#8A5A00; --amber-wash:#FDF4E3; --amber-rule:#EBD9AE;
+    --green:#0F6B46; --green-wash:#E8F6EE;
+    --red:#A81B33; --red-wash:#FCEDEF;
+  }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+    --ink:#F2EFF1; --ink-2:#C9C4CC; --muted:#9B96A1;
+    --paper:#141318; --panel:#1E1C24; --rule:#332F3A; --rule-2:#262330;
+    --pink:#FF4FB5; --pink-wash:#2A1324;
+    --amber:#E0B264; --amber-wash:#2A2213; --amber-rule:#4A3C1E;
+    --green:#5FD2A0; --green-wash:#12241C;
+    --red:#F2889B; --red-wash:#2A161B;
+  }}
+  :root[data-theme="dark"]{
+    --ink:#F2EFF1; --ink-2:#C9C4CC; --muted:#9B96A1;
+    --paper:#141318; --panel:#1E1C24; --rule:#332F3A; --rule-2:#262330;
+    --pink:#FF4FB5; --pink-wash:#2A1324;
+    --amber:#E0B264; --amber-wash:#2A2213; --amber-rule:#4A3C1E;
+    --green:#5FD2A0; --green-wash:#12241C;
+    --red:#F2889B; --red-wash:#2A161B;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    font-size:15px; line-height:1.6;
+    padding-block:28px; padding-left:18px; padding-right:18px;
+  }
+  .wrap{max-width:660px; margin:0 auto; display:flex; flex-direction:column; gap:30px}
+
+  .mast{display:flex; flex-direction:column; gap:7px}
+  .kicker{font-family:"JetBrains Mono",ui-monospace,monospace; font-size:10.5px; font-weight:700;
+    letter-spacing:.16em; text-transform:uppercase; color:var(--pink)}
+  h1{font-family:"Archivo",sans-serif; font-weight:900; font-size:31px; line-height:1.1;
+    margin:0; letter-spacing:-.015em; text-wrap:balance}
+  .stand{margin:0; color:var(--muted); font-size:14.5px}
+
+  .q{display:flex; flex-direction:column; gap:12px; padding-top:24px; border-top:1px solid var(--rule)}
+  .qhead{display:flex; align-items:flex-start; gap:10px}
+  .qhead i{font-style:normal; font-family:"JetBrains Mono",monospace; font-size:11px; font-weight:700;
+    width:22px; height:22px; border-radius:50%; background:var(--ink); color:var(--paper);
+    display:grid; place-items:center; flex:none; margin-top:2px}
+  h2{font-family:"Archivo",sans-serif; font-weight:800; font-size:19px; margin:0; letter-spacing:-.01em;
+    text-wrap:balance}
+  p{margin:0}
+  strong{font-weight:700; color:var(--ink)}
+  .small{font-size:13px; color:var(--muted)}
+
+  .yousaid{background:var(--panel); border-left:3px solid var(--pink); border-radius:0 10px 10px 0;
+    padding:11px 14px; font-size:14px; color:var(--ink-2)}
+  .yousaid b{display:block; font-family:"JetBrains Mono",monospace; font-size:9.5px; font-weight:700;
+    letter-spacing:.12em; text-transform:uppercase; color:var(--pink); margin-bottom:4px}
+
+  .cmp{display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--amber-rule);
+    border:1px solid var(--amber-rule); border-radius:12px; overflow:hidden}
+  .cmp > div{background:var(--amber-wash); padding:13px 15px; display:flex; flex-direction:column; gap:4px}
+  .cmp .lbl{font-family:"JetBrains Mono",monospace; font-size:9.5px; font-weight:700;
+    letter-spacing:.11em; text-transform:uppercase; color:var(--amber)}
+  .cmp .val{font-family:"JetBrains Mono",monospace; font-size:17px; font-weight:700; color:var(--ink);
+    font-variant-numeric:tabular-nums; letter-spacing:-.02em}
+  .cmp .sub{font-size:12.5px; color:var(--muted)}
+
+  table{width:100%; border-collapse:collapse; font-size:14px}
+  th{font-family:"JetBrains Mono",monospace; font-size:9.5px; font-weight:700; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--muted); text-align:left; padding:0 0 6px;
+    border-bottom:1px solid var(--rule)}
+  th.r,td.r{text-align:right}
+  td{padding:8px 0; border-bottom:1px solid var(--rule-2); font-variant-numeric:tabular-nums}
+  tr:last-child td{border-bottom:none}
+  .side{font-family:"JetBrains Mono",monospace; font-size:9.5px; font-weight:700; letter-spacing:.08em;
+    padding:2px 6px; border-radius:999px; margin-left:6px}
+  .side.l{background:var(--green-wash); color:var(--green)}
+  .side.s{background:var(--red-wash); color:var(--red)}
+  .dist{font-family:"JetBrains Mono",monospace; font-weight:700; color:var(--green)}
+
+  .opts{display:flex; flex-direction:column; gap:8px}
+  .opt{display:block}
+  .opt label{display:flex; gap:11px; align-items:flex-start; cursor:pointer;
+    border:1.5px solid var(--rule); border-radius:11px; padding:12px 14px; background:var(--paper);
+    transition:border-color .12s, background .12s}
+  .opt label:hover{border-color:var(--pink)}
+  .opt input{margin:3px 0 0; accent-color:var(--pink); flex:none; width:17px; height:17px}
+  .opt input:focus-visible{outline:2px solid var(--pink); outline-offset:2px}
+  .opt input:checked ~ span{color:var(--ink)}
+  .opt label:has(input:checked){border-color:var(--pink); background:var(--pink-wash)}
+  .opt span{font-size:14.5px; color:var(--ink-2)}
+  .opt span b{display:block; color:var(--ink); font-weight:700; margin-bottom:2px}
+
+  textarea{width:100%; font-family:inherit; font-size:14px; color:var(--ink); background:var(--paper);
+    border:1.5px solid var(--rule); border-radius:11px; padding:11px 13px; resize:vertical; min-height:62px}
+  textarea:focus{outline:none; border-color:var(--pink)}
+  textarea::placeholder{color:var(--muted)}
+
+  .btns{display:flex; gap:10px; flex-wrap:wrap; margin-top:4px}
+  .btn{font-family:"Archivo",sans-serif; font-weight:800; font-size:14px; letter-spacing:.02em;
+    border:none; border-radius:11px; padding:13px 20px; cursor:pointer; background:var(--ink);
+    color:var(--paper)}
+  .btn.alt{background:var(--pink)}
+  .btn:focus-visible{outline:2px solid var(--pink); outline-offset:2px}
+  .said{font-size:13.5px; color:var(--ink-2); min-height:20px; font-weight:600}
+  #out{width:100%; margin-top:6px; min-height:170px; font-family:"JetBrains Mono",monospace; font-size:12px}
+
+  .end{display:flex; flex-direction:column; gap:11px; padding-top:24px; border-top:2px solid var(--pink)}
+  .foot{border-top:1px solid var(--rule); padding-top:14px; font-size:12px; color:var(--muted)}
+
+  @media (max-width:430px){
+    h1{font-size:25px}
+    .cmp{grid-template-columns:1fr}
+    .cmp .val{font-size:15px}
+    .btn{width:100%}
+  }
+  @media (prefers-reduced-motion:reduce){ *{transition:none!important} }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header class="mast">
+    <div class="kicker">Level Up &middot; from Angela</div>
+    <h1>Six things, when you have a minute</h1>
+    <p class="stand">Three are from your last review that I still need your call on, two came up on the board
+      this week, and one is a quick fix. Answer what you can &mdash; press the button at the end and it copies
+      itself so you can paste it straight back to me.</p>
+  </header>
+
+  <!-- 1 -->
+  <section class="q">
+    <div class="qhead"><i>1</i><h2>SHIB has an extra zero</h2></div>
+    <p>Every level on this morning&rsquo;s SHIB short is <strong>ten times smaller</strong> than where SHIB is
+      actually trading, so it can never trigger &mdash; price would have to fall 90% to reach it.</p>
+    <div class="cmp">
+      <div><span class="lbl">Your entry</span><span class="val">0.000000473</span><span class="sub">seven zeros</span></div>
+      <div><span class="lbl">SHIB right now</span><span class="val">0.00000501</span><span class="sub">six zeros</span></div>
+    </div>
+    <p class="small">Your TP1 0.000000463 &middot; TP2 0.000000444 &middot; TP3 0.000000421 &middot; stop
+      0.000000482 all carry the same extra zero, which is why nothing flagged it &mdash; they agree with each
+      other, just not with the market.</p>
+    <div class="opts">
+      <div class="opt"><label><input type="radio" name="q1" value="I will repost SHIB with the decimal corrected"><span><b>I&rsquo;ll repost it</b>Same trade, decimal shifted one place.</span></label></div>
+      <div class="opt"><label><input type="radio" name="q1" value="Drop the SHIB short, do not repost"><span><b>Drop it</b>The setup has moved on; don&rsquo;t bother.</span></label></div>
+      <div class="opt"><label><input type="radio" name="q1" value="Angela should fix the SHIB decimal directly"><span><b>You fix it for me</b>Shift the decimal on my behalf, don&rsquo;t make me repost.</span></label></div>
+    </div>
+    <textarea id="n1" placeholder="Anything to add…"></textarea>
+  </section>
+
+  <!-- 2 -->
+  <section class="q">
+    <div class="qhead"><i>2</i><h2>Should a retired setup come back on its own?</h2></div>
+    <p>You&rsquo;ve told me two different things about this, several weeks apart, and I want to build the one
+      you actually want.</p>
+    <div class="yousaid"><b>Back in September, on our call</b>If it hasn&rsquo;t triggered in three days, drop
+      it off the board into a holding bin &mdash; and if it comes back within 10% of the trigger, it jumps
+      back on.</div>
+    <div class="yousaid"><b>23 October, in your notes</b>&ldquo;It should be watching for 24 hours and after
+      that time mark no trade and retire trade and <strong>do not reactivate until i put another
+      one.</strong>&rdquo;</div>
+    <p>The board is running the October version, so nothing returns by itself. But four of your retired setups
+      have drifted back within 10% of your own trigger:</p>
+    <table>
+      <thead><tr><th>Setup</th><th class="r">Your trigger</th><th class="r">Now</th><th class="r">Away</th></tr></thead>
+      <tbody>
+        <tr><td><b>ZRO</b><span class="side l">LONG</span></td><td class="r">$1.80</td><td class="r">$1.763</td><td class="r dist">2.1%</td></tr>
+        <tr><td><b>AVAX</b><span class="side l">LONG</span></td><td class="r">$9.29</td><td class="r">$8.97</td><td class="r dist">3.4%</td></tr>
+        <tr><td><b>XRP</b><span class="side l">LONG</span></td><td class="r">$1.3557</td><td class="r">$1.3046</td><td class="r dist">3.8%</td></tr>
+        <tr><td><b>UNI</b><span class="side s">SHORT</span></td><td class="r">$6.86</td><td class="r">$7.422</td><td class="r dist">8.2%</td></tr>
+      </tbody>
+    </table>
+    <p class="small">ONDO&rsquo;s short is at 10.5% &mdash; just outside.</p>
+    <div class="opts">
+      <div class="opt"><label><input type="radio" name="q2" value="AUTOMATIC: a retired setup returns on its own within 10% of the trigger"><span><b>It comes back on its own</b>Within 10% of my trigger it returns to the board, same levels. Those four would reappear today.</span></label></div>
+      <div class="opt"><label><input type="radio" name="q2" value="MANUAL: stays retired until Chelsea posts it again (current behaviour)"><span><b>It stays off until I post it again</b>What the board does now. Retired means retired.</span></label></div>
+      <div class="opt"><label><input type="radio" name="q2" value="Comes back but flagged for Chelsea to approve"><span><b>Bring it back, but ask me first</b>It reappears in a list for me to wave through, not straight onto the board.</span></label></div>
+    </div>
+    <textarea id="n2" placeholder="If 10% isn't the right number any more, say what is…"></textarea>
+  </section>
+
+  <!-- 3 -->
+  <section class="q">
+    <div class="qhead"><i>3</i><h2>When price blows past your stop before the trade ever starts</h2></div>
+    <p>Sometimes price runs past where your stop would have been while the setup is still just watching
+      &mdash; it never triggered, so nothing &ldquo;stopped out&rdquo;, but the level it was built on is gone.</p>
+    <p>Right now the board puts a warning on those cards and <strong>leaves them in the watching list</strong>.
+      Four are in that state today: SOL, SUI, ZEC and the HYPE short.</p>
+    <div class="opts">
+      <div class="opt"><label><input type="radio" name="q3" value="Retire it: mark no trade and move to past calls"><span><b>Retire it</b>Mark it no trade and move it to past calls, like a setup that timed out.</span></label></div>
+      <div class="opt"><label><input type="radio" name="q3" value="Keep it listed with the warning (current behaviour)"><span><b>Leave it where it is</b>Keep it in the watching list with the warning on it. What happens now.</span></label></div>
+      <div class="opt"><label><input type="radio" name="q3" value="Hide it, but let it return if price comes back"><span><b>Hide it, but let it come back</b>Off the board while price is away, back if it returns to the level.</span></label></div>
+    </div>
+    <textarea id="n3" placeholder="Anything to add…"></textarea>
+  </section>
+
+  <!-- 4 -->
+  <section class="q">
+    <div class="qhead"><i>4</i><h2>Your rule about a trade that already started</h2></div>
+    <p>From your last review. I haven&rsquo;t built it yet because I want to be sure I have it exactly right
+      &mdash; it decides whether a trade counts as live before you posted it.</p>
+    <div class="yousaid"><b>23 October, your words</b>&ldquo;The trade should go into triggered if the candle
+      opened on the 1 hr before the post, but only if the stochs rsi macd are pointed up on the 1hr and the
+      price is within 10% of the entry price that I dictated.&rdquo;</div>
+    <p>The part I need pinned down is the indicators:</p>
+    <div class="opts">
+      <div class="opt"><label><input type="radio" name="q4" value="ALL THREE of stochastics, RSI and MACD must agree"><span><b>All three have to agree</b>Stochastics, RSI and MACD all pointing the trade&rsquo;s way, or it doesn&rsquo;t count.</span></label></div>
+      <div class="opt"><label><input type="radio" name="q4" value="Stochastics must agree; the other two are supporting"><span><b>Stochastics decides</b>It leads, the way it does on the entry strength meter. The other two support it.</span></label></div>
+      <div class="opt"><label><input type="radio" name="q4" value="A majority (two of three) is enough"><span><b>Two out of three is enough</b></span></label></div>
+      <div class="opt"><label><input type="radio" name="q4" value="Leave this rule out for now"><span><b>Leave it for now</b>Don&rsquo;t build it yet.</span></label></div>
+    </div>
+    <textarea id="n4" placeholder="How far back should we look — just the candle before the post, or further?"></textarea>
+  </section>
+
+  <!-- 5 -->
+  <section class="q">
+    <div class="qhead"><i>5</i><h2>The wording that gets added to your entries</h2></div>
+    <div class="yousaid"><b>23 October, your words</b>&ldquo;Sometimes even though i just have one price as
+      the entry it will automatically add a qualifier like &lsquo;once the 1hr gets over the sma and
+      smma&rsquo; even though it was not in what i said.&rdquo;</div>
+    <p>You were right &mdash; it&rsquo;s adding that on our end, on roughly a third of your entries. I can stop
+      it. I just want to know which way you&rsquo;d rather have it.</p>
+    <div class="opts">
+      <div class="opt"><label><input type="radio" name="q5" value="Never add wording Chelsea did not type"><span><b>Only ever use my words</b>If I gave one price, the board shows one price and nothing else.</span></label></div>
+      <div class="opt"><label><input type="radio" name="q5" value="Keep the moving-average wording, it is always true"><span><b>Keep it</b>The 1H open over the lines is always how I trade it, so saying it is fine.</span></label></div>
+    </div>
+    <textarea id="n5" placeholder="Anything to add…"></textarea>
+  </section>
+
+  <!-- 6 -->
+  <section class="q">
+    <div class="qhead"><i>6</i><h2>The app question &mdash; what would help?</h2></div>
+    <p>Last time you marked this <strong>&ldquo;needs clarification&rdquo;</strong> and I never came back to
+      you on it, which was my miss. The question was whether the board should live inside the Level Up app
+      rather than as a web link.</p>
+    <p class="small">As it stands, anyone you send the link to can open it and pass it on. In the app it would
+      sit behind the member login, but it&rsquo;s a bigger build and someone has to keep it running.</p>
+    <div class="opts">
+      <div class="opt"><label><input type="radio" name="q6" value="Put the board in the app behind the member login"><span><b>Put it in the app</b>Behind the login, members only.</span></label></div>
+      <div class="opt"><label><input type="radio" name="q6" value="Keep it as a web link"><span><b>Keep the link</b>It works, and it&rsquo;s easy to share in Skool.</span></label></div>
+      <div class="opt"><label><input type="radio" name="q6" value="Still needs clarification - see notes"><span><b>I still need something explained</b>Tell me what, in the box below.</span></label></div>
+    </div>
+    <textarea id="n6" placeholder="What would you want to know before deciding?"></textarea>
+  </section>
+
+  <div class="end">
+    <div class="btns">
+      <button class="btn" id="gather" type="button">Gather my answers</button>
+      <button class="btn alt" id="dl" type="button" hidden>Save as a file</button>
+    </div>
+    <div class="said" id="said"></div>
+    <textarea id="out" readonly placeholder="Your answers will appear here." hidden></textarea>
+    <p class="small">Press <b>Gather my answers</b> and it copies itself &mdash; paste it back to Angela any
+      way you like. Nothing here is sent anywhere on its own, and nothing is saved if you close the page, so
+      copy it before you go.</p>
+  </div>
+
+  <footer class="foot">
+    A working page for Chelsea &mdash; not a member page, and not linked from the board. Prices shown were
+    live when this was written.
+  </footer>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var QS = [
+    { n: 'q1', note: 'n1', title: '1. SHIB has an extra zero' },
+    { n: 'q2', note: 'n2', title: '2. Should a retired setup come back on its own' },
+    { n: 'q3', note: 'n3', title: '3. Price past the stop before the trade starts' },
+    { n: 'q4', note: 'n4', title: '4. Your rule about a trade that already started' },
+    { n: 'q5', note: 'n5', title: '5. Wording added to your entries' },
+    { n: 'q6', note: 'n6', title: '6. The app question' }
+  ];
+  var saidEl = document.getElementById('said');
+  var outEl = document.getElementById('out');
+  var dlBtn = document.getElementById('dl');
+  var lastText = '';
+
+  function build() {
+    var lines = ['LEVEL UP - CHELSEA\'S ANSWERS', new Date().toLocaleDateString(), ''];
+    var answered = 0;
+    QS.forEach(function (q) {
+      var picked = document.querySelector('input[name="' + q.n + '"]:checked');
+      var note = (document.getElementById(q.note).value || '').trim();
+      if (picked) answered++;
+      lines.push(q.title);
+      lines.push('   Answer: ' + (picked ? picked.value : '(not answered)'));
+      if (note) lines.push('   Notes: ' + note);
+      lines.push('');
+    });
+    lines.push('Answered ' + answered + ' of ' + QS.length + '.');
+    return lines.join('\n');
+  }
+
+  document.getElementById('gather').addEventListener('click', function () {
+    lastText = build();
+    outEl.hidden = false;
+    outEl.value = lastText;
+    outEl.focus();
+    outEl.select();
+    dlBtn.hidden = false;
+    /* Say something straight away, then upgrade it if the copy actually lands. The clipboard promise can sit
+       unsettled when the tab is not focused, and a blank line under the button is the one outcome nobody can
+       act on. */
+    saidEl.textContent = 'Your answers are in the box below — copy them and send them to Angela.';
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(lastText).then(
+        function () { saidEl.textContent = 'Copied — paste it back to Angela.'; },
+        function () { /* the line above already says what to do */ }
+      );
+    }
+  });
+
+  dlBtn.addEventListener('click', function () {
+    if (!lastText) return;
+    try {
+      var blob = new Blob([lastText], { type: 'text/plain;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'chelsea-answers-' + new Date().toISOString().slice(0, 10) + '.txt';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+      saidEl.textContent = 'Saved to your downloads.';
+    } catch (e) {
+      saidEl.textContent = 'Couldn’t save a file here — copy the text instead.';
+      dlBtn.hidden = true;
+    }
+  });
+})();
+</script>
+</body>
+</html>
