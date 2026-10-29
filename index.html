@@ -569,18 +569,38 @@ const sideRows=(()=>{try{
   const Core=(typeof window!=="undefined"&&window.LevelUpCore)||(typeof LevelUpCore!=="undefined"&&LevelUpCore)||null;
   if(!Core||!Core.buildAll)return {};
   const built=Core.buildAll(text);const out={};
+  /* TWO SHAPES MEAN THE SAME THING (2026-10-28, corrected 2026-10-29 on HYPE).
+     The parser reports a two-sided asset either as ONE bare entry carrying a .sides map - when both sides
+     fall inside the 2h pair window - or as SEPARATE "ASSET|LONG"/"ASSET|SHORT" top-level keys when they do
+     not. Only the first shape was handled, so HYPE broke the moment Chelsea published a short on 10/29
+     three days after its long: the sides stopped pairing, sideRows found nothing, and the board fell back to
+     one card showing only the newer side while the long vanished from the page entirely.
+     Whether two setups were published seconds or days apart has nothing to do with whether each deserves its
+     own tile, so both shapes are collected here into the same per-side map. */
+  const want=(a,d,entry)=>{
+    const pt=(entry&&entry.published_text)||{};
+    const ts=pt.timestamp_text||"",t1=(pt.triggers||[])[0]||"";
+    if(!ts)return null;
+    const rowsFor=all[a]||[];
+    const row=rowsFor.find(r=>get(r,"timestamp")===ts&&get(r,"trigger 1")===t1)||rowsFor.find(r=>get(r,"timestamp")===ts);
+    return (row&&get(row,"status"))?row:null;};
+  const bucket={};
   Object.keys(built).forEach(k=>{
-    const e=built[k];if(!e||!e.sides)return;
-    const rowsFor=all[k]||[];const m={};
+    const e=built[k];if(!e)return;
+    const keyed=/^(.+)\|(LONG|SHORT)$/.exec(k);
+    if(keyed){
+      const a=keyed[1],d=keyed[2].toLowerCase();
+      const row=want(a,d,e);
+      if(row)(bucket[a]=bucket[a]||{})[d]=row;
+      return;
+    }
+    if(!e.sides)return;
     Object.keys(e.sides).forEach(d=>{
-      const pt=e.sides[d].published_text||{};
-      const ts=pt.timestamp_text||"",t1=(pt.triggers||[])[0]||"";
-      if(!ts)return;
-      const row=rowsFor.find(r=>get(r,"timestamp")===ts&&get(r,"trigger 1")===t1)||rowsFor.find(r=>get(r,"timestamp")===ts);
-      if(row&&get(row,"status"))m[d]=row;
+      const row=want(k,d,e.sides[d]);
+      if(row)(bucket[k]=bucket[k]||{})[d]=row;
     });
-    if(Object.keys(m).length===2)out[k]=m;
   });
+  Object.keys(bucket).forEach(a=>{if(Object.keys(bucket[a]).length===2)out[a]=bucket[a];});
   return out;}catch(e){return {};}})();
 const mkCard=(a,r,side)=>{const [c,t]=STATUS(get(r,"status"));
   return {a,r,c,t,side:side||null,
