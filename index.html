@@ -2019,12 +2019,19 @@ load();setInterval(load,60000);
     function applyStopBreachFlags() {
       if (!setups) return;
       var mf = window.__mechFeed;
-      Object.keys(setups).forEach(function (asset) {
-        var s = setups[asset];
+      Object.keys(setups).forEach(function (setupKey) {
+        var s = setups[setupKey];
         if (!s || !s.status || s.status.class !== 'WATCHING') return;
+        /* 2026-10-29: the parser keys a two-sided asset as "ASSET|LONG"/"ASSET|SHORT", so split the key and
+           carry the side through. Matching cards on the whole key would match nothing (a card's href says
+           asset=HYPE, never HYPE|LONG) and matching on the asset alone stamps one side's warning onto the
+           other's tile - which is how HYPE's completed long came to be labelled "never triggered". */
+        var keyParts = /^(.+)\|(LONG|SHORT)$/.exec(setupKey);
+        var asset = keyParts ? keyParts[1] : setupKey;
+        var keySide = keyParts ? keyParts[2].toLowerCase() : null;
         // only a pre-trigger check - once mechanically triggered, the real post-trigger stop/TP facts already
         // cover this (resolveCurrentState()/mechanicalFor() above), so skip to avoid a redundant/confusing flag.
-        var mech = mf && mf.mechanicalFor(asset, mf.currentInstanceKeyFor(asset));
+        var mech = mf && mf.mechanicalFor(asset, mf.currentInstanceKeyFor(asset), keySide);
         if (mech && mech.triggered) return;
         checkStopBreach(asset, s).then(function (res) {
           var shouldShow = !!(res && res.breached);
@@ -2045,7 +2052,24 @@ load();setInterval(load,60000);
             if (da) { cardAsset = da.toUpperCase(); }
             else { var m = /[?&]asset=([^&]+)/.exec(c.getAttribute('href') || ''); cardAsset = m ? decodeURIComponent(m[1]).toUpperCase() : null; }
             if (!cardAsset || cardAsset !== asset) return;
+            /* The card's OWN side, from its link or its data attribute. */
+            var cardSide = (c.getAttribute('data-side') || '').toLowerCase();
+            if (cardSide !== 'long' && cardSide !== 'short') {
+              var sm = /[?&]side=(long|short)/i.exec(c.getAttribute('href') || '');
+              cardSide = sm ? sm[1].toLowerCase() : null;
+            }
+            /* A side-specific warning never reaches the other side's tile. */
+            if (keySide && cardSide && cardSide !== keySide) return;
             var old = c.querySelector('.stop-breach-flag');
+            /* AND the card is re-tested on its own evidence, whatever the asset-level gate above concluded.
+               "This never triggered" on a trade that triggered and took every target is the worst thing this
+               warning can say, and it said it about HYPE's long. */
+            var cardMech = mf && mf.mechanicalFor(cardAsset, null, cardSide);
+            if (cardMech && cardMech.triggered) {
+              if (old) old.remove();
+              try { c.className = (c.className || '').replace(/\s*is-dead/g, ''); } catch (e) {}
+              return;
+            }
             // 2026-10-06: only touch the DOM when the shown state actually needs to change - a cache-served
             // "still breached" result re-removing+re-inserting an identical node every call is itself a
             // childList mutation, which (called from inside mech-feed's decorate(), re-triggered by exactly
