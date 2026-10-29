@@ -1460,6 +1460,8 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
 .mech-sidetruth p:last-child{margin-bottom:0}
 .mech-sidetruth b{color:var(--red-d)}
 .mech-sidetruth .sidetruth-dyor{font-size:11.5px;color:var(--gray);line-height:1.5}
+.sideflip-retired.is-win{border-left-color:var(--pink);background:rgba(250,3,152,.06)}
+.sideflip-retired.is-win b{color:var(--pink)}
 .sideflip-retired{margin:0 0 10px;padding:10px 12px;border-left:4px solid var(--red);background:rgba(239,68,68,.06);
   font-size:12.5px;line-height:1.55;color:var(--ink)}
 .sideflip-retired b{color:var(--red-d)}
@@ -2451,16 +2453,15 @@ details.sideflip{counter-reset:sect}
       var didTrigger = function (d) { var lc = sides[d].lifecycle; return !!(lc && lc.trigger && lc.trigger.reached_at); };
 
       var msgs = [];
-      if (shown && isRetired(shown)) {
-        var winner = shown === 'LONG' ? 'SHORT' : 'LONG';
-        /* The old sentence said the other side "triggered first, so the monitor stopped tracking this one".
-           That described pair retirement, which is gone - the two sides are tracked independently now, and
-           saying otherwise would explain this page with a rule the board no longer follows. */
-        msgs.push('<b>The levels on this page are the ' + shown + ' side, and that trade is over.</b> Chelsea'
-          + ' published both directions on ' + ASSET_ + ', and each one is followed on its own - one of them'
-          + ' ending has no effect on the other. For the ' + winner + " side, open \u201cThe other side of this"
-          + " setup\u201d further down.");
-      }
+      /* THE "THIS TRADE IS OVER" NOTICE WAS REMOVED HERE (2026-10-29, Angela: "hype has a red box saying it
+         never triggered"). It belonged to the one-card era, when this page could show one side's LEVELS under
+         the other side's HEADLINE and a member needed warning. Each side now has its own card and its own
+         page via &side=, and the mech-feed layer reads that side, so the headline directly above already
+         states this side's outcome in its own colour. Repeating it inside a red alarm box added nothing and,
+         on HYPE's long - triggered, all three targets taken, completion coin - actively misreported a win as
+         something that had gone wrong.
+         The mismatch message below is deliberately KEPT. It cannot fire while the two layers agree, which is
+         precisely why it is worth having: it is the guard that speaks up if they ever drift apart again. */
       if (shown && reported && reported !== shown) {
         msgs.push('<b>Read the direction carefully: the state at the top of this page is the ' + reported
           + ' side, and the ladder and levels below it are the ' + shown + ' side.</b> Chelsea published both.'
@@ -2487,7 +2488,18 @@ details.sideflip{counter-reset:sect}
         if (body) {
           var n = document.createElement('div');
           n.id = 'sideflip-retired'; n.className = 'sideflip-retired';
-          n.innerHTML = didTrigger(otherDir)
+          /* THE COLOUR FOLLOWS THE RESULT (2026-10-29). This note was hard-coded red, and red means stopped
+             on this board - so a side that reached every one of Chelsea's targets was being reported in the
+             loss colour. A finished trade is not automatically a bad one. */
+          var oLc = sides[otherDir].lifecycle || {};
+          var oOut = (oLc.public_display || {}).outcome;
+          var oWon = oLc.state === 'OBJECTIVES_EXHAUSTED' || oOut === 'COMPLETED' || oOut === 'CLOSED_WITH_PROGRESS';
+          if (oWon) n.className = 'sideflip-retired is-win';
+          n.innerHTML = oWon
+            ? '<b>This side finished.</b> It triggered and reached what it was aiming for - the state at the top'
+              + ' of this page is the other side. Shown because Chelsea published it and nothing published is'
+              + ' ever deleted, not because these levels are still live.'
+            : didTrigger(otherDir)
             ? '<b>This side is over.</b> It triggered and has since finished - the state at the top of this page'
               + ' is the other side. Shown because Chelsea published it and nothing published is ever deleted -'
               + ' not because these levels are live.'
