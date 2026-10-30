@@ -365,9 +365,20 @@ async function load(){
      the long while the card reported the short. The out-of-batch side is NOT dropped; it still renders in the
      disclosure, because nothing Chelsea published is ever removed. */
   const BATCH_WINDOW_MS_=2*60*60*1000;
-  const currentBatchDirs=(dirs)=>{const ts=dirs.map(sidePubMs).filter(t=>t!==null);if(!ts.length)return dirs;
+  /* 2026-10-30 (Angela, HYPE): this window was measured with the FEED's publication times, which are only as
+     current as the last monitor run. That morning the feed was five hours behind and held HYPE's 10/26 long
+     and 10/29 short, so "the newest batch" resolved to the 10/29 short and today's 5:08 AM long - the setup
+     a member had actually come to read - was dropped from the running before pickSide() ever saw it. The
+     page then drew yesterday's short under a proximity strip quoting today's long trigger. The SHEET is the
+     authority on when Chelsea published; the feed is the authority on what has happened since. pubOf is the
+     caller's Sheet time for a side; it falls back to the feed per side, which is the behaviour this
+     replaces, so a caller that cannot supply one is no worse off than before. */
+  const currentBatchDirs=(dirs,pubOf)=>{
+    const at=(d)=>{let t=null;try{t=pubOf?pubOf(d):null;}catch(e){t=null;}
+      return (t!==null&&t!==undefined&&isFinite(t))?t:sidePubMs(d);};
+    const ts=dirs.map(at).filter(t=>t!==null);if(!ts.length)return dirs;
     const newest=Math.max.apply(null,ts);
-    const keep=dirs.filter(d=>{const t=sidePubMs(d);return t===null||(newest-t)<=BATCH_WINDOW_MS_;});
+    const keep=dirs.filter(d=>{const t=at(d);return t===null||(newest-t)<=BATCH_WINDOW_MS_;});
     return keep.length?keep:dirs;};
   const pickSide=(dirs)=>{let best=null;
     dirs.forEach(d=>{
@@ -393,7 +404,9 @@ async function load(){
       /* 2026-10-24: one call to the shared order above, replacing two ad-hoc "exactly one of these"
          questions that could not separate ADA's two triggered sides at all. */
       const asked=WANT_SIDE&&dirs.indexOf(WANT_SIDE)>=0?WANT_SIDE:null;
-      const want=asked||(haveMech(dirs)?pickSide(currentBatchDirs(dirs)):null);
+      const want=asked||(haveMech(dirs)?pickSide(currentBatchDirs(dirs,d=>{
+        const sr=(entry.sides[d]||{}).setup_row||{};
+        return (sr.utcMs!==null&&sr.utcMs!==undefined)?sr.utcMs:null;})):null);
       if(!want)return null;
       const pt=entry.sides[want].published_text||{};
       const ts=pt.timestamp_text||"", t1=(pt.triggers||[])[0]||"";
@@ -510,7 +523,8 @@ async function load(){
          the page by a two-second publication margin. Mechanical evidence outranks the clock, and the order
          it uses is the shared one documented above - not a second opinion about it. */
       const asked=WANT_SIDE&&dirs.indexOf(WANT_SIDE)>=0?WANT_SIDE:null;
-      const byEvidence=asked||(haveMech(dirs)?pickSide(currentBatchDirs(dirs)):null);
+      const byEvidence=asked||(haveMech(dirs)?pickSide(currentBatchDirs(dirs,d=>{
+        const r=byDir[d];const t=r?rowTs(r):NaN;return isFinite(t)?t:null;})):null);
       const pDir=byEvidence||dirs.find(d=>byDir[d]===S)||entry.primary_side||dirs[0];
       const qDir=dirs.find(d=>d!==pDir);
       return {primary:{dir:pDir,row:byDir[pDir]},quiet:{dir:qDir,row:byDir[qDir]}};
@@ -1888,6 +1902,20 @@ details.sideflip{counter-reset:sect}
       var m = /\|(LONG|SHORT)$/.exec(picked.key);
       return m ? m[1] : null;
     }
+    /* THE SAME TEST mechanicalFor() PERFORMS, AS A FUNCTION (2026-10-30). ensureStrengthMeter() and
+       ensureNowRowTruth() below render straight off a feed entry without going through mechanicalFor(), and
+       both trusted the ticker alone - ensureLadderHits() was the only one of the three that had been given
+       the guard. On 2026-10-30 that printed the 10/26 HYPE long's frozen reading, its three take-profit
+       stamps and its "this setup is closed" line over the brand-new long Chelsea published that morning, a
+       setup with entirely different targets that had not even triggered. Degrades open while
+       loadDirection() is still in flight, the same fail-safe as every other guard here. */
+    function feedInstanceCurrent(asset, entry) {
+      if (!entry) return false;
+      if (!currentInstanceKey) return true;
+      var validKeys = instanceKeysForCurrent(asset);
+      return validKeys.length ? validKeys.indexOf(entry.setup_instance_key) >= 0
+                              : (entry.setup_instance_key === currentInstanceKey);
+    }
     function mechanicalFor(asset, currentInstanceKey) {
       if (!feed) return null;
       var picked = feedEntryFor(asset); if (!picked) return null;
@@ -2542,6 +2570,10 @@ details.sideflip{counter-reset:sect}
     function ensureNowRowTruth() {
       var row = document.querySelector('#ladder .row.now'); if (!row) return;
       var picked = feedEntryFor(ASSET_);
+      /* 2026-10-30 (Angela, HYPE): an old instance's terminal state must never close a new setup. Today's
+         HYPE long - published 5:08 AM, never triggered - carried "This setup is closed. The price above is
+         for reference only" because the feed still held the 10/26 long at OBJECTIVES_EXHAUSTED. */
+      if (!feedInstanceCurrent(ASSET_, picked && picked.entry)) picked = null;
       var lc = picked && picked.entry && picked.entry.lifecycle;
       /* 2026-10-24: SIX_LINE_EXIT and the retirement join the two original terminal states here. Both were
          added to the engine after this function was written, and a live-pulsing "Live price" row under a
@@ -2680,6 +2712,12 @@ details.sideflip{counter-reset:sect}
       var old = document.getElementById('mech-str'); if (old) old.remove();
       if (!feed || !feed.assets) return;
       var picked = feedEntryFor(ASSET_);
+      /* 2026-10-30 (Angela, HYPE: it "has the badge on it because previously it hit all of its three take
+         profits"). This panel carries milestonesHtml() - the UP THE LADDER stamps - so an unguarded entry
+         does not merely misreport the strength, it prints another trade's take-profits as this one's.
+         Today's HYPE long (targets 102.21 / 110.82 / 141) showed TP1/TP2/TP3 dated Oct 26, which were the
+         previous long's hits at 77.62 / 78.45 / 80.07. */
+      if (!feedInstanceCurrent(ASSET_, picked && picked.entry)) return;
       var r = picked && picked.entry && picked.entry.confirmation_strength;
       if (!r || !r.word) return;
       /* 2026-10-24: a retired setup has no entry left to measure the strength of, and this panel was the one

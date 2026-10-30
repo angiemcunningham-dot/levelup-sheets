@@ -1902,7 +1902,15 @@ load();setInterval(load,60000);
               var sc = e.sheet_status && e.sheet_status.class;
               if (sc === 'CLOSED' || sc === 'INVALIDATED') return;
               var lower = d.toLowerCase();
-              var m = mf.mechanicalFor(a, null, lower);
+              /* 2026-10-30 (Angela, XRP): the ONE mechanicalFor() call on this page that passed null for the
+                 instance key, which switches the 2026-09-25 instance-safety guard off completely. Chelsea
+                 republished XRP on 10/30 - both sides, Watching - while the feed still held the 10/23 short,
+                 triggered with TP1 banked. This line put that seven-day-dead instance into Active Now while
+                 the Sheet-driven grid correctly listed today's untriggered pair, so XRP sat on the board
+                 twice, once as a live short and once as a fresh watch. The asset-level backfill directly
+                 above already passes the key; only this paired branch did not. instanceKeysFor() returns
+                 BOTH sides' keys, so the asset-level key is the right one to pass here. */
+              var m = mf.mechanicalFor(a, mf.currentInstanceKeyFor(a), lower);
               if (!m || !m.triggered || m.stopped || m.complete) return;
               perSide.push({ asset: a, cls: d === 'SHORT' ? 'ACTIVE_SHORT' : 'ACTIVE_LONG',
                 side: lower, label: 'ACTIVE ' + d,
@@ -2287,6 +2295,19 @@ load();setInterval(load,60000);
       } catch (e) { /* no attention data yet */ }
       return keys;
     }
+    /* THE SAME TEST mechanicalFor() PERFORMS, AS A FUNCTION (2026-10-30). Three surfaces render straight off a
+       feed entry without going through mechanicalFor() - the strength strip here, and the strength panel and
+       the live-price row on sheet.html - and all three trusted the ticker alone. On 2026-10-30 that put the
+       10/26 HYPE long's frozen reading, its three take-profit stamps and its "this setup is closed" line onto
+       the brand-new long Chelsea published that morning. Degrades open while the Sheet parse is still in
+       flight, the same fail-safe every other guard on this page uses. */
+    function feedInstanceCurrent(asset, entry) {
+      if (!entry) return false;
+      var cur = currentInstanceKeyFor(asset);
+      if (!cur) return true;
+      var valid = instanceKeysFor(asset);
+      return valid.length ? valid.indexOf(entry.setup_instance_key) >= 0 : (entry.setup_instance_key === cur);
+    }
     /* INSTANCE-SAFETY FIX (2026-09-25 hotfix, staging): mechanicalFor() used to trust feed.assets[asset].lifecycle
        purely by ticker, with no check that the FEED's own idea of "current instance" for that asset still matches
        the SHEET's actual current instance right now. A feed generated before Chelsea republished a same-ticker
@@ -2594,6 +2615,10 @@ load();setInterval(load,60000);
     function strengthStripFor(asset, side) {
       if (!feed || !feed.assets) return '';
       var picked = feedEntryFor(asset, side);
+      /* 2026-10-30 (Angela, HYPE): a reading belongs to the instance it was taken on. Without this the card
+         for today's HYPE long read "Very strong - 5 of 5", which was the reading FROZEN at the 10/26 long's
+         trigger at $77.07, shown against a setup published that morning with its trigger at $98.398. */
+      if (!feedInstanceCurrent(asset, picked && picked.entry)) return '';
       var r = picked && picked.entry && picked.entry.confirmation_strength;
       if (!r || !r.word) return '';
       /* 2026-10-24: same rule as sheet.html's full panel - a live entry-strength reading on a retired card
@@ -2668,7 +2693,19 @@ load();setInterval(load,60000);
         var anSide = (c.getAttribute('data-side') || '').toLowerCase();
         if (anSide !== 'long' && anSide !== 'short') anSide = null;
         var oldRow = c.querySelector('.mech-row'); if (oldRow) oldRow.remove();
-        var resolved = resolveCurrentState(asset, anSide); if (!resolved) return;
+        var resolved = resolveCurrentState(asset, anSide);
+        if (!resolved) {
+          /* 2026-10-30 (Angela, XRP: "why does xrp say Triggered not condition met"). cardHtmlActive()
+             hardcodes the word "Triggered" on every tile and this function is what replaces it - with
+             "CONDITION MET", "TP2 REACHED", whatever the evidence actually supports - and then hides it.
+             The early return fired BEFORE that line, so a tile whose evidence this function had just
+             REJECTED kept the one word on it that only the mechanical layer is entitled to say. XRP read
+             "ACTIVE SHORT / TRIGGERED" with no tick row and no trigger date beside ADA and PEPE, which
+             carried both. The board states a fact or it says nothing (2026-10-22); it never declares on
+             evidence it threw out. */
+          var bareTag = c.querySelector('.act-tag'); if (bareTag) bareTag.style.display = 'none';
+          return;
+        }
         var statusEl = c.querySelector('.act-status');
         if (statusEl) {
           statusEl.textContent = resolved.text;
