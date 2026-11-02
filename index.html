@@ -2720,7 +2720,13 @@ load();setInterval(load,60000);
         // check mark - right now you have to click into it to see if it is hit or not". The per-TP checkmark row
         // (same badgeHtml() the Today's Setups/History cards already get) was never wired to Active Now tiles -
         // only the flat text swap above was. Same instance-safe mechanicalFor() lookup, no new logic.
-        var html = badgeHtml(mechanicalFor(asset, currentInstanceKeyFor(asset)));
+        /* 2026-11-02 (Angela, BTC): anSide, like every other read in this function. The label above is
+           side-aware and the tick row was not, so on a two-sided asset both tiles drew whichever side
+           feedEntryFor() happened to land on. Live case: BTC's long had TP1+TP2 and its short had TP1, and
+           the short tile read "ACTIVE SHORT - TP1 REACHED" above a row ticking TP1 AND TP2 - the label and
+           the ticks on one tile describing different trades. The grid's own decorate() at the bottom of
+           this file has always passed the side; this call site simply never did. */
+        var html = badgeHtml(mechanicalFor(asset, currentInstanceKeyFor(asset), anSide));
         if (html && statusEl) { var d = document.createElement('div'); d.innerHTML = html; statusEl.parentNode.insertBefore(d.firstChild, statusEl.nextSibling); }
       });
     }
