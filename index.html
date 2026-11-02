@@ -2123,6 +2123,19 @@ load();setInterval(load,60000);
       // also fetch for the entry-zone-anchored conditional triggers approxTriggerProximity() can use (see view()
       // above) - A.triggerProximity() alone would never admit them, since it only measures 'present' triggers.
       Object.keys(setups).forEach(function (a) { if (assets.indexOf(a) < 0 && isWatchingLike(setups[a]) && approxTriggerProximity(setups[a], 1).state !== 'NA') assets.push(a); });
+      /* A CONDITIONAL TRIGGER STILL HAS A PRICE (2026-11-02, Angela - "no live price", first on BNB, then
+         reproduced on QNT). Chelsea's conditional triggers satisfy NEITHER filter above: triggerProximity()
+         measures only 'present' triggers, and approxTriggerProximity() needs an ENTRY_ZONE level, which a
+         row like QNT's "Entry 203.38, but below key resistance..." never produces because the text does not
+         START with "Entry Zone". So the asset was rendered in Live Attention but no price was ever REQUESTED
+         for it, and the card read "no live price" for a ticker Binance quotes perfectly well - QNT was
+         202.44 at the moment the card said there was no price. A price is a fact about the asset, not about
+         whether we can measure distance to its trigger, and these all ride the same single batch request. */
+      Object.keys(setups).forEach(function (a) {
+        if (assets.indexOf(a) >= 0 || !isWatchingLike(setups[a])) return;
+        var hasTriggerZone = (setups[a].levels || []).some(function (l) { return l.kind === 'trigger' && l.zone && l.zone.low > 0; });
+        if (hasTriggerZone) assets.push(a);
+      });
       A.activeNow(setups).forEach(function (it) { if (assets.indexOf(it.asset) < 0) assets.push(it.asset); });   // active assets: price is context only
       if (!assets.length) { render(); return Promise.resolve(); }
       return A.fetchPrices(assets).then(function (r) {
