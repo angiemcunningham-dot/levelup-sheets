@@ -2985,7 +2985,14 @@ load();setInterval(load,60000);
              in the wrong section. Verified live: the other four retirements relocated, TAO did not. */
           var inWatching = c.parentNode === grid || c.parentNode === watchGridForMove
             || !!(watchGridForMove && watchGridForMove.contains && watchGridForMove.contains(c));
-          if (resolved && (resolved.kind === 'stopped' || resolved.kind === 'complete' || resolved.kind === 'expired') && inWatching) {
+          /* 2026-11-03 (Angela): a REFUSED setup moves for the same reason a retired one does - it is not
+             being watched, because it is not being measured. It cannot arrive here through `resolved`, which
+             is null precisely because there is no lifecycle to resolve, so it is tested on its own. SHIB sat
+             in Currently Watching for four days reading as "not yet triggered, not resolved" on levels that
+             were a factor of ten off the market. Nothing is deleted - Chelsea published it, so it keeps its
+             card and its NOT TRACKED mark in Previous Calls. */
+          var notTrackedHere = notTrackedFor(asset, side);
+          if (((resolved && (resolved.kind === 'stopped' || resolved.kind === 'complete' || resolved.kind === 'expired')) || notTrackedHere) && inWatching) {
             if (histGrid) {
               var histEmpty = histGrid.querySelector('.empty'); if (histEmpty) histEmpty.remove();
               c.style.display = ''; // clear any display:none a prior cycle set while this was still a near/triggered card in #grid
