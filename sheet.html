@@ -1742,7 +1742,10 @@ details.sideflip{counter-reset:sect}
     var app = document.getElementById('app');
     if (!ASSET_ || !app) return;
     var FEED_URL = 'monitor-feed.json';
-    var STALE_MS = 45 * 60000;
+    /* 90 minutes, not 45 - see index.html's copy of this comment for the full reasoning (2026-11-03).
+       Short version: the 30-minute dispatcher this was sized for was stopped on 2026-10-22, the monitor has
+       run hourly since, and a 45-minute threshold therefore fired on every healthy hour. */
+    var STALE_MS = 90 * 60000;
     var feed = null;
 
     function fmtAgo(iso) {

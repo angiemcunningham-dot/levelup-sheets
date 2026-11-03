@@ -416,7 +416,7 @@ a.act-card.side-short:hover{box-shadow:0 10px 26px rgba(185,28,28,.18)}
       <li><b>Clearer warning on a dead setup.</b> If price closed past Chelsea&#39;s stop before a setup ever
       triggered, that card now says so in plain language at the top, instead of a hedged note underneath a
       percentage telling you how close it was.</li>
-      <li><b>A banner if automatic tracking falls behind.</b> The TRIGGERED / TP ticks update every 30 minutes.
+      <li><b>A banner if automatic tracking falls behind.</b> The TRIGGERED / TP ticks update every hour.
       If that stops, a red banner now says so. On 20 October it stopped for almost 13 hours and the board said
       almost nothing — that is what this is for.</li>
       <li><b>Old watches move aside.</b> A setup still &ldquo;watching&rdquo; after two weeks without triggering
@@ -2247,7 +2247,18 @@ load();setInterval(load,60000);
   'use strict';
   try {
     var FEED_URL = 'monitor-feed.json';
-    var STALE_MS = 45 * 60000; // 45 min - mechanical facts change far less often than price
+    /* THE WARNING MUST OUTLAST THE CADENCE (2026-11-03, Angela: "why is tracking behind").
+       45 minutes was set when a 30-minute dispatcher kept the feed current. That dispatcher was stopped on
+       2026-10-22 and the monitor has run hourly ever since, so the threshold has been SHORTER than the gap
+       between two healthy runs: the feed lands at HH:04, the board called it stale at HH:49, and the next
+       run did not clear the banner until about HH+1:06. That is roughly sixteen minutes in every hour -
+       better than a quarter of the day - telling members that tracking was behind while it was running
+       perfectly to schedule. Twelve consecutive runs on 2026-11-03 landed at HH:04:52 with no gap at all.
+       A warning that cries wolf a quarter of the time is worse than no warning, because the one time it
+       means something nobody will believe it. 90 minutes is the first value that cannot fire on a healthy
+       hour: it needs a run to have been genuinely MISSED, and it still says so half an hour into the miss,
+       well before a second one is due. */
+    var STALE_MS = 90 * 60000;
     var feed = null;
 
     function fmtAgo(iso) {
@@ -2874,7 +2885,7 @@ load();setInterval(load,60000);
           }
           var ageTxt = feed ? fmtAgo(feed.generated_at) : 'an unknown time';
           staleEl.innerHTML = '<b>&#9888; Automatic tracking is behind</b>'
-            + '<p>The mechanical evidence on this board last updated <b>' + ageTxt + '</b>. It normally updates every 30 minutes.</p>'
+            + '<p>The mechanical evidence on this board last updated <b>' + ageTxt + '</b>. It normally updates every hour.</p>'
             + '<p><b>Chelsea&#39;s setups and levels below are still current</b> - those are read straight from the Sheet and are not affected. '
             + 'What has paused is the automatic condition and target tracking, so a card may not yet show a move that has already happened.</p>'
             + '<p>Read the chart before acting on anything here. Nothing on this board is financial advice, and every level is an assumption about what the market may do - never a guarantee. Do your own research.</p>';
