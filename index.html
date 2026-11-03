@@ -2554,6 +2554,26 @@ load();setInterval(load,60000);
         + (x.retiredAt ? '<span class="mech-tick">RETIRED ' + fmtAgo(x.retiredAt).toUpperCase() + '</span>' : '')
         + '</div>';
     }
+    /* A SETUP THE ENGINE REFUSED TO EVALUATE (2026-11-03, Angela: "please fix shib"). The feed now says so
+       explicitly via `not_tracked`, because a null lifecycle alone cannot distinguish "not reached yet" from
+       "refused" - and those are opposite in meaning. SHIB's levels were published a factor of ten off this
+       market, the engine declined to measure them, and with no lifecycle the card could never expire either:
+       it sat under "Currently Watching - not yet triggered, not resolved" for four days, reading as a live
+       consideration. Instance-guarded like every other feed read here. */
+    function notTrackedFor(asset, side) {
+      if (!feed || !feed.assets) return null;
+      var picked = feedEntryFor(asset, side);
+      if (!picked || !feedInstanceCurrent(asset, picked.entry)) return null;
+      return picked.entry.not_tracked || null;
+    }
+    /* The counterpart to expiredBadgeHtml(): one plain mark and no TP circles, because an empty ladder here
+       would invite the reading that the targets were missed, when nothing was ever measured. */
+    function notTrackedBadgeHtml(x) {
+      if (!x) return '';
+      return '<div class="mech-row" title="The published levels are not on the same scale as this market, so none of them can be checked against price">'
+        + '<span class="mech-tick">&#9675; NOT TRACKED - PUBLISHED LEVELS DO NOT MATCH THIS MARKET</span>'
+        + '</div>';
+    }
     /* CURRENT-STATE RECONCILIATION (staging). Turns the same instance-safe mechanicalFor() facts above into ONE
        reconciled current-state headline, shared by this grid, Active Now here, and sheet.html's copy of this same
        script for the detail-page banner - so the two surfaces can never again show CAKE-style contradictory current
@@ -2627,6 +2647,9 @@ load();setInterval(load,60000);
            engine now has the authoritative answer, so it leads. The card itself is never removed; it is
            relocated into Previous Calls by decorate() below, because Chelsea published it. */
         if (expiredFor(setup.asset, currentInstanceKeyFor(setup.asset))) return false;
+        /* 2026-11-03: a setup whose levels could not be measured is not a live consideration either, and
+           its proximity number would be meaningless - distance to a trigger ten times off the market. */
+        if (notTrackedFor(setup.asset)) return false;
         return true;
       };
       window.LevelUpAttention.__mechWrapped = true;
@@ -2928,7 +2951,8 @@ load();setInterval(load,60000);
             }
           }
           var html = badgeHtml(mechanicalFor(asset, currentInstanceKeyFor(asset), side))
-            || expiredBadgeHtml(expiredFor(asset, currentInstanceKeyFor(asset), side));
+            || expiredBadgeHtml(expiredFor(asset, currentInstanceKeyFor(asset), side))
+            || notTrackedBadgeHtml(notTrackedFor(asset, side));
           if (html) { var d = document.createElement('div'); d.innerHTML = html; if (pill && pill.parentNode) pill.parentNode.insertBefore(d.firstChild, pill.nextSibling); }
           /* OPTION D: the strip goes under the state line, after the TP ladder badge. Removed and rebuilt
              each pass so it cannot double up when load() re-renders the card. */
