@@ -2167,6 +2167,13 @@ load();setInterval(load,60000);
 /* MECHANICAL FEED (staging addon) - durable trigger/TP/stop facts computed from real market candles by the monitor,
    published separately from the Sheet. Purely additive: the Sheet stays the only authority for setup + status text. */
 .mech-row{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 2px}
+/* 2026-11-04: the pointer to a pair's other half. Deliberately quiet - one line of small type, no border,
+   no chip - because it is a signpost to somewhere else on the page, not a claim about this setup. */
+.mech-pair{display:flex;gap:6px;align-items:baseline;flex-wrap:wrap;margin:7px 0 0;
+  font-size:11.5px;line-height:1.4;color:#5B6472}
+.mech-pair .pd{font-weight:800;letter-spacing:.06em;text-transform:uppercase;font-size:10px}
+.mech-pair .pd.d-long{color:var(--green-d)}.mech-pair .pd.d-short{color:var(--red-d)}
+.mech-pair .pw{color:#2B3340;font-weight:700}
 .mech-tick{font-family:"JetBrains Mono",monospace;font-size:10px;font-weight:700;letter-spacing:.04em;padding:3px 8px;border-radius:999px;border:1.5px solid var(--gray2);color:var(--gray)}
 .mech-tick.on{border-color:var(--green);color:var(--green-d);background:rgba(34,197,94,.08)}
 .mech-tick.stop{border-color:var(--red);color:var(--red-d);background:rgba(239,68,68,.08)}
@@ -2954,6 +2961,53 @@ load();setInterval(load,60000);
             || expiredBadgeHtml(expiredFor(asset, currentInstanceKeyFor(asset), side))
             || notTrackedBadgeHtml(notTrackedFor(asset, side));
           if (html) { var d = document.createElement('div'); d.innerHTML = html; if (pill && pill.parentNode) pill.parentNode.insertBefore(d.firstChild, pill.nextSibling); }
+          /* WHERE THE OTHER HALF OF THE PAIR WENT (2026-11-04, Angela on BTC: "it is buried and jumbled").
+             Chelsea publishes two sides, each resolves on its own evidence, and the board files each one in
+             whichever section its own state belongs to. That is right - but it means a reader looking for BTC
+             finds one card up top carrying a red "never triggered" warning and the other buried in Previous
+             Calls as a loss, with nothing on either saying the other exists. Each card was accurate and the
+             pair was unreadable.
+             This adds one quiet line naming the other side's state and the section holding it. It moves
+             nothing and claims nothing: both cards stay exactly where their own evidence puts them. */
+          try {
+            var oldPair = c.querySelector('.mech-pair'); if (oldPair) oldPair.remove();
+            var otherSide = side === 'long' ? 'short' : side === 'short' ? 'long' : null;
+            if (otherSide && feed && feed.assets && feed.assets[asset + '|' + otherSide.toUpperCase()]) {
+              /* A grid card carries its side in its own href (?asset=X&side=long), not in a data attribute -
+                 only Active Now tiles have data-side. Match the way this function already reads `side`. */
+              var mate = null;
+              Array.prototype.forEach.call(document.querySelectorAll('a.card, a.act-card'), function (x) {
+                if (mate || x === c) return;
+                var h = x.getAttribute('href') || '';
+                var ma = /[?&]asset=([^&]+)/.exec(h); if (!ma || decodeURIComponent(ma[1]).toUpperCase() !== asset) return;
+                var ms = /[?&]side=(long|short)/i.exec(h);
+                var xs = ms ? ms[1].toLowerCase() : (x.getAttribute('data-side') || '').toLowerCase();
+                if (xs === otherSide) mate = x;
+              });
+              var SECTION = { 'grid': "Today's Setups", 'grid-watching': 'Currently Watching',
+                              'grid-history': 'Previous Calls', 'active-now': 'Active Now' };
+              var where = null;
+              for (var n = mate; n && !where; n = n.parentElement) if (n.id && SECTION[n.id]) where = SECTION[n.id];
+              var mr = resolveCurrentState(asset, otherSide);
+              var word = mr ? mr.text
+                : (notTrackedFor(asset, otherSide) ? 'Not tracked'
+                  : (mate && /NOT A LIVE WATCH/.test(mate.innerText || '') ? 'Watching - no longer a live watch' : 'Watching'));
+              if (where || mr || mate) {
+                var pr = document.createElement('div');
+                pr.className = 'mech-pair';
+                var a1 = document.createElement('span');
+                a1.className = 'pd d-' + otherSide;
+                a1.textContent = (otherSide === 'long' ? '▲ ' : '▼ ') + otherSide.toUpperCase() + ' SIDE';
+                var a2 = document.createElement('span');
+                a2.innerHTML = '<span class="pw"></span>';
+                a2.querySelector('.pw').textContent = word;
+                pr.appendChild(a1); pr.appendChild(a2);
+                if (where) { var a3 = document.createElement('span'); a3.textContent = '· in ' + where; pr.appendChild(a3); }
+                var anchorEl = c.querySelector('.mech-row') || pill;
+                if (anchorEl && anchorEl.parentNode) anchorEl.parentNode.insertBefore(pr, anchorEl.nextSibling);
+              }
+            }
+          } catch (e) { /* a signpost is never worth breaking a card for */ }
           /* OPTION D: the strip goes under the state line, after the TP ladder badge. Removed and rebuilt
              each pass so it cannot double up when load() re-renders the card. */
           var oldStrip = c.querySelector('.mech-str-strip'); if (oldStrip) oldStrip.remove();
