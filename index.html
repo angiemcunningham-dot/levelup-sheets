@@ -92,7 +92,7 @@ a.card.is-both{border-color:var(--pink-line)}
 /* 2026-10-06 (Angela, explicit: real invalidation misses found on KAS/LINK/AAVE - price already closed past the
    stop level before ever triggering, with nothing surfacing it): a pre-trigger stop-breach flag, additive only,
    never changes a status or hides a card. */
-.stop-breach-flag{font-family:Archivo,sans-serif;font-weight:700;font-size:11.5px;letter-spacing:.01em;color:var(--red-d);background:rgba(239,68,68,.10);border:2px solid var(--red);border-radius:10px;padding:9px 12px;margin:0 0 10px;line-height:1.55}
+.stop-breach-flag,.cannot-trigger-flag{font-family:Archivo,sans-serif;font-weight:700;font-size:11.5px;letter-spacing:.01em;color:var(--red-d);background:rgba(239,68,68,.10);border:2px solid var(--red);border-radius:10px;padding:9px 12px;margin:0 0 10px;line-height:1.55}
 .stop-breach-flag b{font-weight:900;display:block;margin-bottom:3px;font-size:12px;letter-spacing:.03em;text-transform:uppercase}
 /* A setup whose stop was passed before it ever triggered: the headline number and the tier tag are no longer
    telling the truth about anything, so they stop shouting. Greyed and shrunk, never removed - the member can
@@ -174,6 +174,10 @@ a.rw-card:hover{border-style:solid;box-shadow:0 10px 24px rgba(255,149,0,.16)}
 .rw-tag{display:inline-block;margin:8px 0 6px;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:5px 11px;border-radius:999px;border:2px solid var(--orange);color:var(--orange-d);background:#FFF4E0}
 .rw-headline{font-size:13.5px;line-height:1.55;color:#3A2E18}
 .rw-foot{font-family:"JetBrains Mono";font-size:10.5px;color:var(--gray);margin-top:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+/* A setup whose stop was passed before it ever triggered: the headline number and the tier tag are no longer
+   telling the truth about anything, so they stop shouting. Greyed and shrunk, never removed - the member can
+   still see what the board was measuring, it just no longer reads as "nearly there". */
+a.att-card.ct-dead{border-color:var(--red);background:#fff}a.att-card.ct-dead .att-pct b{font-size:20px;color:var(--gray);text-decoration:line-through;text-decoration-thickness:2px}a.att-card.ct-dead .att-pct span{color:var(--gray)}a.att-card.ct-dead .att-tag{background:var(--gray);color:#fff;opacity:.55}a.att-card.ct-dead .att-bar{opacity:.3}a.att-card.ct-dead .att-meta{color:var(--gray)}
 </style><style id="att-css">
 /* ===== LIVE ATTENTION (staging addon) — presentation only; tiers map 1:1 to the monitor's attention bands ===== */
 /* Boxed (border + background wash), same treatment as Reset Watch and Active Now, so this section reads as its
@@ -2125,7 +2129,7 @@ load();setInterval(load,60000);
       });
     }
     function loadSheet() {
-      return fetch(CSV + (CSV.indexOf('?') > -1 ? '&' : '?') + 't=' + Date.now()).then(function (r) { return r.text(); }).then(function (t) { setups = C.buildAll(t); sheetErr = false; renderActive(); applyStopBreachFlags(); }).catch(function () { sheetErr = true; });
+      return fetch(CSV + (CSV.indexOf('?') > -1 ? '&' : '?') + 't=' + Date.now()).then(function (r) { return r.text(); }).then(function (t) { setups = C.buildAll(t); sheetErr = false; renderActive(); applyStopBreachFlags(); applyCannotTriggerPanels(); }).catch(function () { sheetErr = true; });
     }
     function loadPrices() {
       if (!setups) return Promise.resolve();
@@ -2605,6 +2609,60 @@ load();setInterval(load,60000);
       return '<div class="mech-row" title="Price closed through the published stop before this setup ever triggered, so it can no longer fire">'
         + '<span class="mech-tick">&#9675; CANNOT TRIGGER - STOP BROKEN BEFORE ENTRY</span>'
         + '</div>';
+    }
+    /* THE SAME WARNING THE OTHER DEAD CARDS GET, WHEN THE CLIENT-SIDE CHECK HAS NOT PRODUCED IT
+       (2026-11-05). applyStopBreachFlags() writes the full "Not a live watch" panel by fetching candles
+       and comparing them to the stop itself. On 2026-11-05 it produced that panel for ADA, DOGE, ONDO and
+       XRP but not for BTC - the one asset of the five with BOTH sides published that day, and the only one
+       the ENGINE had actually confirmed as invalidated. The clearest case got the quietest card.
+       Rather than guess further at that function's pair handling while the market was moving, this renders
+       the engine's own verdict at the same prominence, and only when the client-side panel is absent - so
+       a card never carries two versions of the same sentence. The engine is the better source anyway: it
+       is the thing that actually refuses to trigger the setup. */
+    var ctPassRunning = false;
+    function applyCannotTriggerPanels() {
+      /* RE-ENTRANCY GUARD. This runs from the same pass as applyStopBreachFlags, which is itself reached
+         from decorate(), which a MutationObserver re-triggers on childList changes - so a DOM write here
+         can call this function again before it has finished. That is the exact feedback loop this file
+         already documents for the stop-breach flag, and on 2026-11-05 a first cut of this function left
+         the live board unresponsive. Every write below is also no-op guarded, but the flag is the thing
+         that makes re-entry impossible rather than merely cheap. */
+      if (ctPassRunning) return;
+      ctPassRunning = true;
+      try {
+        Array.prototype.forEach.call(document.querySelectorAll('a.card, a.att-card'), function (c) {
+          var da = c.getAttribute('data-asset');
+          var cardAsset = da ? da.toUpperCase() : (function () {
+            var m = /[?&]asset=([^&]+)/.exec(c.getAttribute('href') || '');
+            return m ? decodeURIComponent(m[1]).toUpperCase() : null;
+          })();
+          if (!cardAsset) return;
+          var cardSide = (c.getAttribute('data-side') || '').toLowerCase();
+          if (cardSide !== 'long' && cardSide !== 'short') {
+            var sm = /[?&]side=(long|short)/i.exec(c.getAttribute('href') || '');
+            cardSide = sm ? sm[1].toLowerCase() : null;
+          }
+          var ct = cannotTriggerFor(cardAsset, cardSide);
+          var mine = c.querySelector('.cannot-trigger-flag');
+          if (!ct || c.querySelector('.stop-breach-flag')) { if (mine) mine.remove(); return; }
+          /* ITS OWN CLASS NAMES, SHARING ONLY THE CSS (2026-11-05, learned the hard way).
+             The first cut reused `stop-breach-flag` and `is-dead`. applyStopBreachFlags owns both: when its
+             own check says "no breach" it REMOVES them - and for a two-sided asset its check reads whichever
+             single side att-core kept, so for BTC it always said no breach and always removed them. This
+             pass then put them back, that mutation re-triggered decorate(), and the two functions tore the
+             same node up and down until the tab stopped responding. Distinct class names mean neither pass
+             can see, or undo, the other's work. */
+          try { c.className = (c.className || '').indexOf('ct-dead') < 0 ? (c.className + ' ct-dead') : c.className; } catch (e) {}
+          if (mine) return;
+          var el = document.createElement('div');
+          el.className = 'cannot-trigger-flag';
+          el.innerHTML = '<b>&#9888; Not a live watch</b>'
+            + ' — price closed through Chelsea&#39;s stop before this ever triggered, so it can no longer fire. '
+            + 'The distance-to-trigger shown here no longer means anything. Kept visible for the record, not as something to watch.';
+          if (c.firstChild) c.insertBefore(el, c.firstChild); else c.appendChild(el);
+        });
+      } catch (e) { if (window.console) console.warn('cannot-trigger panels skipped:', e); }
+      finally { ctPassRunning = false; }
     }
     function notTrackedBadgeHtml(x) {
       if (!x) return '';
@@ -3124,7 +3182,7 @@ load();setInterval(load,60000);
         // fires right after load()'s periodic #grid/#grid-watching rebuild wipes any card-level addition - relying
         // on att-ui's own independent 60s fetch cycle alone left the flag flickering out between rebuilds.
         // stopBreachCache (20-min TTL) keeps this cheap - almost always a cache hit, no extra network call.
-        if (window.__attention && window.__attention.applyStopBreachFlags) window.__attention.applyStopBreachFlags();
+        if (window.__attention && window.__attention.applyStopBreachFlags) window.__attention.applyStopBreachFlags(); applyCannotTriggerPanels();
         var hc = document.getElementById('hist-count'), histGridEl = document.getElementById('grid-history');
         if (hc && histGridEl) hc.textContent = ' (' + Array.prototype.filter.call(histGridEl.querySelectorAll('a.card'), function (c) { return c.style.display !== 'none'; }).length + ')';
         var note = feed ? ('Feed updated ' + fmtAgo(feed.generated_at) + (((Date.now() - Date.parse(feed.generated_at))) > STALE_MS ? ' (may be stale)' : '')) : '';
