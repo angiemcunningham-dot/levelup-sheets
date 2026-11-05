@@ -2585,6 +2585,27 @@ load();setInterval(load,60000);
     }
     /* The counterpart to expiredBadgeHtml(): one plain mark and no TP circles, because an empty ladder here
        would invite the reading that the targets were missed, when nothing was ever measured. */
+    /* A SETUP THAT CAN NO LONGER FIRE (2026-11-05, Angela: "market is dumping and the board is not
+       accurate"). The engine has refused to trigger these since 2026-10-12 - a 1H close through the
+       published stop before entry ends the setup, Chelsea's own rule - but it produces no terminal state,
+       so the card sat at "Watching" until the 24-hour window expired. On a falling morning that reads as a
+       live consideration for a trade that cannot happen. The feed now carries the fact; this reads it. */
+    function cannotTriggerFor(asset, side) {
+      if (!feed) return null;
+      var picked = feedEntryFor(asset, side); if (!picked) return null;
+      var a = picked.entry, lc = a.lifecycle;
+      if (!lc || lc.voided) return null;
+      if (lc.trigger && lc.trigger.reached_at) return null;
+      var cls = a.sheet_status && a.sheet_status.class;
+      if (cls && cls !== 'WATCHING' && cls !== 'NO_TRADE') return null;
+      return a.cannot_trigger || null;
+    }
+    function cannotTriggerBadgeHtml(x) {
+      if (!x) return '';
+      return '<div class="mech-row" title="Price closed through the published stop before this setup ever triggered, so it can no longer fire">'
+        + '<span class="mech-tick">&#9675; CANNOT TRIGGER - STOP BROKEN BEFORE ENTRY</span>'
+        + '</div>';
+    }
     function notTrackedBadgeHtml(x) {
       if (!x) return '';
       return '<div class="mech-row" title="The published levels are not on the same scale as this market, so none of them can be checked against price">'
@@ -2667,6 +2688,9 @@ load();setInterval(load,60000);
         /* 2026-11-03: a setup whose levels could not be measured is not a live consideration either, and
            its proximity number would be meaningless - distance to a trigger ten times off the market. */
         if (notTrackedFor(setup.asset)) return false;
+        /* 2026-11-05: and neither is one that can no longer fire - its distance to a trigger it can never
+           reach is not a number anybody should be ranking. */
+        if (cannotTriggerFor(setup.asset)) return false;
         return true;
       };
       window.LevelUpAttention.__mechWrapped = true;
@@ -2969,7 +2993,8 @@ load();setInterval(load,60000);
           }
           var html = badgeHtml(mechanicalFor(asset, currentInstanceKeyFor(asset), side))
             || expiredBadgeHtml(expiredFor(asset, currentInstanceKeyFor(asset), side))
-            || notTrackedBadgeHtml(notTrackedFor(asset, side));
+            || notTrackedBadgeHtml(notTrackedFor(asset, side))
+            || cannotTriggerBadgeHtml(cannotTriggerFor(asset, side));
           if (html) { var d = document.createElement('div'); d.innerHTML = html; if (pill && pill.parentNode) pill.parentNode.insertBefore(d.firstChild, pill.nextSibling); }
           /* WHERE THE OTHER HALF OF THE PAIR WENT (2026-11-04, Angela on BTC: "it is buried and jumbled").
              Chelsea publishes two sides, each resolves on its own evidence, and the board files each one in
@@ -3120,7 +3145,7 @@ load();setInterval(load,60000);
     load();
     setInterval(load, 60000);
     obs.observe(grid.parentNode, { childList: true, subtree: true });
-    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, currentInstanceKeyFor: currentInstanceKeyFor, resolveCurrentState: resolveCurrentState, directionFor: directionFor, decorate: decorate, decorateActiveNow: decorateActiveNow, coinEligible: coinEligible, badgeHtml: badgeHtml, expiredFor: expiredFor, expiredBadgeHtml: expiredBadgeHtml, strengthStripFor: strengthStripFor, ensureTodayNote: ensureTodayNote, notTrackedFor: notTrackedFor };   // test hook (read-only)
+    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, currentInstanceKeyFor: currentInstanceKeyFor, resolveCurrentState: resolveCurrentState, directionFor: directionFor, decorate: decorate, decorateActiveNow: decorateActiveNow, coinEligible: coinEligible, badgeHtml: badgeHtml, expiredFor: expiredFor, expiredBadgeHtml: expiredBadgeHtml, strengthStripFor: strengthStripFor, ensureTodayNote: ensureTodayNote, notTrackedFor: notTrackedFor, cannotTriggerFor: cannotTriggerFor };   // test hook (read-only)
   } catch (e) { if (window.console) console.warn('mechanical feed addon disabled:', e); }
 })();
 </script>
