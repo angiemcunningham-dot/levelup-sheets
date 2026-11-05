@@ -1308,8 +1308,9 @@ load();setInterval(load,60000);
  *   - LevelUpCore.buildAll / LevelUpCore.edges  (the shared parser the monitor uses; parity-tested against the deployed board)
  *   - the monitor's attention-band definitions from monitor/engine.js (BAND_NAMES, bandOrd, sidePre, distTo, and the
  *     "nearest not-yet-passed trigger, distance to its NEAR edge, 0 when inside the zone" rule).
- * The five one-line helpers below are byte-for-byte the engine's; test/attention.parity.test.js fails if they ever diverge
- * (it runs the real engine on every asset over a grid of prices and compares distance, band and inside/passed state).
+ * The four one-line helpers below are byte-for-byte the engine's; test/att-module.test.js (ATT-17) fails if they
+ * ever diverge, and ATT-4 pins every band and distance this module reports over a grid of prices on every asset.
+ * That suite runs this block unmodified out of the HTML, so it tests what the board serves, not a copy of it.
  *
  * Scope: mechanical price proximity to Chelsea's PUBLISHED trigger zone. It never says entered/triggered/valid and never
  * changes a status. Chelsea's confirmation rules (1H hold, MAs, retest) are not evaluated here.
@@ -1325,6 +1326,15 @@ load();setInterval(load,60000);
   const bandOrd = (d) => (d == null || !isFinite(d) ? null : d <= 0.5 ? 4 : d <= 1 ? 3 : d <= 2 ? 2 : d <= 3 ? 1 : 0);
   const sidePre = (p, e) => (e.pre === 'below' ? (p < e.near ? 'pre' : p <= e.far ? 'inside' : 'beyond') : (p > e.near ? 'pre' : p >= e.far ? 'inside' : 'beyond'));
   const distTo = (p, edge) => Math.abs(p - edge) / edge * 100;
+
+  /* A SHEET KEY IS NOT A TICKER (2026-11-05).
+     The shared parser keys a two-sided asset `BTC|LONG` / `BTC|SHORT`; the board's own embedded copy keys it
+     `BTC`. This module used to build exchange symbols out of whatever key it was handed, so the first time
+     the shared parser was switched in, every paired setup asked Binance for `BTC|LONGUSDT`, received nothing,
+     and rendered as "no live price" - LIVE ATTENTION went from four tiles to zero with no error anywhere.
+     From here on a ticker is derived from the ASSET and a price is returned under the KEY it was asked for.
+     Single-sided assets are untouched: assetOf('SOLO') === 'SOLO'. */
+  const assetOf = (k) => String(k).split('|')[0];
 
   /* Which statuses get a trigger-proximity card. The engine computes TRIGGER bands for WATCHING and NO_TRADE; the board
      shows students only WATCHING (a No Trade card is not actionable). Pass {includeNoTrade:true} to mirror the engine exactly. */
@@ -1394,9 +1404,12 @@ load();setInterval(load,60000);
      value the board banner uses). Nothing about trade state is recalculated or inferred from price. */
   function activeNow(setups) {
     const out = [];
-    Object.keys(setups).sort().forEach((a) => {
-      const s = setups[a]; const cls = s.status && s.status.class;
-      if (cls === 'ACTIVE_LONG' || cls === 'ACTIVE_SHORT') out.push({ asset: a, cls, side: cls === 'ACTIVE_LONG' ? 'long' : 'short', label: cls === 'ACTIVE_LONG' ? 'ACTIVE LONG' : 'ACTIVE SHORT', status_text: s.status.text, status_iso: s.status.iso || null, setup: s });
+    Object.keys(setups).sort().forEach((k) => {
+      const s = setups[k]; const cls = s.status && s.status.class;
+      /* `.key` indexes `setups` and the price map; `.asset` is the TICKER, which is what gets compared
+         against ticker lists and what a price is fetched for. They are the same string for a single-sided
+         asset and differ for a side of a pair - see assetOf() below. */
+      if (cls === 'ACTIVE_LONG' || cls === 'ACTIVE_SHORT') out.push({ key: k, asset: assetOf(k), cls, side: cls === 'ACTIVE_LONG' ? 'long' : 'short', label: cls === 'ACTIVE_LONG' ? 'ACTIVE LONG' : 'ACTIVE SHORT', status_text: s.status.text, status_iso: s.status.iso || null, setup: s });
     });
     return out;
   }
@@ -1411,21 +1424,27 @@ load();setInterval(load,60000);
 
   /* ---- prices (browser): Binance public batch (the monitor's primary), per-symbol retry, Coinbase per-asset fallback
          (the monitor's confirmation source). No CoinGecko, no keys. ---- */
-  async function fetchPrices(assets, fetchFn, symbolOverrides) {
+  async function fetchPrices(keys, fetchFn, symbolOverrides) {
     const g = typeof self !== 'undefined' ? self : globalThis;
     const f = fetchFn || (typeof g.fetch === 'function' ? g.fetch.bind(g) : null);
     if (!f) return { prices: {}, sources: {}, at: 0 };
     const ov = symbolOverrides || {};
     const out = {}; const src = {};
-    const sym = (a) => (ov[a] && ov[a].binance) || (a + 'USDT');
+    const sym = (k) => { const a = assetOf(k); return (ov[a] && ov[a].binance) || (a + 'USDT'); };
+    /* One entry per distinct ASSET, remembering every key that wants it: a two-sided asset therefore costs
+       one request instead of two, and both of its sides receive the same price. */
+    const want = []; const keysFor = {};
+    for (const k of keys) { const a = assetOf(k); if (!keysFor[a]) { keysFor[a] = []; want.push(a); } keysFor[a].push(k); }
+    const fill = (a, p, s) => { if (p > 0) keysFor[a].forEach((k) => { out[k] = p; src[k] = s; }); };
+    const priced = (a) => out[keysFor[a][0]] > 0;
     try {
-      const url = 'https://data-api.binance.vision/api/v3/ticker/price?symbols=' + encodeURIComponent(JSON.stringify(assets.map(sym)));
-      const r = await f(url); if (r.ok) { const j = await r.json(); const m = {}; j.forEach((x) => { m[x.symbol] = parseFloat(x.price); }); assets.forEach((a) => { const p = m[sym(a)]; if (p > 0) { out[a] = p; src[a] = 'binance'; } }); }
+      const url = 'https://data-api.binance.vision/api/v3/ticker/price?symbols=' + encodeURIComponent(JSON.stringify(want.map(sym)));
+      const r = await f(url); if (r.ok) { const j = await r.json(); const m = {}; j.forEach((x) => { m[x.symbol] = parseFloat(x.price); }); want.forEach((a) => { fill(a, m[sym(a)], 'binance'); }); }
     } catch (e) { /* fall through to per-asset */ }
-    for (const a of assets) {
-      if (out[a]) continue;
-      try { const r = await f('https://data-api.binance.vision/api/v3/ticker/price?symbol=' + sym(a)); if (r.ok) { const p = parseFloat((await r.json()).price); if (p > 0) { out[a] = p; src[a] = 'binance'; continue; } } } catch (e) { /* next */ }
-      try { const cb = (ov[a] && ov[a].coinbase) || (a + '-USD'); const r = await f('https://api.exchange.coinbase.com/products/' + cb + '/ticker'); if (r.ok) { const p = parseFloat((await r.json()).price); if (p > 0) { out[a] = p; src[a] = 'coinbase'; } } } catch (e) { /* unavailable */ }
+    for (const a of want) {
+      if (priced(a)) continue;
+      try { const r = await f('https://data-api.binance.vision/api/v3/ticker/price?symbol=' + sym(a)); if (r.ok) { const p = parseFloat((await r.json()).price); if (p > 0) { fill(a, p, 'binance'); continue; } } } catch (e) { /* next */ }
+      try { const cb = (ov[a] && ov[a].coinbase) || (a + '-USD'); const r = await f('https://api.exchange.coinbase.com/products/' + cb + '/ticker'); if (r.ok) { const p = parseFloat((await r.json()).price); if (p > 0) { fill(a, p, 'coinbase'); } } } catch (e) { /* unavailable */ }
     }
     return { prices: out, sources: src, at: Date.now() };
   }
