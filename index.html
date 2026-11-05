@@ -2125,7 +2125,7 @@ load();setInterval(load,60000);
       });
     }
     function loadSheet() {
-      return fetch(CSV + (CSV.indexOf('?') > -1 ? '&' : '?') + 't=' + Date.now()).then(function (r) { return r.text(); }).then(function (t) { setups = C.buildAll(t); sheetErr = false; renderActive(); applyStopBreachFlags(); applyCannotTriggerPanels(); }).catch(function () { sheetErr = true; });
+      return fetch(CSV + (CSV.indexOf('?') > -1 ? '&' : '?') + 't=' + Date.now()).then(function (r) { return r.text(); }).then(function (t) { setups = C.buildAll(t); sheetErr = false; renderActive(); applyStopBreachFlags(); }).catch(function () { sheetErr = true; });
     }
     function loadPrices() {
       if (!setups) return Promise.resolve();
@@ -2605,43 +2605,6 @@ load();setInterval(load,60000);
       return '<div class="mech-row" title="Price closed through the published stop before this setup ever triggered, so it can no longer fire">'
         + '<span class="mech-tick">&#9675; CANNOT TRIGGER - STOP BROKEN BEFORE ENTRY</span>'
         + '</div>';
-    }
-    /* THE SAME WARNING THE OTHER DEAD CARDS GET, WHEN THE CLIENT-SIDE CHECK HAS NOT PRODUCED IT
-       (2026-11-05). applyStopBreachFlags() writes the full "Not a live watch" panel by fetching candles
-       and comparing them to the stop itself. On 2026-11-05 it produced that panel for ADA, DOGE, ONDO and
-       XRP but not for BTC - the one asset of the five with BOTH sides published that day, and the only one
-       the ENGINE had actually confirmed as invalidated. The clearest case got the quietest card.
-       Rather than guess further at that function's pair handling while the market was moving, this renders
-       the engine's own verdict at the same prominence, and only when the client-side panel is absent - so
-       a card never carries two versions of the same sentence. The engine is the better source anyway: it
-       is the thing that actually refuses to trigger the setup. */
-    function applyCannotTriggerPanels() {
-      try {
-        Array.prototype.forEach.call(document.querySelectorAll('a.card, a.att-card'), function (c) {
-          var da = c.getAttribute('data-asset');
-          var cardAsset = da ? da.toUpperCase() : (function () {
-            var m = /[?&]asset=([^&]+)/.exec(c.getAttribute('href') || '');
-            return m ? decodeURIComponent(m[1]).toUpperCase() : null;
-          })();
-          if (!cardAsset) return;
-          var cardSide = (c.getAttribute('data-side') || '').toLowerCase();
-          if (cardSide !== 'long' && cardSide !== 'short') {
-            var sm = /[?&]side=(long|short)/i.exec(c.getAttribute('href') || '');
-            cardSide = sm ? sm[1].toLowerCase() : null;
-          }
-          var ct = cannotTriggerFor(cardAsset, cardSide);
-          var mine = c.querySelector('.cannot-trigger-flag');
-          if (!ct || c.querySelector('.stop-breach-flag')) { if (mine) mine.remove(); return; }
-          try { c.className = (c.className || '').indexOf('is-dead') < 0 ? (c.className + ' is-dead') : c.className; } catch (e) {}
-          if (mine) return;
-          var el = document.createElement('div');
-          el.className = 'stop-breach-flag cannot-trigger-flag';
-          el.innerHTML = '<b>&#9888; Not a live watch</b>'
-            + ' — price closed through Chelsea&#39;s stop before this ever triggered, so it can no longer fire. '
-            + 'The distance-to-trigger shown here no longer means anything. Kept visible for the record, not as something to watch.';
-          if (c.firstChild) c.insertBefore(el, c.firstChild); else c.appendChild(el);
-        });
-      } catch (e) { if (window.console) console.warn('cannot-trigger panels skipped:', e); }
     }
     function notTrackedBadgeHtml(x) {
       if (!x) return '';
@@ -3161,7 +3124,7 @@ load();setInterval(load,60000);
         // fires right after load()'s periodic #grid/#grid-watching rebuild wipes any card-level addition - relying
         // on att-ui's own independent 60s fetch cycle alone left the flag flickering out between rebuilds.
         // stopBreachCache (20-min TTL) keeps this cheap - almost always a cache hit, no extra network call.
-        if (window.__attention && window.__attention.applyStopBreachFlags) window.__attention.applyStopBreachFlags(); applyCannotTriggerPanels();
+        if (window.__attention && window.__attention.applyStopBreachFlags) window.__attention.applyStopBreachFlags();
         var hc = document.getElementById('hist-count'), histGridEl = document.getElementById('grid-history');
         if (hc && histGridEl) hc.textContent = ' (' + Array.prototype.filter.call(histGridEl.querySelectorAll('a.card'), function (c) { return c.style.display !== 'none'; }).length + ')';
         var note = feed ? ('Feed updated ' + fmtAgo(feed.generated_at) + (((Date.now() - Date.parse(feed.generated_at))) > STALE_MS ? ' (may be stale)' : '')) : '';
