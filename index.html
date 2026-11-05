@@ -2688,9 +2688,14 @@ load();setInterval(load,60000);
         /* 2026-11-03: a setup whose levels could not be measured is not a live consideration either, and
            its proximity number would be meaningless - distance to a trigger ten times off the market. */
         if (notTrackedFor(setup.asset)) return false;
-        /* 2026-11-05: and neither is one that can no longer fire - its distance to a trigger it can never
-           reach is not a number anybody should be ranking. */
-        if (cannotTriggerFor(setup.asset)) return false;
+        /* 2026-11-05: deliberately NOT excluded here, though the first cut of this did exclude it.
+           This board already had a better answer than a badge: the attention pass below marks such a card
+           `is-dead`, mutes its distance-to-trigger, and writes "Not a live watch - this never triggered,
+           and price has since closed past Chelsea's stop" across the top of it (2026-10-21, Angela). That
+           is exactly the right thing to say, and dropping the setup from this list removed it. BTC on
+           2026-11-05 ended up the ONLY one of five dead longs without the warning, because it was the only
+           one the engine had confirmed - the clearest case got the quietest card. The badge is additive;
+           it does not replace that panel. */
         return true;
       };
       window.LevelUpAttention.__mechWrapped = true;
