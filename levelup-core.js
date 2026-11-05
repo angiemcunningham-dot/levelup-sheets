@@ -770,6 +770,17 @@
     return out;
   }
 
+  /* ---------------- collection keys ----------------
+
+     `buildAll` keys a two-sided asset `AVAX|LONG` / `AVAX|SHORT` and a single-sided one by its bare symbol.
+     Consumers therefore have to move between a COLLECTION KEY and the ASSET it belongs to, and doing that by
+     hand is how the board came to build the exchange symbol `BTC|LONGUSDT` and lose every paired price. These
+     three are the only sanctioned way to do it. */
+  const KEY_SEP = '|';
+  const assetOf = (key) => String(key).split(KEY_SEP)[0];
+  const sideOf = (key) => { const p = String(key).split(KEY_SEP); return p[1] ? p[1].toLowerCase() : null; };
+  const keyOf = (asset, side) => (side ? String(asset).toUpperCase() + KEY_SEP + String(side).toUpperCase() : String(asset).toUpperCase());
+
   function buildAll(csvText) {
     const rows = loadRows(csvText); const by = groupBySetup(rows); const out = {};
     Object.keys(by).sort().forEach((k) => { out[k] = buildSetup(by[k].asset, by[k].rows); });
@@ -783,9 +794,67 @@
     return out;
   }
 
+  /*
+   * THE BOARD'S SHAPE, FROM THIS PARSE (2026-11-05).
+   *
+   * The board pages carried their own copy of this parser for weeks, hand-resynced on notice, and the copies
+   * drifted in both directions. Every incident report since 2026-10-09 has asked for one parser: *"this is
+   * the third time a mismatched resync has caused a real miss (LINK, SHIB, now ZRO/INJ). There's no automated
+   * check that the two copies agree."* Measured on the live sheet on 2026-11-05 the drift had reached:
+   *
+   *   - WRITTEN_INVALIDATION read on 46 of 70 entries here and on none of them there, and
+   *   - QNT, whose direction this parser resolves to long and the board's copy calls ambiguous. That changes
+   *     QNT's level fingerprint, so the board computed the instance key
+   *     `QNT|1793353172000|043f8a5f…` while the feed - written by THIS parser - carried `…|0ced4504…`.
+   *     Confirmed live: `mechanicalFor('QNT', …)` returned null, so QNT's mechanical overlay could not
+   *     resolve at all. The board's parser disagreed with the feed on exactly that one asset; this one agrees
+   *     on all 70.
+   *
+   * The ONLY thing the board needed its own copy for is the collection key. It keys every asset by its bare
+   * symbol and hangs a two-sided asset's two builds off `.sides`, because its cards, its pair rendering and
+   * its mechanical overlay are all written against that shape. That is a view concern, not a parsing one, so
+   * it is produced here from this parse rather than by keeping a second parser alive.
+   *
+   * The pair rule is `groupBySetup`'s - the same published-within-the-window rule, not a copy of it - and on
+   * the live sheet it names the same twelve paired assets the board's `pairSides` did.
+   */
+  function buildAllByAsset(csvText) {
+    const rows = loadRows(csvText);
+    const by = groupByAsset(rows);
+    const bySetup = groupBySetup(rows);
+    const out = {};
+    Object.keys(by).sort().forEach((a) => {
+      const entry = buildSetup(a, by[a]);
+      const sideKeys = Object.keys(bySetup).filter((k) => assetOf(k) === a && sideOf(k)).sort();
+      if (sideKeys.length > 1) {
+        /* Both sides, each built from its OWN rows, under the same asset key. Every side carries the
+           setup_key the monitor and the feed use, so the render and the mechanical overlay line up. */
+        entry.sides = {};
+        sideKeys.forEach((k) => {
+          const side = buildSetup(a, bySetup[k].rows);
+          side.setup_key = k;
+          side.paired_with = sideKeys.find((o) => o !== k) || null;
+          entry.sides[sideOf(k)] = side;
+        });
+        entry.paired = true;
+        /* Which side the asset-level entry itself speaks for - the board shows it when it has no reason to
+           pick a side. A pair has no primary, so this is whatever the combined parse resolved, or null. */
+        entry.primary_side = (entry.direction && entry.direction.value) || null;
+        entry.setup_key = a;
+        entry.paired_with = null;
+      } else {
+        entry.setup_key = sideKeys.length === 1 ? sideKeys[0] : a;
+        entry.paired_with = null;
+      }
+      out[a] = entry;
+    });
+    return out;
+  }
+
   return {
     hash, parseCSV, loadRows, rowRef, rowId, F, srcType, isPC, hasLevels, statusClass,
     parseSheetTimestamp, scanNumbers, firstZone, parseTrigger, parseTargets, parseStop, parseSafety,
-    extractLevels, levelFingerprint, edges, groupByAsset, groupBySetup, directionProbe, selectRows, buildSetup, buildAll,
+    extractLevels, levelFingerprint, edges, groupByAsset, groupBySetup, directionProbe, selectRows, buildSetup,
+    buildAll, buildAllByAsset, assetOf, sideOf, keyOf, KEY_SEP,
   };
 });
