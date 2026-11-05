@@ -1873,6 +1873,16 @@ load();setInterval(load,60000);
           var m = mf.mechanicalFor(it.asset, mf.currentInstanceKeyFor(it.asset), it.side);
           return !(m && (m.stopped || m.complete));
         });
+        /* A TRADE THE BOARD CANNOT EVER END IS NOT A LIVE TRADE (2026-11-05, Angela, PEPE: "we need to fix
+           it"). PEPE|SHORT triggered on 10/22 with an unusable "$0.00" stop and, at the time, no readable
+           invalidation either - so no price existed at which this board could ever say it had finished.
+           It sat right here for fourteen days, beside genuinely live trades, looking exactly like one.
+           The engine now says so in the feed (not_tracked NO_TERMINAL_LEVEL) rather than leaving the board
+           to infer it. The card is not deleted - Chelsea published it and decorate() still places it in
+           the grid with its reason - it simply stops being presented as something happening now. */
+        if (mf.notTrackedFor) {
+          list = list.filter(function (it) { return !mf.notTrackedFor(it.asset, it.side); });
+        }
         /* ONE ENTRY PER SIDE (2026-10-28, Angela: "not seeing two tiles yet still on one card").
            The grids render per side; this section did not, because A.activeNow() keys by asset and the
            backfill above adds one entry per asset too. A two-sided asset therefore arrived here as a single
@@ -3110,7 +3120,7 @@ load();setInterval(load,60000);
     load();
     setInterval(load, 60000);
     obs.observe(grid.parentNode, { childList: true, subtree: true });
-    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, currentInstanceKeyFor: currentInstanceKeyFor, resolveCurrentState: resolveCurrentState, directionFor: directionFor, decorate: decorate, decorateActiveNow: decorateActiveNow, coinEligible: coinEligible, badgeHtml: badgeHtml, expiredFor: expiredFor, expiredBadgeHtml: expiredBadgeHtml, strengthStripFor: strengthStripFor, ensureTodayNote: ensureTodayNote };   // test hook (read-only)
+    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, currentInstanceKeyFor: currentInstanceKeyFor, resolveCurrentState: resolveCurrentState, directionFor: directionFor, decorate: decorate, decorateActiveNow: decorateActiveNow, coinEligible: coinEligible, badgeHtml: badgeHtml, expiredFor: expiredFor, expiredBadgeHtml: expiredBadgeHtml, strengthStripFor: strengthStripFor, ensureTodayNote: ensureTodayNote, notTrackedFor: notTrackedFor };   // test hook (read-only)
   } catch (e) { if (window.console) console.warn('mechanical feed addon disabled:', e); }
 })();
 </script>
