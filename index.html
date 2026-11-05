@@ -1996,48 +1996,13 @@ load();setInterval(load,60000);
        status, hides a card, or moves it to History; that stays a human (Chelsea/Angela) decision, same "surface
        facts, never invent a status" rule every other mechanical signal on this page follows. Client-side only -
        never touches the frozen monitor engine or the Sheet. */
-    var stopBreachCache = {};   // key: asset|publishedMs|fingerprint -> {breached, threshold, checkedAt}
-    var STOP_BREACH_RECHECK_MS = 20 * 60000;
-    function stopBreachKeyFor(asset, s) {
-      if (!s || !s.fingerprint) return null;
-      var sr = s.setup_row || {};
-      var itsPart = (sr.utcMs !== null && sr.utcMs !== undefined) ? String(sr.utcMs) : 'raw:' + String(sr.ts_text || '').trim().replace(/\s+/g, ' ').toLowerCase();
-      return asset + '|' + itsPart + '|' + s.fingerprint;
-    }
-    function fetchKlinesCloses(symbol, sinceMs) {
-      var url = 'https://data-api.binance.vision/api/v3/klines?symbol=' + symbol + '&interval=1h&startTime=' + sinceMs + '&limit=1000';
-      return fetch(url).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-        .then(function (kl) { return kl.map(function (k) { return parseFloat(k[4]); }); });
-    }
-    function fetchKlinesKrakenCloses(asset, sinceMs) {
-      var url = 'https://api.kraken.com/0/public/OHLC?pair=' + asset + 'USD&interval=60&since=' + Math.floor(sinceMs / 1000);
-      return fetch(url).then(function (r) { return r.ok ? r.json() : null; })
-        .then(function (j) {
-          if (!j || (j.error && j.error.length) || !j.result) return [];
-          var key = Object.keys(j.result).filter(function (k) { return k !== 'last'; })[0];
-          var candles = key ? j.result[key] : [];
-          return candles.map(function (c) { return parseFloat(c[4]); });
-        }).catch(function () { return []; });
-    }
-    function checkStopBreach(asset, s) {
-      var key = stopBreachKeyFor(asset, s);
-      if (!key) return Promise.resolve(null);
-      var cached = stopBreachCache[key];
-      if (cached && (Date.now() - cached.checkedAt) < STOP_BREACH_RECHECK_MS) return Promise.resolve(cached);
-      var dir = s.direction && s.direction.value; if (!dir) return Promise.resolve(null);
-      var stopLevel = (s.levels || []).filter(function (l) { return l.kind === 'stop' && l.state === 'present' && l.zone; })[0];
-      if (!stopLevel) return Promise.resolve(null);
-      var sr = s.setup_row || {};
-      var sinceMs = sr.utcMs; if (!sinceMs) return Promise.resolve(null);
-      var threshold = dir === 'short' ? stopLevel.zone.high : stopLevel.zone.low;
-      return fetchKlinesCloses(asset + 'USDT', sinceMs).catch(function () { return fetchKlinesKrakenCloses(asset, sinceMs); })
-        .then(function (closes) {
-          var breach = (closes || []).some(function (c) { return dir === 'short' ? c >= threshold : c <= threshold; });
-          var result = { breached: breach, threshold: threshold, checkedAt: Date.now() };
-          stopBreachCache[key] = result;
-          return result;
-        }).catch(function () { return null; });
-    }
+
+    /* REMOVED 2026-11-05: stopBreachCache, STOP_BREACH_RECHECK_MS, stopBreachKeyFor, checkStopBreach,
+       fetchKlinesCloses and fetchKlinesKrakenCloses. They fetched up to 1000 hourly candles per asset in
+       every member's browser, from Binance with a Kraken fallback, to answer a question the engine now
+       answers once, server-side, per side, and publishes as `stop_breached`. Keeping them as a second
+       opinion is exactly how three implementations of one question came to exist - see the 2026-10-13
+       deep review, which asked for them to be unified. The verdict is read in applyStopBreachFlags. */
     function applyStopBreachFlags() {
       if (!setups) return;
       var mf = window.__mechFeed;
@@ -2055,8 +2020,11 @@ load();setInterval(load,60000);
         // cover this (resolveCurrentState()/mechanicalFor() above), so skip to avoid a redundant/confusing flag.
         var mech = mf && mf.mechanicalFor(asset, mf.currentInstanceKeyFor(asset), keySide);
         if (mech && mech.triggered) return;
-        checkStopBreach(asset, s).then(function (res) {
-          var shouldShow = !!(res && res.breached);
+        /* 2026-11-05: the verdict is read, not computed. Resolved per CARD below rather than per Sheet
+           key, because the key the parser hands us is asset-only for a pair and that is exactly the bug
+           this replaces. Kept inside a resolved Promise so the DOM pass below is untouched - it ran
+           asynchronously before and the MutationObserver timing around it is load-bearing. */
+        Promise.resolve(null).then(function () {
           // 2026-10-10 (Angela-reported, RENDER case): a Watching setup close to its real mechanical trigger
           // is suppressed from #grid/#grid-watching (hidePass(), above) and shown ONLY as a Live Attention
           // "a.att-card" tile instead - a completely different element (own class, own markup, matched by
@@ -2082,6 +2050,10 @@ load();setInterval(load,60000);
             }
             /* A side-specific warning never reaches the other side's tile. */
             if (keySide && cardSide && cardSide !== keySide) return;
+            /* THIS card's own side, from the engine. Null side (a single-sided asset) resolves the way it
+               always did; a pair now gets its own answer per tile instead of sharing one. */
+            var res = mf && mf.stopBreachedFor ? mf.stopBreachedFor(cardAsset, cardSide) : null;
+            var shouldShow = !!res;
             var old = c.querySelector('.stop-breach-flag');
             /* AND the card is re-tested on its own evidence, whatever the asset-level gate above concluded.
                "This never triggered" on a trade that triggered and took every target is the worst thing this
@@ -2116,7 +2088,7 @@ load();setInterval(load,60000);
                  is sitting on, and asks nothing of the member. Still flags only - it never changes a status,
                  never removes a setup, and nothing Chelsea published disappears. */
               el.innerHTML = '<b>⚠ Not a live watch</b>' + ' — this never triggered, and price has since closed past '
-                + 'Chelsea&#39;s stop (' + A.fmtPrice(res.threshold) + '). The level it was built on is gone, so the '
+                + 'Chelsea&#39;s stop (' + A.fmtPrice(res.level) + '). The level it was built on is gone, so the '
                 + 'distance-to-trigger shown here no longer means anything. Kept visible for the record, not as something to watch.';
               /* FIRST in the card, above the percentage and the tier label. A member reads top-down, and
                  the fact that a setup is dead has to arrive before the number saying how close it is. */
@@ -2594,6 +2566,25 @@ load();setInterval(load,60000);
        published stop before entry ends the setup, Chelsea's own rule - but it produces no terminal state,
        so the card sat at "Watching" until the 24-hour window expired. On a falling morning that reads as a
        live consideration for a trade that cannot happen. The feed now carries the fact; this reads it. */
+    /* THE PUBLISHED ANSWER TO "DID PRICE CLOSE INTO CHELSEA'S STOP BEFORE THIS EVER TRIGGERED"
+       (2026-11-05). This page used to work it out itself - fetch 1000 hourly candles in the member's
+       browser, parse the stop out of the Sheet, compare, cache for 20 minutes. The 2026-10-13 deep review
+       listed that as one of three divergent implementations of the same question and asked for one source
+       of truth; the engine now computes it server-side, once, per SIDE, and publishes it.
+       Side matters: the browser version keyed by ASSET, so for a two-sided pair it judged both cards
+       against whichever single side the board's parser kept. On 2026-11-05 that meant BTC's long was
+       measured against its short's stop, which in a falling market can never fire, so the one card most
+       obviously dead was the only one of five without a warning. */
+    function stopBreachedFor(asset, side) {
+      if (!feed) return null;
+      var picked = feedEntryFor(asset, side); if (!picked) return null;
+      var a = picked.entry, lc = a.lifecycle;
+      if (!lc || lc.voided) return null;
+      if (lc.trigger && lc.trigger.reached_at) return null;
+      var cls = a.sheet_status && a.sheet_status.class;
+      if (cls && cls !== 'WATCHING' && cls !== 'NO_TRADE') return null;
+      return a.stop_breached || null;
+    }
     function cannotTriggerFor(asset, side) {
       if (!feed) return null;
       var picked = feedEntryFor(asset, side); if (!picked) return null;
@@ -3181,7 +3172,8 @@ load();setInterval(load,60000);
         // window.__attention) every time this runs, since THIS function's own MutationObserver already reliably
         // fires right after load()'s periodic #grid/#grid-watching rebuild wipes any card-level addition - relying
         // on att-ui's own independent 60s fetch cycle alone left the flag flickering out between rebuilds.
-        // stopBreachCache (20-min TTL) keeps this cheap - almost always a cache hit, no extra network call.
+        // 2026-11-05: cheap for a better reason now - the verdict is a field on the feed this page has
+        // already loaded, so re-applying it costs a lookup rather than a cached candle fetch.
         if (window.__attention && window.__attention.applyStopBreachFlags) window.__attention.applyStopBreachFlags(); applyCannotTriggerPanels();
         var hc = document.getElementById('hist-count'), histGridEl = document.getElementById('grid-history');
         if (hc && histGridEl) hc.textContent = ' (' + Array.prototype.filter.call(histGridEl.querySelectorAll('a.card'), function (c) { return c.style.display !== 'none'; }).length + ')';
@@ -3208,7 +3200,7 @@ load();setInterval(load,60000);
     load();
     setInterval(load, 60000);
     obs.observe(grid.parentNode, { childList: true, subtree: true });
-    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, currentInstanceKeyFor: currentInstanceKeyFor, resolveCurrentState: resolveCurrentState, directionFor: directionFor, decorate: decorate, decorateActiveNow: decorateActiveNow, coinEligible: coinEligible, badgeHtml: badgeHtml, expiredFor: expiredFor, expiredBadgeHtml: expiredBadgeHtml, strengthStripFor: strengthStripFor, ensureTodayNote: ensureTodayNote, notTrackedFor: notTrackedFor, cannotTriggerFor: cannotTriggerFor };   // test hook (read-only)
+    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, currentInstanceKeyFor: currentInstanceKeyFor, resolveCurrentState: resolveCurrentState, directionFor: directionFor, decorate: decorate, decorateActiveNow: decorateActiveNow, coinEligible: coinEligible, badgeHtml: badgeHtml, expiredFor: expiredFor, expiredBadgeHtml: expiredBadgeHtml, strengthStripFor: strengthStripFor, ensureTodayNote: ensureTodayNote, notTrackedFor: notTrackedFor, cannotTriggerFor: cannotTriggerFor, stopBreachedFor: stopBreachedFor };   // test hook (read-only)
   } catch (e) { if (window.console) console.warn('mechanical feed addon disabled:', e); }
 })();
 </script>
