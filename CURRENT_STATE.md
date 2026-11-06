@@ -32,7 +32,7 @@ Chelsea's setups flow one way into the Sheet, then get read twice: once by the m
 | `monitor/public-feed.js` | monitor repo | What the board is allowed to show |
 | `mech-feed` script | inside `index.html` AND `sheet.html` | Re-decides side, state and warnings in the browser (the problem) |
 
-**Working folders.** Use `C:\dev\levelup-sheets` and `C:\dev\monitor-task\repo`. `C:\dev\monitor-task\sheets` is the runner's own clone; do not work in it. The OneDrive `LevelUp_Monitor_Rebuild` copy is 47 commits behind; do not use it.
+**Working folders.** Do all monitor code work in `C:\dev\work\levelup-trade-monitor`. NEVER edit in `C:\dev\monitor-task\repo` or `C:\dev\monitor-task\sheets`; the 15-minute runner resets those. Board work goes in `C:\dev\levelup-sheets`. The OneDrive `LevelUp_Monitor_Rebuild` copy is 47 commits behind; do not use it.
 
 ## What runs on a schedule
 
@@ -51,12 +51,12 @@ The goal is exactly one scheduled writer: the 15-minute task on Ang's PC. Two ot
 
 These are product rules, not code questions. Until each has one written answer, code built around it will keep looping. Write the answer and the date next to each one.
 
-- [ ] **Diamond rule.** When one side of a pair is invalidated, can the other side still trigger later? Five longs (ADA, BTC, DOGE, ONDO, XRP) are stuck at "cannot trigger" with no way back. Answer:
-- [x] **Auto-return (Chelsea, confirmed 2026-11-05).** When one side of a pair is invalidated or stopped, the OPPOSITE side goes back to Watching once price is within 6% of its trigger price (e.g. $100 trigger: $94 to $106). Watching is NOT triggered. The trigger is ALWAYS a 1-hour candle OPENING above (long) or below (short) the Simple and Smooth moving averages. A stopped trade is over and never comes back. (Supersedes the 10% figure asked about on 2026-10-29.)
-- [ ] **Written invalidation.** Should Chelsea's written invalidation line govern the strength meter everywhere? Measured cost: 9 cards change. Answer:
-- [ ] **"Not a live watch" wording.** Two different sentences are live (`index.html` lines 1477 and 2046). Pick one. Answer:
-- [ ] **Split pair.** When one side finishes and the other is live, do the two cards stay together or sit in separate sections? Answer:
-- [ ] **Old ChatGPT prompt** (2026-10-23). It tells Chelsea's AI to join wording with "+" or "then", which breaks the parser. Confirm it was never sent, or correct it.
+- [ ] **Diamond rule (Chelsea, 2026-11-05) - PARTLY ANSWERED.** Each side of a pair stays live until it triggers, or its own stop or expiry hits; one side being invalidated never ends the other. **STILL OPEN:** does a side whose own stop was breached BEFORE it ever triggered (the ADA, BTC, DOGE, ONDO and XRP longs) come back to Watching at 6%? Until that is answered, those five stay as they are.
+- [x] **Auto-return (Chelsea, confirmed 2026-11-05).** When one side of a pair is invalidated or stopped, the OPPOSITE side goes back to Watching once price is within 6% of its trigger price (e.g. $100 trigger: $94 to $106). Watching is NOT triggered. The trigger is ALWAYS a 1-hour candle OPENING above (long) or below (short) the Simple and Smooth moving averages. A stopped trade is over and never comes back. (Supersedes the 10% figure asked about on 2026-10-29.) Verified 2026-11-05: engine already tests the 1H candle OPEN (monitor/engine.js:399, :58). No change needed.
+- [x] **Written invalidation (Chelsea, 2026-11-05).** NO - it is a note only and does not override the strength meter. Add a visible warning on the card when price is past her written invalidation.
+- [x] **"Not a live watch" wording (Chelsea, 2026-11-05).** One sentence, exactly: "This setup never triggered and is no longer valid. Shown for the record only - not something to watch." (Replaces both sentences currently live at `index.html` lines 1477 and 2046.)
+- [x] **Split pair (Chelsea, 2026-11-05).** The two cards STAY TOGETHER - it shows students the "if this, then that".
+- [x] **Old ChatGPT prompt (Chelsea, 2026-11-05).** Never used. No action.
 
 ## Known problems, ranked
 
@@ -81,7 +81,7 @@ Do these in order. Each step is done only when its check passes, and the result 
 
 - [x] **0. Stop extra writers.** Cloudflare dispatcher cron removed on 2026-11-05.
 - [x] **0b. Remove the `monitor-shadow` hourly cron.** monitor-shadow hourly cron removed 2026-11-05 (d68b515); tests now assert no schedule.
-- [ ] **0c. Give Claude Code its own working folder.** The runner runs git reset --hard in C:\dev\monitor-task\repo, wiping uncommitted work. Done when Claude Code works in a separate clone the runner never touches.
+- [x] **0c. Give Claude Code its own working folder.** Done 2026-11-05: `C:\dev\work\levelup-trade-monitor` is a separate clone of levelup-trade-monitor that the runner never touches. All monitor code work happens there.
 - [ ] **0d. Review the 2026-11-04 stash in monitor-task\repo.** Done when it is kept or dropped.
 - [ ] **0e. config/monitor.config.json target_cadence_minutes is still 60; real cadence is 15.** Decide and align (affects the staleness check).
 - [ ] **1. Answer the open decisions** (section above). Done when every box there has a written answer and date.
