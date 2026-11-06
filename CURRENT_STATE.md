@@ -2,7 +2,7 @@
 
 Nov 5, 2026 · @Ang
 
-**Next session starts with: Step 3 staging PLAN. Then step 4 build once Chelsea supplies the state words.**
+**Next session starts with: Review publish-staging.js diff with Ang, then run it once and open the preview link.**
 
 The board works, but the same decisions are made in too many places, so every fix moves the bug somewhere else. The fix is one decider (the monitor) and one doc (this one). This doc replaces all 449 earlier handoffs.
 
@@ -84,6 +84,7 @@ The root cause is one decision made in several places that drift apart. Problems
 | 10 | Intake posts sometimes arrive slowly | intake app to Sheet | Not urgent; investigate after the fix plan |
 | 11 | Monitor replay gate read the board working folder’s local HEAD; fixed 2026-11-05 by comparing to origin/main | `scripts/sync-board-fixtures.js` | A board change committed locally and deliberately not pushed made the gate fail closed, and the 23:31 cycle published nothing. Guarded by BFS-7 |
 | 12 | …and origin/main itself went stale: nothing fetches `C:\dev\levelup-sheets` any more, so once board work moved it froze one commit behind. Fixed 2026-11-06 - the guard reads whichever clone has the NEWEST origin/main | `scripts/sync-board-fixtures.js` | Reading one fixed path either blesses a stale fixture or reds the gate a cycle after every board push. Guarded by BFS-8 and BFS-9 |
+| 13 | BFS-8 itself made its two git commits milliseconds apart and compared `%ct`, which is whole SECONDS, so the replay gate went red at random. Measured 2026-11-06: 1 run in 6, and 4 in 8 under load. Fixed the same day by pinning both commit dates | `test/board-fixture-sync.test.js` | A random red fails the cycle closed and publishes nothing - the same symptom as the 23:31 outage on 2026-11-05, a different cause. Found while building step 3, fixed as a separate commit |
 
 ## Fix plan
 
@@ -97,13 +98,21 @@ Do these in order. Each step is done only when its check passes, and the result 
 - [x] **1. Answer the open decisions** (section above). Done 2026-11-05: every decision in that section now has a written answer and a date.
 - [x] **2. Lock in past bugs as tests** - done 2026-11-05 except B4 and B6, which stay todo until built. BTC, HYPE, LINK, ADA and PEPE all have live regression tests (PLS-1, PFS-1, PLS-18, PLS-20b, PLS-19, WNR-1, NTL-1..6, A7), and Chelsea’s new rules are live as B1, B2, B3, B7 and B8. B5 is **done** - one "Not a live watch" sentence from one function, shipped 2026-11-05 (board d4c3e0c, monitor 976baab); the test is live. Still todo: **B4** (written invalidation never moves the strength meter, feed carries the warning flag) and **B6** (a pair’s two cards stay together).
   - Diamond comeback built 2026-11-05 (56902dc): `dormantFor()` in `monitor/engine.js`. Note: the 24h watch window still applies, so a dormant side can only come back within 24h of publication.
-- [ ] **3. Staging board. DO THIS BEFORE STEP 4** (ordered 2026-11-06). A copy of the board where every change lands first. Done when Ang can open a staging link and approve before anything goes live. The next session plans this: the SIMPLEST setup where a monitor change and a board change can land together and be viewed before the live replay gate sees them.
+- [ ] **3. Staging board. DO THIS BEFORE STEP 4** (ordered 2026-11-06). A copy of the board where every change lands first. Done when Ang can open a staging link and approve before anything goes live.
+  - **THE PREVIEW FOLDER IS `preview-c4e8de`** (random and unguessable by instruction, Ang 2026-11-06 - deliberately NOT "staging"). It is named in exactly two places, `scripts/publish-staging.js` and this line; nothing derives it. URL once published: `https://angiemcunningham-dot.github.io/levelup-sheets/preview-c4e8de/`
+  - **Built 2026-11-06, NOT YET RUN, NOTHING PUSHED.** `scripts/publish-staging.js` (monitor repo) generates the folder in the board repo from the two WORKING TREES - the pages from `C:\dev\work\levelup-sheets`, the feed from this repo's freshly restored state via the same `buildFromDir` the live feed uses. That is what lets a monitor change and a board change be viewed together before either ships.
+  - Every generated page gets a sticky full-width "PREVIEW - NOT THE LIVE BOARD" banner and its own noindex. The `.js` files are copied verbatim.
+  - **Why it cannot disturb the live board.** The replay gate reads `git show origin/main:index.html` / `:sheet.html`, ROOT paths only (`scripts/sync-board-fixtures.js` PAGES and `readPage`), so a file at `preview-c4e8de/index.html` is invisible to it - asserted by STG-2, not assumed. The 15-minute runner hard-resets its own board clone and copies only `monitor-feed.json`, so it never writes here.
+  - Guards: refuses any board clone but `C:\dev\work\levelup-sheets`; every write is checked to land inside the preview folder; `pull --rebase` with autostash before pushing (the runner pushes main every 15 minutes, and the clone carries the parked PLS-20b change); path-scoped `git add` and a commit WITHOUT `-a`, so PLS-20b can never be swept into a preview commit.
+  - Covered by **STG-1 to STG-10** in `test/publish-staging.test.js`. STG-3 caught a real defect on the first run - the injected banner did not strip back out cleanly on `<body><div class="sheet">`, so a preview page was not the working-tree page plus the banner. Fixed before commit.
+  - Still to do: review the diff, run it once, open the link. Then this step is done.
 - [ ] **4. Make the monitor the only decider.** The feed states, per side: which side leads and what state it is in. The pages only display it. Done when the browser-side copies in step 5 have nothing left to decide.
   - **Designed and approved 2026-11-06 - see "Step 4 design" below.** BLOCKED on two things: step 3 (staging) must exist first, and Chelsea must supply the display words. Do not build before both.
 - [ ] **5. Delete the browser copies.** Remove the duplicated side, state and warning logic from both `mech-feed` blocks. Done when `currentBatch`, `expiredFor` and both "Not a live watch" writers are gone from the pages.
 - [ ] **6. One shared price fetch and one Sheet read per page.** Done when each page has one price timer and one Sheet fetch.
 - [ ] **7. Clean up.** Commit or drop PLS-20b, rename the OneDrive clone to `_OLD_DO_NOT_USE`, and replace the TURBO hardcode with a Sheet status.
   - Rename `C:\dev\levelup-sheets` to `_OLD_DO_NOT_USE` (frozen since 2026-11-05) and remove it from the `boardDir()` candidates (`scripts/sync-board-fixtures.js:62`). Fewer copies, not smarter ones.
+  - Delete the four dead `staging/*` folders in the monitor repo (`staging/board`, `staging/instance-safety-fix`, `staging/overnight-audit/board-ux-fixes`, `staging/overnight-2026-09-28`). Each is a hand-copied `index.html` + `sheet.html` + `monitor-feed.json` from a previous attempt at step 3 - four attempts, none of which stuck, because a hand-made copy of a page drifts. `preview-c4e8de` replaces all of them and is generated, never hand-made.
 - [ ] **8. Stale-feed alert.** Notify Ang when the feed is more than 45 minutes old.
 - [ ] **9. Morning "Expiring today" review for Chelsea.** When she logs into the intake app (~4 AM), show every setup expiring that day with Keep active (adds 24h) / Let it expire buttons. No click = expires as normal. Reuse `review-queue.js` and `morning-review.js`. Build after steps 3-6. Do not build now.
 
