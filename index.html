@@ -1965,6 +1965,13 @@ load();setInterval(load,60000);
     function stopBreachedFor(asset, side) {
       if (!feed) return null;
       var picked = feedEntryFor(asset, side); if (!picked) return null;
+      /* AND IT HAS TO BE THIS SETUP (2026-11-05). notTrackedFor() has checked the instance since the day it
+         was written; these two never did. Between monitor runs the feed still holds the PREVIOUS instance of
+         a setup Chelsea has just republished - ordinarily minutes, and five hours on the morning the rule was
+         written. That old instance can carry a stop-breach from a setup that no longer exists, and painting
+         it on the new card tells a member their fresh setup is already dead. Caught by att-ui.test.js AUI-13,
+         the first test ever to execute this function. */
+      if (!feedInstanceCurrent(asset, picked.entry)) return null;
       var a = picked.entry, lc = a.lifecycle;
       if (!lc || lc.voided) return null;
       if (lc.trigger && lc.trigger.reached_at) return null;
@@ -1975,6 +1982,8 @@ load();setInterval(load,60000);
     function cannotTriggerFor(asset, side) {
       if (!feed) return null;
       var picked = feedEntryFor(asset, side); if (!picked) return null;
+      /* The same instance check as stopBreachedFor above, for the same reason. */
+      if (!feedInstanceCurrent(asset, picked.entry)) return null;
       var a = picked.entry, lc = a.lifecycle;
       if (!lc || lc.voided) return null;
       if (lc.trigger && lc.trigger.reached_at) return null;
