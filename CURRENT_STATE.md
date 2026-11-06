@@ -2,7 +2,7 @@
 
 Nov 5, 2026 · @Ang
 
-**Next session starts with: rename `C:\dev\levelup-sheets` to `_OLD_DO_NOT_USE_levelup-sheets` (blocked 2026-11-06 by a stale bash handle; nothing reads it, BCS-14 enforces that), then fix plan step 5 - delete what is left of the browser copies. Still open: option (c) and the SIX_LINE_EXIT words (Chelsea), B4, B6, the "Original Chelsea published status" wording.**
+**Next session starts with: rename `C:\dev\levelup-sheets` to `_OLD_DO_NOT_USE_levelup-sheets` (blocked 2026-11-06 by a stale bash handle; nothing reads it, BCS-14 enforces that), then fix plan step 5 - delete what is left of the browser copies. Still open: option (c) and the SIX_LINE_EXIT words (Chelsea), B4, B6, the "Original Chelsea published status" wording. A side-by-side pair layout for `sheet.html` is waiting in the PREVIEW for Ang's verdict - see "Pairs side by side on the detail page" below; nothing is pushed.**
 
 The board works, but the same decisions are made in too many places, so every fix moves the bug somewhere else. The fix is one decider (the monitor) and one doc (this one). This doc replaces all 449 earlier handoffs.
 
@@ -386,6 +386,106 @@ different CLOCKS. `sheet.html`'s base render passes the Sheet's publication time
 mech layers pass the feed's. When the monitor is behind, the card and the detail page can still name different
 sides. The ordering is one function now, so this is a one-line argument change at two call sites rather than a
 third implementation - but it is a real decision about which clock is right, and it is not made here.
+## Pairs side by side on the detail page (2026-11-06)
+
+**Ang, 2026-11-06: pairs show side by side on the detail page, no dropdown.**
+
+IN THE PREVIEW ONLY. Nothing is pushed to the live board. Preview:
+`https://angiemcunningham-dot.github.io/levelup-sheets/preview-c4e8de/sheet.html?asset=BTC` and `...?asset=ADA`.
+
+### What changed on `sheet.html`
+
+- `sideFlip()` and its `<details class="sideflip">` are **DELETED**, not hidden, and so are the `.sideflip`
+  stylesheet rules, `details.sideflip{counter-reset:sect}` and the `#sideflip-retired` note the mech-feed layer
+  wrote into the dropdown's body. `FINISHED_CARD_STATES` went with them: its only consumer was `isRetired()`,
+  which fed that note, so a fifth terminal-state list on the page is gone rather than left unused.
+- A pair renders as `<div class="sidepair">` holding two `<section class="sidecol" data-dir="long|short">`.
+  Two columns at desktop width, one column at 860px and below, both sides fully open in both.
+- **The order is the lead order and nothing decides it twice.** Columns are emitted in `pairedSides()`
+  primary-then-quiet, which is `leadSide()` -> `LevelUpCore.pickPairSide` -> `CARD_STATE_RANK`
+  (TRIGGERED > WATCHING > FINISHED > DORMANT > EXPIRED). The phone stack is pure source order: no CSS `order`
+  property anywhere in a `.sidepair`/`.sidecol` rule, asserted by SBS-11, so the phone cannot disagree with the
+  desktop about which side leads.
+- **Per column:** its own direction tag, its own publication time, its own status, its own levels, its own
+  ladder and its own live price.
+- **Once for the page:** the chart, Chelsea's voice note (both already from `media()`), and the disclaimers.
+  The "Levels are structure, not instructions" line and the `.dyor` "Not financial advice" block moved OUT of
+  `setupHTML()` - emitted there, they printed twice in two columns - and are now emitted once by `bodyHTML()`
+  beneath both columns, which is also where a member stops reading.
+
+### The column status adds no second writer of a sentence
+
+`sideStatusHTML(dir)` reads that side's own `card_state` off the feed and words it from
+`LevelUpWords.CARD_STATE_WORDS` - the one table both pages load. Only `{DIR}` is filled. `TRIGGERED` and
+`FINISHED_WIN` carry fragments for banked targets (`{PROGRESS}`, `{BANKED}`) and those are **deliberately left
+at their no-progress form**: the page-top headline already composes the full sentence for the leading side by
+reading the lifecycle, and composing it again here would be a second writer of one sentence. A column says WHICH
+STATE its side is in; the headline says how far that side has got. `WATCHING` has `status: null` in the table on
+purpose, so an ordinary watch gets no strip at all and Chelsea's own pill stays the status (SBS-7b).
+
+Tone classes (`tone-active/complete/stopped/expired/closed`) mirror the table's `tone` one-to-one. That is what
+carries the 2026-10-29 HYPE rule - a side that won is never painted red - now that the dropdown note which used
+to carry it is gone.
+
+### Two mech-feed passes became per-ladder, which removed an assumption
+
+`ensureNowRowTruth()` and `ensureLadderHits()` read `getElementById('ladder')` and resolved the side through
+`feedEntryFor()`/`WANT_SIDE` - sound while the page drew one ladder, wrong the moment both are open, because the
+trailing column's ladder would be asked about the LEADING side's lifecycle. That is the 2026-10-24 BTC bug
+(one side's `reached_at` stamped onto the other side's prices). Each ladder now carries `data-dir` and
+`ladderSides()` / `entryForLadder()` answer it from its own side's feed entry. Single-sided pages have no
+`data-dir` and fall through to `feedEntryFor()` exactly as before (SBS-12). No new decision: the state is still
+the monitor's `card_state` and the hits are still that side's own lifecycle.
+
+`livePrice()` likewise places a NOW row in **every** ladder from **one** `fetchPrices()` call - two sides of one
+asset is one price - so the trailing column has a live price where it had none. `#nowp`/`#nowts` became the
+classes `.now-px`/`.now-ts`, because two elements cannot share an id. This is the direction of step 6, not
+against it.
+
+The `mech-sidetruth` mismatch guard is KEPT and reworded: its last clause told a member to open a disclosure
+that no longer exists, and now points at the labelled column.
+
+### Tests: 1155 run, 1151 pass, 0 fail, 4 todo (the same 4 as before), `node --test` with NO env var
+
+`test/pair-side-by-side.test.js` is new and is the single home of the side-by-side contract: **SBS-1 to SBS-12**.
+It reads the board WORK clone's `sheet.html`, taking the path from `scripts/publish-staging.js` `BOARD_DIR`
+rather than writing it out again - the 08:06 step-4 rollback was caused by a third hand-copied board path in
+`test/helpers.js` silently resolving to the frozen clone.
+
+**Why it does not read `test/fixtures/board/`, unlike every other board test.** That fixture comes from
+`git show origin/main:sheet.html`, the DEPLOYED page. This layout is deliberately not deployed, so a
+fixture-based test could only assert the old page. When the layout ships, the file keeps working unchanged: the
+work clone is where board work is pushed from, so its working tree and its origin/main agree on push.
+
+Four assertions were written against the dropdown and could only be satisfied by it. Each is **deleted at its old
+site with a note naming its replacement**, so the contract has one home instead of four:
+
+| Deleted | What it asserted | Replaced by |
+| --- | --- | --- |
+| `PP-4` (`parity-pair`) | `<details>` and `<summary>` exist | SBS-1, SBS-3, SBS-4 |
+| `OD-5` (`board-option-d-legibility`) | `details.sideflip{counter-reset:sect}` | SBS-8, on `.sidecol` |
+| `WNR-4` (`winner-never-red`) | the flip note's colour follows the result (a win is not red) | SBS-7, both directions |
+| `WNR-5` (`winner-never-red`) | a side that never triggered says exactly that | SBS-6 |
+
+`PP-3` and `WNR-1/2/3` are untouched and still pass - neither subject moved.
+
+One finding worth keeping: the first draft of the SBS feed fixture set `lifecycle: null` on both sides, and
+SBS-4 failed while the page was behaving exactly as it always has. `pairedSides()` only consults the lead order
+when `haveMech()` is true, and `haveMech()` asks for a **lifecycle**, not a `card_state`. A hand-built feed
+missing a field the board gates on tests the degradation path and reports nothing - the same trap
+`H.withCardStates()` exists to close for `card_state`.
+
+### Still open on this change
+
+- **The column wording is PROVISIONAL, like every other `card_state` string.** `levelup-words.js` flags it:
+  only the DORMANT sub-line is Chelsea's. The columns inherit that table, so when she answers, her words
+  replace these and nothing in the layout changes.
+- **Not reconciled with the "split pair" decision of 2026-11-05** ("the two cards STAY TOGETHER - it shows
+  students the 'if this, then that'"), which was about `index.html`'s cards. This change is the detail page only
+  and reads as consistent with it, but it has not been checked against the landing page.
+- `index.html` is untouched. A card still links to `sheet.html?asset=X&side=Y`; the detail page now shows both
+  sides whichever side was clicked, and `WANT_SIDE` still decides which one LEADS.
+
 ## Evidence
 
 The full audit from 2026-11-05 is at `C:\Users\angie\LEVELUP_AUDIT`. Start with `INVENTORY.md`. It holds the claims check, loops, rewrites, skipped work and duplicates, with file and line for each.

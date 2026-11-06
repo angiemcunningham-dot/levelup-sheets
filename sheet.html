@@ -66,19 +66,36 @@ h1 em{font-style:normal;color:var(--pink)}
 .btn{font-family:Inter;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:9px 16px;border-radius:999px;border:2px solid var(--pink);background:#fff;color:var(--pink);cursor:pointer;text-decoration:none}
 .btn.primary{background:var(--pink);color:#fff}
 .ladder{border:2px solid var(--pink);border-radius:14px;background:#fff;overflow:hidden;box-shadow:0 10px 28px rgba(13,13,15,.07)}
-/* TWO-SIDED SETUP (2026-10-21, density C): the quiet side of a pair folds into a disclosure. */
-.sideflip{margin-top:22px;border:1px solid var(--line);border-radius:14px;background:#fff;overflow:hidden}
-.sideflip>summary{cursor:pointer;list-style:none;padding:14px 18px;font-family:"Archivo",sans-serif;font-weight:700;
-  font-size:13px;letter-spacing:.06em;text-transform:uppercase;display:flex;align-items:center;gap:10px}
-.sideflip>summary::-webkit-details-marker{display:none}
-.sideflip>summary::after{content:"\25BE";margin-left:auto;font-size:11px;opacity:.55;transition:transform .15s}
-.sideflip[open]>summary::after{transform:rotate(180deg)}
-.sideflip>summary:focus-visible{outline:2px solid var(--pink);outline-offset:-2px}
-.sideflip .flipbody{padding:4px 18px 20px}
-.sideflip .flipbody.retired{opacity:.62}
+/* TWO-SIDED SETUP, BOTH SIDES OPEN (Ang, 2026-11-06). The density-C disclosure rules that were here -
+   .sideflip, its summary, its marker and .flipbody - are DELETED, not overridden: the dropdown is gone
+   from the markup, so a rule for it could only rot. Two equal columns, the leading side first in SOURCE
+   order so that the phone stack needs no second rule to decide which comes first. */
+.sidepair{display:grid;grid-template-columns:1fr 1fr;gap:26px;align-items:start;margin-top:4px}
+.sidepair-note{font-size:13px;line-height:1.55;color:#6c7488;margin:22px 0 0}
+.sidecol{min-width:0}                                 /* a grid item must be allowed to shrink or the ladder forces overflow */
+.sidecol-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-height:30px;padding-bottom:10px;border-bottom:2px solid var(--line)}
+.sidecol-pub{font-size:11.5px;color:#6c7488}
+.sidecol-badge{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--pink);
+  border:1px solid var(--pink-line);border-radius:999px;padding:2px 8px}
+/* The column's own status. Tone classes mirror levelup-words.js `tone` one-to-one - no condition picks
+   them and none of them judges the state; they are the look of the words. */
+.sidecol-state{margin-top:12px;padding:11px 14px;border-left:5px solid var(--line);border-radius:0 8px 8px 0;background:#F6F6F9}
+.sidecol-state-h{font-family:Archivo,sans-serif;font-weight:900;font-size:14px;letter-spacing:.04em;color:var(--ink)}
+.sidecol-state-sub{margin:6px 0 0;font-size:12.5px;line-height:1.55;color:#4C5663}
+.sidecol-state.tone-active{border-left-color:var(--green);background:#F2FCF6}
+.sidecol-state.tone-active .sidecol-state-h{color:var(--green-d)}
+.sidecol-state.tone-complete{border-left-color:var(--pink);background:rgba(250,3,152,.06)}
+.sidecol-state.tone-complete .sidecol-state-h{color:var(--pink)}
+.sidecol-state.tone-stopped{border-left-color:var(--red);background:rgba(239,68,68,.06)}
+.sidecol-state.tone-stopped .sidecol-state-h{color:var(--red-d)}
+.sidecol-state.tone-expired,.sidecol-state.tone-closed{border-left-color:#9aa1b2;background:#F1F2F6}
+.sidecol-state.tone-expired .sidecol-state-h,.sidecol-state.tone-closed .sidecol-state-h{color:#4C5663}
+.page-levels-note{margin-top:18px}
 .dirtag{display:inline-block;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.06em}
 .dirtag.d-long{background:#e7f4ee;color:#0f7a52}
 .dirtag.d-short{background:#fcebe9;color:#a8231f}
+/* .sidenote was the dropdown's explanatory line; the rule is kept only because the contrast pass at the
+   bottom of this file still overrides it, and the two are deleted together when that pass is next touched. */
 .sidenote{font-size:13px;color:#6c7488;margin:2px 0 0}
 /* 2026-10-21 (Angela, explicit): "disclaimer disclaimer disclaimer... it needs to say I am not a financial
    advisor Do your own research". The footer version is below the fold on a long setup page - this one sits
@@ -116,6 +133,12 @@ h1 em{font-style:normal;color:var(--pink)}
 .empty{padding:60px 20px;text-align:center;color:var(--gray)}
 audio,iframe.audio{width:100%;margin-top:10px;border:0;height:80px}
 @media(max-width:640px){.tl>div{grid-template-columns:1fr;gap:2px}.inner{padding:30px 18px 24px}.grid2{grid-template-columns:1fr}.head{flex-direction:column-reverse;align-items:flex-start}.row{grid-template-columns:40px 1fr auto;padding:13px 14px;gap:10px}.rp{font-size:19px}}
+/* PHONE WIDTH: THE PAIR STACKS, BOTH SIDES STILL FULLY OPEN (Ang, 2026-11-06). One column, and the order
+   is the SOURCE order, which is the lead order - no `order` property and nothing re-deciding which side
+   comes first, so the phone can never disagree with the desktop about that. Collapsing either side here
+   would reintroduce the dropdown on the device most members read the board on. Breakpoint is 860px, not
+   640px: two ladders with a price column stop fitting well before the page's other mobile rules kick in. */
+@media(max-width:860px){.sidepair{grid-template-columns:1fr;gap:10px}}
 </style>
 <style id="att-css">
 /* ===== LIVE ATTENTION (staging addon) — presentation only; tiers map 1:1 to the monitor's attention bands ===== */
@@ -436,15 +459,27 @@ async function load(){
     if(clUrl)x+=`<div class="btnrow"><a class="btn" href="${esc(clUrl)}" target="_blank" rel="noopener noreferrer">Open interactive chart${carried?" (setup of "+esc(stamp(get(S,"timestamp")))+")":""}</a></div>`;
     if(vm)x+=`<div class="card soft"><h3>Chelsea's read — voice</h3><iframe class="audio" src="https://drive.google.com/file/d/${vm}/preview" allow="autoplay"></iframe></div>`;
     return x;};
+  /* THE DISCLAIMERS BELONG TO THE PAGE, NOT TO A LADDER (Ang, 2026-11-06).
+     They used to be emitted INSIDE this function, immediately after the ladder rows. That was correct while
+     the page drew one ladder; now that a pair draws two side by side, emitting them here printed the same
+     "Not financial advice" block twice, in two columns, a few hundred pixels apart. Ang's rule for the
+     side-by-side layout is that shared items appear once - the chart, Chelsea's voice note and these. So
+     they moved OUT of setupHTML and are emitted once by bodyHTML() below, beneath both columns.
+     They are not weaker for being stated once: they now sit at the end of the whole page, which is where a
+     member stops reading, instead of halfway down one of two columns. */
+  const sharedDisclaimerHTML=()=>`<p class="rn page-levels-note"><b>Levels are structure, not instructions.</b> Price reaching a level is information. Whether it becomes an entry is your decision and your risk.</p><div class="dyor"><b>&#9888; Not financial advice</b><p>Chelsea is not a financial advisor. Every level above is an assumption about what the market may do next &mdash; never a guarantee, and never a promise of a result. Do your own research, size your own risk, and make your own decision. The outcome is yours.</p></div>`;
   /* Takes the row to render, so the same function can draw BOTH sides of a two-sided setup (2026-10-21).
-     `primary` keeps id="ladder" and therefore the live NOW row on the main side only - see sideFlip() below. */
-  const setupHTML=(Srow,primary)=>{let x="";const Lrows=levels(Srow);
+     `primary` keeps id="ladder" on the LEADING side, because the page-top mech panels (market evidence,
+     trigger readiness, entry strength, the six-line note) anchor on that id and describe the side the
+     headline speaks for. Every ladder, leading or not, now carries `data-dir` and its own live price -
+     see livePrice() and the per-ladder passes in mech-feed. `dir` is null on a single-sided asset. */
+  const setupHTML=(Srow,primary,dir)=>{let x="";const Lrows=levels(Srow);
     if(get(Srow,"why"))x+=`<div class="sect"><div class="bar"></div><h2>Why</h2></div><div class="card"><p>${esc(clarifyPileLanguage(get(Srow,"why")))}</p></div>`;
     const T=[1,2,3].map(i=>get(Srow,"trigger "+i)).filter(Boolean);
     if(T.length){x+=`<div class="sect"><div class="bar"></div><h2>The Levels</h2></div>`;T.forEach((t,i)=>x+=`<div class="card soft"><h3>Trigger ${i+1}</h3><p>${esc(t)}</p></div>`);}
-    if(Lrows.length){x+=`<div class="sect"><div class="bar"></div><h2>The Ladder</h2>${primary?`<div class="hint">live price</div>`:""}</div><div class="ladder"${primary?` id="ladder"`:""}>`;
+    if(Lrows.length){x+=`<div class="sect"><div class="bar"></div><h2>The Ladder</h2><div class="hint">live price</div></div><div class="ladder"${primary?` id="ladder"`:""}${dir?` data-dir="${esc(String(dir).toLowerCase())}"`:""}>`;
       const rowsH=Lrows.map(l=>`<div class="row" data-p="${l.price}"><div class="dot d-${l.kind}"></div><div><div class="rl">${esc(l.role)}</div><div class="rn">${esc(l.note)}</div></div><div class="rp">${fmt(l.price)}<small>${l.kind==="tp"?"target":l.kind==="stop"?"invalidation":"level"}</small></div></div>`);
-      x+=rowsH.join("")+`</div><p class="rn" style="margin-top:10px"><b>Levels are structure, not instructions.</b> Price reaching a level is information. Whether it becomes an entry is your decision and your risk.</p><div class="dyor"><b>&#9888; Not financial advice</b><p>Chelsea is not a financial advisor. Every level above is an assumption about what the market may do next &mdash; never a guarantee, and never a promise of a result. Do your own research, size your own risk, and make your own decision. The outcome is yours.</p></div>`;}
+      x+=rowsH.join("")+`</div>`;}
     if(get(Srow,"warning"))x+=`<div class="sect"><div class="bar"></div><h2>Warning</h2></div><div class="warn"><div class="wh">Heads up</div><div class="wb">${esc(get(Srow,"warning"))}</div></div>`;
     if(get(Srow,"confidence up")||get(Srow,"confidence down"))x+=`<div class="sect"><div class="bar"></div><h2>Confidence Check</h2></div><div class="grid2"><div class="inv up"><div class="ih">▲ Confidence up</div><div class="ib">${esc(get(Srow,"confidence up"))}</div></div><div class="inv dn"><div class="ih">▼ Confidence down</div><div class="ib">${esc(get(Srow,"confidence down"))}</div></div></div>`;
     return x;};
@@ -498,9 +533,70 @@ async function load(){
     }catch(err){return null;}
   };
   const sides=pairedSides();
-  const sideFlip=(q)=>`<details class="sideflip"><summary><span class="dirtag d-${q.dir}">${q.dir.toUpperCase()}</span>The other side of this setup</summary><div class="flipbody"><p class="sidenote">Chelsea published this ${q.dir} alongside the ${sides.primary.dir} above, ${esc(stamp(get(q.row,"timestamp")))}. These are Chelsea&#39;s real published levels for that side. The current state shown at the top of this page governs - if the side above has already triggered, this one may no longer apply.</p>${setupHTML(q.row,false)}</div></details>`;
-  /* every existing call site renders the primary side exactly as before; the flip is additive */
-  const bodyHTML=()=>setupHTML(S,true)+(sides?sideFlip(sides.quiet):"");
+
+  /* ----------------------------------------------------------------------------------------------------
+     BOTH SIDES SIDE BY SIDE (Ang, 2026-11-06). THE DROPDOWN IS DELETED, NOT HIDDEN.
+
+     What was here: `sideFlip()`, a <details class="sideflip"> that folded the second side of a pair behind
+     a "The other side of this setup" summary. That was density C, chosen by Angela on 2026-10-20 when a
+     pair was new and the quiet side was genuinely an aside.
+
+     Why it is gone. A diamond has two live sides, and the standing rule is that one side playing out or
+     being invalidated never kills the other - a 1H candle at the level can activate the second side days
+     later. A collapsed <details> teaches the opposite: it says one side is the setup and the other is a
+     footnote. On ADA today the short is TRIGGERED and the long is EXPIRED, and a member who never opens
+     the disclosure never learns the long is dead. Both sides are now open, labelled and equal.
+
+     THE ORDER IS THE LEAD ORDER AND NOTHING ELSE: TRIGGERED > WATCHING > FINISHED > DORMANT > EXPIRED,
+     from LevelUpCore.pickPairSide via leadSide() above - the one implementation all three surfaces call.
+     `sides.primary` IS the leading side, so the columns are emitted primary-then-quiet and the CSS does no
+     reordering of its own. At phone width the same source order stacks, which puts the leading side first
+     there too without a second rule deciding it.
+
+     WHAT IS SHARED AND WHAT IS NOT. Per column: its own status, its own levels, its own ladder, its own
+     live price. Once for the page: the chart, Chelsea's voice note and the disclaimers - media() was
+     already emitted once above, and the disclaimers moved out of setupHTML() to join it. */
+
+  /* THE COLUMN STATES ITS SIDE'S STATE. IT DOES NOT RESTATE THE SIDE'S PROGRESS.
+     The words come from LevelUpWords - the one table both pages read - keyed on that side's own
+     `card_state` off the feed. Only {DIR} is filled here. TRIGGERED and FINISHED_WIN carry fragments for
+     banked targets ({PROGRESS}, {BANKED}) and those are deliberately left at their no-progress form,
+     because the page-top headline already composes the full sentence for the leading side by reading the
+     lifecycle, and composing it a second time here would be a second writer of one sentence - exactly the
+     duplication this board is being taken apart to remove. A column says WHICH STATE its side is in; the
+     headline says how far that side has got.
+     WATCHING has no status in the table on purpose: Chelsea's own pill is the status for an ordinary
+     watch, so the strip falls back to her published status for that row and says nothing mechanical. */
+  const sideStatusHTML=(dir)=>{
+    const W=(typeof window!=="undefined"&&window.LevelUpWords)||null;
+    const st=sideCardState(dir);
+    const e=W&&st?W.CARD_STATE_WORDS[st]:null;
+    const words=e?W.fill(e.status,{DIR:String(dir).toUpperCase(),PROGRESS:e.progress_none||"",BANKED:"",TPS:""}):null;
+    const tone=e&&e.tone?` tone-${e.tone}`:"";
+    if(!words)return "";
+    return `<div class="sidecol-state${tone}"><div class="sidecol-state-h">${esc(words)}</div>`
+      +(e.sub?`<p class="sidecol-state-sub">${esc(e.sub)}</p>`:"")+`</div>`;
+  };
+
+  /* One function, both columns. `lead` only marks which one the page-top headline speaks for; it changes
+     no words and decides nothing. The member-visible claim on the trailing column is its own card_state,
+     not "this one matters less". */
+  const sideColumnHTML=(s,lead)=>`<section class="sidecol${lead?" is-lead":""}" data-dir="${esc(String(s.dir).toLowerCase())}">`
+    +`<header class="sidecol-h"><span class="dirtag d-${esc(String(s.dir).toLowerCase())}">${esc(String(s.dir).toUpperCase())}</span>`
+    +`<span class="sidecol-pub">published ${esc(stamp(get(s.row,"timestamp")))}</span>`
+    /* Short enough to sit on ONE line beside the tag and the timestamp. The first build read "status at
+       the top of this page", which wrapped, so the leading column's header was two lines and the trailing
+       one was one - and every section bar below them sat at a different height between the columns. */
+    +(lead?`<span class="sidecol-badge">leads this page</span>`:"")+`</header>`
+    +sideStatusHTML(s.dir)
+    +setupHTML(s.row,lead,s.dir)
+    +`</section>`;
+
+  const bodyHTML=()=>(sides
+    ?`<p class="sidepair-note">Chelsea published both sides of this setup. Each column below is its own trade with its own status, levels and ladder - one side playing out does not end the other.</p>`
+      +`<div class="sidepair">${sideColumnHTML(sides.primary,true)}${sideColumnHTML(sides.quiet,false)}</div>`
+    :setupHTML(S,true,null))
+    +sharedDisclaimerHTML();
   if(noTradeLike){
     if(hasSetup){
       h+=`<div class="sect"><div class="bar"></div><h2>Published setup</h2><div class="hint">${esc(stamp(get(S,"timestamp")))}</div></div>`;
@@ -528,7 +624,6 @@ async function load(){
   livePrice(L);
 }
 
-let nowRow=null;
 async function livePrice(L){
   // 2026-09-29 fix: this used to resolve a CoinGecko id (hardcoded map, else a /search lookup) and read
   // /simple/price - CoinGecko's public API is failing ("Failed to fetch", live-verified) for at least some
@@ -542,14 +637,28 @@ async function livePrice(L){
   if(!px)return;
   const t=new Date().toLocaleTimeString("en-US",{timeZone:"America/New_York",hour:"numeric",minute:"2-digit"});
   const dl=$("#dateline");if(dl)dl.innerHTML=dl.textContent.split("  ·  LIVE")[0]+`  ·  LIVE ${fmt(px)} @ ${t} EST`;
-  const lad=$("#ladder");if(!lad)return;
-  if(!nowRow){nowRow=document.createElement("div");nowRow.className="row now";nowRow.innerHTML=`<div class="dot d-now"></div><div><div class="rl">NOW <span class="now-ts" id="nowts"></span></div><div class="rn">Live price. Everything above this line is earned, not assumed.</div></div><div class="rp"><span id="nowp"></span><small>live</small></div>`;}
-  nowRow.querySelector("#nowp").textContent=fmt(px);
+  /* EVERY LADDER ON THE PAGE GETS THE LIVE ROW (Ang, 2026-11-06, the side-by-side layout).
+     This read `$("#ladder")` and placed a single NOW row, which was right while a pair folded its second
+     side into a dropdown. With two ladders open at once, the trailing column had no live price at all -
+     and a ladder without the NOW line is the one thing a member cannot read, because where price sits
+     relative to the levels is the whole point of the ladder.
+     STILL ONE FETCH. The two sides are two sides of the SAME asset, so there is one price and one call to
+     fetchPrices() above; this loop only places that one number in each ladder. That is the direction fix
+     plan step 6 is going (one price timer per page), not against it.
+     The NOW row is built per ladder, so `#nowp` / `#nowts` became CLASSES - two elements cannot share an
+     id, and the old ids would have made the second column's row unaddressable. */
+  const lads=[...document.querySelectorAll(".ladder")];
+  if(!lads.length)return;
   const nowStamp=new Date().toLocaleString("en-US",{timeZone:"America/New_York",month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit",second:"2-digit"});
-  nowRow.querySelector("#nowts").textContent=`(${nowStamp} ET)`;
-  const rows=[...lad.querySelectorAll(".row:not(.now)")];let placed=false;
-  for(const r of rows){if(parseFloat(r.dataset.p)<px){lad.insertBefore(nowRow,r);placed=true;break;}}
-  if(!placed)lad.appendChild(nowRow);
+  for(const lad of lads){
+    let row=lad.querySelector(".row.now");
+    if(!row){row=document.createElement("div");row.className="row now";row.innerHTML=`<div class="dot d-now"></div><div><div class="rl">NOW <span class="now-ts"></span></div><div class="rn">Live price. Everything above this line is earned, not assumed.</div></div><div class="rp"><span class="now-px"></span><small>live</small></div>`;}
+    const pxEl=row.querySelector(".now-px");if(pxEl)pxEl.textContent=fmt(px);
+    const tsEl=row.querySelector(".now-ts");if(tsEl)tsEl.textContent=`(${nowStamp} ET)`;
+    const rows=[...lad.querySelectorAll(".row:not(.now)")];let placed=false;
+    for(const r of rows){if(parseFloat(r.dataset.p)<px){lad.insertBefore(row,r);placed=true;break;}}
+    if(!placed)lad.appendChild(row);
+  }
 }
 load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
 </script>
@@ -836,15 +945,13 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
 .mech-sidetruth p:last-child{margin-bottom:0}
 .mech-sidetruth b{color:var(--red-d)}
 .mech-sidetruth .sidetruth-dyor{font-size:11.5px;color:var(--gray);line-height:1.5}
-.sideflip-retired.is-win{border-left-color:var(--pink);background:rgba(250,3,152,.06)}
-.sideflip-retired.is-win b{color:var(--pink)}
 /* TEMPORARY - remove when the stale-triggered-trade rule (problem 16 / option c) ships. */
 .stale-trade-notice{display:block;width:100%;font-family:Archivo,sans-serif;font-weight:800;font-size:13px;
   letter-spacing:.01em;color:#8A4B00;background:#FFF4E0;border:2px solid var(--orange);border-radius:12px;
   padding:13px 16px;margin:0 0 18px;line-height:1.55}
-.sideflip-retired{margin:0 0 10px;padding:10px 12px;border-left:4px solid var(--red);background:rgba(239,68,68,.06);
-  font-size:12.5px;line-height:1.55;color:var(--ink)}
-.sideflip-retired b{color:var(--red-d)}
+/* .sideflip-retired{...} and its .is-win override were deleted here (Ang, 2026-11-06). They styled the
+   note at the top of the dropdown's body; there is no dropdown, and the trailing column's own
+   .sidecol-state carries that fact with the tone from levelup-words.js. */
 /* 2026-10-22: the confirmation strength meter. Red/amber/green on Chelsea's four words; see the comment on
    ensureStrengthMeter() for why the gate can make this disappear on a live trade. */
 /* 2026-10-22: a reached level says so ON THE LADDER, not only in the headline. AVAX|LONG hit TP1 and its
@@ -903,7 +1010,10 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
    at three different anchors and not all of them exist at once - a hard-coded "1 ·" would be wrong half
    the time. The counter restarts inside the folded second side of a two-sided setup. */
 #app{counter-reset:sect}
-details.sideflip{counter-reset:sect}
+/* Each column of a pair numbers its own sections from 1 (2026-11-06, replacing details.sideflip which did
+   the same job for the folded side). Otherwise a paired ADA page runs 1..7 down the left column and 8..11
+   down the right, which reads as one list of eleven sections across two columns instead of two setups. */
+.sidecol{counter-reset:sect}
 .sect{display:flex;align-items:center;gap:10px;margin:30px 0 0;padding:11px 18px;background:var(--ink);border-radius:4px 4px 0 0}
 .sect .bar{display:none}
 .sect h2{color:#fff;font-size:13px;letter-spacing:.15em}
@@ -1182,7 +1292,10 @@ details.sideflip{counter-reset:sect}
       if (!feedInstanceCurrent(asset, picked.entry)) return null;
       return cardStateValueOf(picked.entry);
     }
-    var FINISHED_CARD_STATES = { FINISHED_WIN: 1, FINISHED_STOPPED: 1, EXPIRED: 1, NOT_TRACKED: 1 };
+    /* FINISHED_CARD_STATES was deleted here (2026-11-06). Its one consumer was isRetired(), which fed the
+       #sideflip-retired note inside the dropdown; both are gone with the side-by-side layout. A fifth list
+       of terminal states on this page is exactly what fix plan step 5 is removing, so it goes rather than
+       sits unused waiting to be picked up again. */
 
     /* WHICH SIDE OF A PAIR THIS SURFACE SPEAKS FOR - THE THREE COPIES ARE GONE (2026-11-06).
        This layer, index.html's mech-feed and this page's own base render each carried their own ranking,
@@ -1815,7 +1928,6 @@ details.sideflip{counter-reset:sect}
     }
     function ensureSideTruth() {
       var old = document.getElementById('mech-sidetruth'); if (old) old.remove();
-      var oldFlip = document.getElementById('sideflip-retired'); if (oldFlip) oldFlip.remove();
       if (!feed || !feed.assets) return;
       var sides = {};
       ['LONG', 'SHORT'].forEach(function (d) { var e = feed.assets[ASSET_ + '|' + d]; if (e) sides[d] = e; });
@@ -1835,8 +1947,6 @@ details.sideflip{counter-reset:sect}
         if (e.lifecycle && e.lifecycle.voided) return null;
         return e.card_state.value || null;
       };
-      var isRetired = function (d) { return !!FINISHED_CARD_STATES[sideState(d)]; };
-
       var msgs = [];
       /* THE "THIS TRADE IS OVER" NOTICE WAS REMOVED HERE (2026-10-29, Angela: "hype has a red box saying it
          never triggered"). It belonged to the one-card era, when this page could show one side's LEVELS under
@@ -1847,10 +1957,16 @@ details.sideflip{counter-reset:sect}
          something that had gone wrong.
          The mismatch message below is deliberately KEPT. It cannot fire while the two layers agree, which is
          precisely why it is worth having: it is the guard that speaks up if they ever drift apart again. */
+      /* 2026-11-06: the final clause used to read "open \u201cThe other side of this setup\u201d further
+         down", which was an instruction to click a disclosure that no longer exists. Both sides are open
+         columns now, each headed with its own direction, so the sentence points at the labelled column
+         instead. The GUARD is unchanged and still worth having for the same reason as before: it cannot
+         fire while the two layers agree about which side leads. */
       if (shown && reported && reported !== shown) {
         msgs.push('<b>Read the direction carefully: the state at the top of this page is the ' + reported
-          + ' side, and the ladder and levels below it are the ' + shown + ' side.</b> Chelsea published both.'
-          + ' For the ' + reported + " levels, open \u201cThe other side of this setup\u201d further down.");
+          + ' side, and the ladder beside it is headed ' + shown + '.</b> Chelsea published both.'
+          + ' Each column below is labelled with its own side - read the ' + reported + ' column for the'
+          + ' levels the state above belongs to.');
       }
       if (msgs.length) {
         var ladder = document.getElementById('ladder');
@@ -1865,38 +1981,17 @@ details.sideflip{counter-reset:sect}
         }
       }
 
-      /* The flip holds the OTHER side's full ladder. If that side is retired, say so there too - otherwise a
-         member opens it and reads a dead setup's levels as live. */
-      var otherDir = shown ? (shown === 'LONG' ? 'SHORT' : 'LONG') : null;
-      if (otherDir && isRetired(otherDir)) {
-        var body = document.querySelector('.sideflip .flipbody');
-        if (body) {
-          var n = document.createElement('div');
-          n.id = 'sideflip-retired'; n.className = 'sideflip-retired';
-          /* THE COLOUR FOLLOWS THE RESULT (2026-10-29). This note was hard-coded red, and red means stopped
-             on this board - so a side that reached every one of Chelsea's targets was being reported in the
-             loss colour. A finished trade is not automatically a bad one.
-             2026-11-06: "did it win" was re-derived here from the lifecycle state plus two public_display
-             outcome strings - a fourth reading of the same evidence. It is the other side's card_state now.
-             The three sentences below stay on this page deliberately: they describe the OTHER side inside a
-             disclosure, not the card's status, so they are not part of the one card_state words table. If
-             Chelsea wants to word them, they move to levelup-words.js as their own table. */
-          var oState = sideState(otherDir);
-          var oWon = oState === 'FINISHED_WIN';
-          if (oWon) n.className = 'sideflip-retired is-win';
-          n.innerHTML = oWon
-            ? '<b>This side finished.</b> It triggered and reached what it was aiming for - the state at the top'
-              + ' of this page is the other side. Shown because Chelsea published it and nothing published is'
-              + ' ever deleted, not because these levels are still live.'
-            : oState === 'FINISHED_STOPPED'
-            ? '<b>This side is over.</b> It triggered and has since finished - the state at the top of this page'
-              + ' is the other side. Shown because Chelsea published it and nothing published is ever deleted -'
-              + ' not because these levels are live.'
-            : '<b>This side never triggered.</b> Chelsea published it, and the condition was never met before it'
-              + ' was retired. Shown because nothing published is ever deleted - not because these levels are live.';
-          body.insertBefore(n, body.firstChild);
-        }
-      }
+      /* THE "#sideflip-retired" NOTE IS DELETED HERE (Ang, 2026-11-06, the side-by-side layout).
+         It wrote one of three sentences into the top of the dropdown's body - "This side finished" /
+         "This side is over" / "This side never triggered" - so that a member who opened the disclosure did
+         not read a dead setup's levels as live. There is no disclosure to open any more: the trailing side
+         is a labelled column carrying its OWN status, composed from its own card_state through
+         levelup-words.js, which is the same fact in the one place the board words states.
+         That is a copy removed, not a warning dropped. The three sentences here were a FOURTH wording of
+         FINISHED_WIN / FINISHED_STOPPED / EXPIRED, living outside the words table precisely because they
+         described "the other side" - a distinction the layout has now dissolved. The win-is-not-red rule
+         they carried (2026-10-29) is carried by the column's `tone-complete` class instead, and the test
+         that pinned it moved with it: see SBS-7 in test/pair-side-by-side.test.js. */
     }
     /* THE CONFIRMATION STRENGTH METER (2026-10-22). Chelsea asked for this on the 2026-10-16 class and said
        later she would rather have a strength meter than traffic lights. monitor/confirmation.js computed it
@@ -1928,35 +2023,71 @@ details.sideflip{counter-reset:sect}
     /* THE LIVE PRICE ON A CLOSED SETUP SAYS IT IS CLOSED (Angela, 2026-10-23, on ADA: "the live price is
        still showing in that ladder"). The row stays, because where price is now is still worth seeing. What
        changes is that it stops describing itself as a running trade. */
+    /* EVERY LADDER ON THE PAGE, AND EACH ONE ASKED ABOUT ITS OWN SIDE (Ang, 2026-11-06).
+       The two passes below used to read `document.getElementById('ladder')` - one ladder, resolved to one
+       side through feedEntryFor()/WANT_SIDE. That was sound while a pair folded its second side into a
+       dropdown, and it is wrong the moment both sides are open: the trailing column's ladder would be
+       asked about the LEADING side's lifecycle, which is the cross-side contamination the 2026-10-24 BTC
+       bug was about - one side's reached_at stamped onto the other side's prices.
+       A ladder carries `data-dir`, so each one names the side it draws and is answered from that side's
+       own feed entry. No new decision: the state still comes from the monitor's card_state, the hits still
+       come from that side's lifecycle. What changed is that the side is READ OFF THE LADDER instead of
+       assumed to be the one the page leads with. A single-sided page has no data-dir and falls through to
+       feedEntryFor() exactly as before. */
+    function ladderSides() {
+      var out = [];
+      var lads = document.querySelectorAll('.ladder');
+      Array.prototype.forEach.call(lads || [], function (lad) {
+        out.push({ ladder: lad, dir: (lad.getAttribute && lad.getAttribute('data-dir')) || null });
+      });
+      return out;
+    }
+    function entryForLadder(dir) {
+      if (!dir) return feedEntryFor(ASSET_);
+      var k = ASSET_ + '|' + String(dir).toUpperCase();
+      var e = feed && feed.assets && feed.assets[k];
+      return e ? { key: k, entry: e } : null;
+    }
+    /* That side's card_state, with the same void and same-instance guards cardStateFor() applies. Kept
+       beside entryForLadder() rather than folded into cardStateFor(), because cardStateFor() answers "the
+       side this page leads with" and every existing caller means exactly that. */
+    function ladderCardState(dir, picked) {
+      if (!picked || !picked.entry) return null;
+      if (!feedInstanceCurrent(ASSET_, picked.entry)) return null;
+      if (picked.entry.lifecycle && picked.entry.lifecycle.voided) return null;
+      return cardStateValueOf(picked.entry);
+    }
     function ensureNowRowTruth() {
-      var row = document.querySelector('#ladder .row.now'); if (!row) return;
-      var picked = feedEntryFor(ASSET_);
-      /* 2026-10-30 (Angela, HYPE): an old instance's terminal state must never close a new setup. Today's
-         HYPE long - published 5:08 AM, never triggered - carried "This setup is closed. The price above is
-         for reference only" because the feed still held the 10/26 long at OBJECTIVES_EXHAUSTED. */
-      if (!feedInstanceCurrent(ASSET_, picked && picked.entry)) picked = null;
-      /* 2026-10-24: a live-pulsing "Live price" row under a finished setup is exactly the claim the comment
-         above this function says the page must not make, and the retirement and the six-line exit count as
-         finished for it just as a stop or a completion do.
-         2026-11-06: this was a FOURTH list of terminal lifecycle states, OR'd with the deleted expiredFor().
-         One read now. NOT_TRACKED is deliberately not in it: nothing is being tracked, which is not the same
-         claim as "this setup is closed", and the row has never said so for SHIB. */
-      var nowState = picked ? cardStateFor(ASSET_) : null;
-      /* `ended` is the one thing the monitor can say about a state whose WORDS are still an open decision -
-         today only SIX_LINE_EXIT, and the legacy retired flag. It carries no wording and names no outcome;
-         it says the instance is over, which is all this row needs to know to stop pulsing. */
-      var endedFlag = !!(picked && picked.entry && picked.entry.card_state && picked.entry.card_state.ended);
-      var done = nowState === 'FINISHED_WIN' || nowState === 'FINISHED_STOPPED' || nowState === 'EXPIRED' || endedFlag;
-      row.classList.toggle('mech-now-closed', done);
-      var note = row.querySelector('.rn');
-      if (note) {
-        var closedText = 'This setup is closed. The price above is for reference only - nothing here is being tracked any more.';
-        var liveText = 'Live price. Everything above this line is earned, not assumed.';
-        var want = done ? closedText : liveText;
-        if (note.textContent !== want) note.textContent = want;
-      }
-      var cap = row.querySelector('.rp small');
-      if (cap) { var w = done ? 'closed' : 'live'; if (cap.textContent !== w) cap.textContent = w; }
+      ladderSides().forEach(function (L) {
+        var row = L.ladder.querySelector('.row.now'); if (!row) return;
+        var picked = entryForLadder(L.dir);
+        /* 2026-10-30 (Angela, HYPE): an old instance's terminal state must never close a new setup. Today's
+           HYPE long - published 5:08 AM, never triggered - carried "This setup is closed. The price above is
+           for reference only" because the feed still held the 10/26 long at OBJECTIVES_EXHAUSTED. */
+        if (!feedInstanceCurrent(ASSET_, picked && picked.entry)) picked = null;
+        /* 2026-10-24: a live-pulsing "Live price" row under a finished setup is exactly the claim the comment
+           above this function says the page must not make, and the retirement and the six-line exit count as
+           finished for it just as a stop or a completion do.
+           2026-11-06: this was a FOURTH list of terminal lifecycle states, OR'd with the deleted expiredFor().
+           One read now. NOT_TRACKED is deliberately not in it: nothing is being tracked, which is not the same
+           claim as "this setup is closed", and the row has never said so for SHIB. */
+        var nowState = picked ? ladderCardState(L.dir, picked) : null;
+        /* `ended` is the one thing the monitor can say about a state whose WORDS are still an open decision -
+           today only SIX_LINE_EXIT, and the legacy retired flag. It carries no wording and names no outcome;
+           it says the instance is over, which is all this row needs to know to stop pulsing. */
+        var endedFlag = !!(picked && picked.entry && picked.entry.card_state && picked.entry.card_state.ended);
+        var done = nowState === 'FINISHED_WIN' || nowState === 'FINISHED_STOPPED' || nowState === 'EXPIRED' || endedFlag;
+        row.classList.toggle('mech-now-closed', done);
+        var note = row.querySelector('.rn');
+        if (note) {
+          var closedText = 'This setup is closed. The price above is for reference only - nothing here is being tracked any more.';
+          var liveText = 'Live price. Everything above this line is earned, not assumed.';
+          var want = done ? closedText : liveText;
+          if (note.textContent !== want) note.textContent = want;
+        }
+        var cap = row.querySelector('.rp small');
+        if (cap) { var w = done ? 'closed' : 'live'; if (cap.textContent !== w) cap.textContent = w; }
+      });
     }
     /* THE PAGE TITLE STOPS SAYING "WATCH" ONCE THE SETUP HAS FIRED (Angela, 2026-10-23: "the card when
        opened says short watch... they all do"). The status banner was already hidden and replaced by the
@@ -1987,10 +2118,16 @@ details.sideflip{counter-reset:sect}
       if (em.textContent !== want) em.textContent = want;
     }
     function ensureLadderHits() {
-      var ladder = document.getElementById('ladder'); if (!ladder) return;
+      /* Per ladder, each asked about its own side - see ladderSides() above. Before the side-by-side
+         layout this ran on `#ladder` only, so a pair's trailing column showed no reached levels at all:
+         a banked target on the side a member was not leading with simply went unmarked. */
+      ladderSides().forEach(function (L) { ladderHitsFor(L.ladder, L.dir); });
+    }
+    function ladderHitsFor(ladder, dir) {
+      if (!ladder) return;
       Array.prototype.forEach.call(ladder.querySelectorAll('.mech-hit'), function (n) { n.remove(); });
       if (!feed || !feed.assets) return;
-      var picked = feedEntryFor(ASSET_);
+      var picked = entryForLadder(dir);
       var lc = picked && picked.entry && picked.entry.lifecycle;
       if (!lc) return;
       /* Only for the instance this page is showing - the same guard mechanicalFor() applies, so a stale
