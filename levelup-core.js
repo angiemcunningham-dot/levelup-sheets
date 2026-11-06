@@ -895,18 +895,25 @@
    * Pure: it takes plain numbers and a card_state value, touches no DOM, no feed shape and no fetch.
    * ============================================================================================ */
   const PAIR_BATCH_WINDOW_MS = 2 * 60 * 60 * 1000;
-  const RUNNING_RANK = 3;
+  /* LEAD ORDER (Ang, DECIDED 2026-11-06): TRIGGERED > WATCHING > FINISHED (win or stopped) > DORMANT >
+     EXPIRED, on every card and page, REGARDLESS OF PUBLISH TIME. BTC is the worked example: the completed
+     short leads and the dormant long goes under it, though both were published seconds apart.
+     Rank dominates; publication time only breaks a tie BETWEEN EQUALS (see pickPairSide), which is what
+     keeps PLS-20 and PLS-20b true - both rank two FINISHED sides, so they land on the same rank and the
+     batch window decides exactly as it always did. */
   const CARD_STATE_RANK = {
-    TRIGGERED: 3,
-    WATCHING: 2, DORMANT: 2,
-    FINISHED_WIN: 1, FINISHED_STOPPED: 1, EXPIRED: 1,
+    TRIGGERED: 5,
+    WATCHING: 4,
+    FINISHED_WIN: 3, FINISHED_STOPPED: 3,
+    DORMANT: 2,
+    EXPIRED: 1,
     NOT_TRACKED: 0,
   };
   /* An UNMAPPED terminal state - today only SIX_LINE_EXIT, whose display words are an open decision
      waiting on Chelsea - still ranks as a side that has ENDED, which is exactly what all three copies
      this replaces already did with it. That is an ORDERING fact and was never the open question; what
      a member READS off such a card is, and this function says nothing about that. */
-  const UNMAPPED_TERMINAL_RANK = 1;
+  const UNMAPPED_TERMINAL_RANK = CARD_STATE_RANK.FINISHED_STOPPED;   // an ended side ranks as FINISHED
   function pairSideRank(state) {
     if (state === null || state === undefined) return UNMAPPED_TERMINAL_RANK;
     return Object.prototype.hasOwnProperty.call(CARD_STATE_RANK, state) ? CARD_STATE_RANK[state] : UNMAPPED_TERMINAL_RANK;
@@ -925,8 +932,15 @@
     return keep.length ? keep : cands;
   }
   /* `a` preferred over `b` within the SAME rank, per the tie-breaks above. */
+  /* WHICH RANKS BREAK A TIE ON THE TRIGGER TIME, BY NAME AND NEVER BY NUMBER (2026-11-06). This read
+     `rank === 3 || rank === 1` against the old table, where 3 was TRIGGERED and 1 was FINISHED/EXPIRED.
+     Renumbering the table for Ang's lead order silently repointed those literals at the wrong states and
+     PLS-19 went red - two running sides fell through to "newest publication" instead of "earliest trigger".
+     A rank is an ordering, not an identity; comparing it to a literal couples two things that are free to
+     move apart. */
+  const TRIGGER_TIEBREAK_RANKS = [CARD_STATE_RANK.TRIGGERED, CARD_STATE_RANK.FINISHED_WIN, CARD_STATE_RANK.EXPIRED];
   function pairBeatsAtRank(a, b, rank) {
-    if (rank === 3 || rank === 1) {
+    if (TRIGGER_TIEBREAK_RANKS.indexOf(rank) >= 0) {
       const ta = finiteOrNull(a.trigger_ms), tb = finiteOrNull(b.trigger_ms);
       if (ta !== null && tb !== null) return ta < tb;
       if (ta !== null) return true;
@@ -943,18 +957,25 @@
     if (!all.length) return null;
     if (all.length === 1) return all[0];
     const o = opts || {};
-    /* RULE 1. The running sides are considered on their own and the batch window is not applied to
-       them: that window is what dropped ADA's running short for being thirteen days old. */
-    const running = all.filter((c) => pairSideRank(c.state) === RUNNING_RANK);
-    const pool = running.length > 1 ? running
-      : running.length === 1 ? [running[0]]
-      : pairBatch(all, o.windowMs);
+    /* RANK FIRST, ACROSS EVERY SIDE, WITH NO BATCH WINDOW (Ang, 2026-11-06: "regardless of publish time").
+       The window applies only AFTER the rank is settled, to break a tie between equals. Doing it the other
+       way round is what dropped ADA's running short for being thirteen days old, and it is also what would
+       bury BTC's completed short under its dormant long. */
+    let bestRank = -1;
+    for (let i = 0; i < all.length; i++) { const r = pairSideRank(all[i].state); if (r > bestRank) bestRank = r; }
+    const top = all.filter((c) => pairSideRank(c.state) === bestRank);
+    if (top.length === 1) return top[0];
+    /* TIE BETWEEN EQUALS. Only here does publication time speak, and it speaks exactly as it always has -
+       which is why PLS-20 and PLS-20b (two FINISHED sides, same rank) are untouched by the rule above.
+       TWO RUNNING SIDES ARE EXEMPT FROM THE WINDOW, as they were before: between two live trades the
+       tie-break is the earlier trigger (PLS-19), and a window would drop the older one before that can be
+       asked. ADA no longer depends on this exemption - rank carries it - but PEPE's two running sides do. */
+    const pool = bestRank === CARD_STATE_RANK.TRIGGERED ? top : pairBatch(top, o.windowMs);
     if (pool.length === 1) return pool[0];
-    let best = null, bestRank = -1;
+    let best = null;
     for (let i = 0; i < pool.length; i++) {
-      const r = pairSideRank(pool[i].state);
-      if (!best || r > bestRank) { best = pool[i]; bestRank = r; continue; }
-      if (r === bestRank && pairBeatsAtRank(pool[i], best, r)) best = pool[i];
+      if (!best) { best = pool[i]; continue; }
+      if (pairBeatsAtRank(pool[i], best, bestRank)) best = pool[i];
     }
     return best;
   }

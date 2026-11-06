@@ -1553,6 +1553,12 @@ load();setInterval(load,60000);
 @keyframes mechCoinSpinIn{from{transform:scale(1.22) rotate(0deg);opacity:0}to{transform:scale(1.22) rotate(360deg);opacity:1}}
 @media (prefers-reduced-motion:reduce){.mech-coin img{animation:none;transform:scale(1.22)}}
 .pill.mech-demoted{opacity:.55;font-size:10px;transform:scale(.92);transform-origin:left center}
+/* ITEM 2 (Ang, 2026-11-06): on any card that is NOT WATCHING, Chelsea's status pill is grey and
+   neutral - never the orange Watching style. The orange is the board's colour for 'this is a live
+   watch'; wearing it under a headline that says the trade finished or is dormant is the same
+   contradiction card_state exists to remove. Keyed on card_state, not on whether words exist, so a
+   state with no wording yet still loses the orange. */
+.pill.pill-neutral{background:#F3F4F6;border-color:var(--gray2);color:#374151}
 /* Active Now's base .act-status (26px/900, styled for short text like "ACTIVE LONG") wraps the longer reconciled
    labels ("ACTIVE LONG — TP1 HIT") across 3-4 lines with the dash stranded alone. Higher specificity than both the
    base rule and its own 640px media-query override (two classes beats one), so this applies at every width without
@@ -1691,8 +1697,9 @@ load();setInterval(load,60000);
        long card on the morning this was approved carried three of their answers at once - a WATCHING pill,
        a red "never triggered" sentence and a CANNOT TRIGGER chip - and they contradicted one another.
 
-       The monitor decides now, once, per side, and publishes `card_state: { value, since }`. All five of
-       those functions are DELETED. cannot_trigger, stop_breached and not_tracked are still in the feed as
+       The monitor decides now, once, per side, and publishes `card_state: { value, since }`. Four of those
+       five are DELETED. `mechanicalFor` stays, stripped of the three state booleans it used to hand out
+       (`stopped`, `complete`, `outcome` - see MF-17): it reads ladder facts and decides nothing. cannot_trigger, stop_breached and not_tracked are still in the feed as
        evidence - reasons, times, notes a member can be shown - and nothing here reads them to decide.
 
        The two guards every one of those functions carried stay, because they are about IDENTITY, not state:
@@ -2335,7 +2342,13 @@ load();setInterval(load,60000);
           var oldHead = c.querySelector('.mech-headline'); if (oldHead) oldHead.remove();
           var oldLabel = c.querySelector('.mech-pill-label'); if (oldLabel) oldLabel.remove();
           var resolved = resolveCurrentState(asset, side);
+          /* ITEM 2: the pill's COLOUR follows card_state directly, so it is neutral for every non-WATCHING
+             state even when resolveCurrentState() declines to speak (no words yet, or a trigger it cannot
+             attribute to this instance). Same single read, no second decision. */
           if (pill) {
+            var pillState = cardStateFor(asset, side);
+            if (pillState && pillState !== 'WATCHING') pill.classList.add('pill-neutral');
+            else pill.classList.remove('pill-neutral');
             if (resolved) {
               pill.classList.add('mech-demoted');
               // 2026-09-29 (Angela-approved): the Coin moves out of the inline headline text into the blank

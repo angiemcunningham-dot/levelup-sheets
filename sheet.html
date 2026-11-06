@@ -27,6 +27,9 @@ body{display:flex;justify-content:center;padding:24px 12px}
 .b-active{background:rgba(34,197,94,.12);border:2px solid var(--green);color:var(--green-d)}
 .b-short{background:rgba(239,68,68,.10);border:2px solid var(--red);color:var(--red-d)}
 .b-watch{background:#FFF4E0;border:2px solid var(--orange);color:var(--orange-d)}
+/* ITEM 2 (Ang, 2026-11-06): same rule as the card - a non-WATCHING page shows Chelsea's status
+   banner in neutral grey, never the orange Watching style. */
+.banner.pill-neutral{background:#F3F4F6;border-color:var(--gray2);color:#374151}
 .b-none{background:#F3F4F6;border:2px solid var(--gray2);color:#374151}
 .b-closed{background:#F3F4F6;border:2px solid #374151;color:#111}
 .b-invalid{background:rgba(239,68,68,.10);border:2px solid var(--red);color:var(--red-d)}
@@ -1528,7 +1531,20 @@ details.sideflip{counter-reset:sect}
       var banner = app.querySelector('.banner'); if (!banner) return;
       var old = document.getElementById('mech-headline');
       var resolved = resolveCurrentState(ASSET_);
-      if (!resolved) { banner.style.display = ''; if (old) old.remove(); return; }
+      if (!resolved) {
+        banner.style.display = '';
+        /* ITEM 2 (Ang, 2026-11-06). When a headline IS shown the banner is hidden below, so the orange
+           never appears. This is the other branch: a non-WATCHING state the words file cannot speak for
+           yet, where Chelsea's banner stays visible - it must not wear the Watching orange either. */
+        try {
+          var bState = cardStateFor(ASSET_, shownSideFor(ASSET_));
+          if (banner.classList) {
+            if (bState && bState !== 'WATCHING') banner.classList.add('pill-neutral');
+            else banner.classList.remove('pill-neutral');
+          }
+        } catch (e) { /* a colour is never worth breaking the page for */ }
+        if (old) old.remove(); return;
+      }
       var a = feed && feed.assets && feed.assets[ASSET_];
       var sheetTxt = (a && a.sheet_status && a.sheet_status.text) || '';
       var pubAgo = (a && a.instance_published_at) ? fmtAgo(a.instance_published_at) : '';
