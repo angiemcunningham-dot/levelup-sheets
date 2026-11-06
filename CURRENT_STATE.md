@@ -2,7 +2,7 @@
 
 Nov 5, 2026 · @Ang
 
-**Next session starts with: Fix plan step 4 PLAN, target = BTC long card in LEVELUP_AUDIT\preview_B5.png (three contradicting labels).**
+**Next session starts with: Step 3 staging PLAN. Then step 4 build once Chelsea supplies the state words.**
 
 The board works, but the same decisions are made in too many places, so every fix moves the bug somewhere else. The fix is one decider (the monitor) and one doc (this one). This doc replaces all 449 earlier handoffs.
 
@@ -63,6 +63,8 @@ These are product rules, not code questions. Until each has one written answer, 
 - [x] **"Not a live watch" wording (Chelsea, 2026-11-05).** One sentence, exactly: "This setup never triggered and is no longer valid. Shown for the record only - not something to watch." (Replaces both sentences currently live at `index.html` lines 1477 and 2046.)
 - [x] **Split pair (Chelsea, 2026-11-05).** The two cards STAY TOGETHER - it shows students the "if this, then that".
 - [x] **Old ChatGPT prompt (Chelsea, 2026-11-05).** Never used. No action.
+- [ ] **Display words for each `card_state` (Chelsea, OPEN 2026-11-06).** Step 4 publishes a state and the board maps it to words in ONE table. Chelsea gives the exact words for each of the seven values, the way she gave the "Not a live watch" sentence. Proposed for DORMANT: "No longer a live watch." The other six are unwritten. The table is not built until she answers.
+- [ ] **What `SIX_LINE_EXIT` maps to (OPEN 2026-11-06).** The lifecycle state appears in three separate "is it over" maps (`sheet.html:336`, `:1217`, `:1880`) and belongs to none of the seven `card_state` values. Most likely FINISHED_STOPPED, but it is a trade outcome a member reads, so it is Chelsea's answer, not a guess.
 
 ## Known problems, ranked
 
@@ -95,13 +97,135 @@ Do these in order. Each step is done only when its check passes, and the result 
 - [x] **1. Answer the open decisions** (section above). Done 2026-11-05: every decision in that section now has a written answer and a date.
 - [x] **2. Lock in past bugs as tests** - done 2026-11-05 except B4 and B6, which stay todo until built. BTC, HYPE, LINK, ADA and PEPE all have live regression tests (PLS-1, PFS-1, PLS-18, PLS-20b, PLS-19, WNR-1, NTL-1..6, A7), and Chelsea’s new rules are live as B1, B2, B3, B7 and B8. B5 is **done** - one "Not a live watch" sentence from one function, shipped 2026-11-05 (board d4c3e0c, monitor 976baab); the test is live. Still todo: **B4** (written invalidation never moves the strength meter, feed carries the warning flag) and **B6** (a pair’s two cards stay together).
   - Diamond comeback built 2026-11-05 (56902dc): `dormantFor()` in `monitor/engine.js`. Note: the 24h watch window still applies, so a dormant side can only come back within 24h of publication.
-- [ ] **3. Staging board.** A copy of the board where every change lands first. Done when Ang can open a staging link and approve before anything goes live.
-- [ ] **4. Make the monitor the only decider.** The feed states, per side: which side leads, whether it is over, and the exact warning text. The pages only display it. Done when the browser-side copies in step 5 have nothing left to decide.
+- [ ] **3. Staging board. DO THIS BEFORE STEP 4** (ordered 2026-11-06). A copy of the board where every change lands first. Done when Ang can open a staging link and approve before anything goes live. The next session plans this: the SIMPLEST setup where a monitor change and a board change can land together and be viewed before the live replay gate sees them.
+- [ ] **4. Make the monitor the only decider.** The feed states, per side: which side leads and what state it is in. The pages only display it. Done when the browser-side copies in step 5 have nothing left to decide.
+  - **Designed and approved 2026-11-06 - see "Step 4 design" below.** BLOCKED on two things: step 3 (staging) must exist first, and Chelsea must supply the display words. Do not build before both.
 - [ ] **5. Delete the browser copies.** Remove the duplicated side, state and warning logic from both `mech-feed` blocks. Done when `currentBatch`, `expiredFor` and both "Not a live watch" writers are gone from the pages.
 - [ ] **6. One shared price fetch and one Sheet read per page.** Done when each page has one price timer and one Sheet fetch.
 - [ ] **7. Clean up.** Commit or drop PLS-20b, rename the OneDrive clone to `_OLD_DO_NOT_USE`, and replace the TURBO hardcode with a Sheet status.
+  - Rename `C:\dev\levelup-sheets` to `_OLD_DO_NOT_USE` (frozen since 2026-11-05) and remove it from the `boardDir()` candidates (`scripts/sync-board-fixtures.js:62`). Fewer copies, not smarter ones.
 - [ ] **8. Stale-feed alert.** Notify Ang when the feed is more than 45 minutes old.
 - [ ] **9. Morning "Expiring today" review for Chelsea.** When she logs into the intake app (~4 AM), show every setup expiring that day with Keep active (adds 24h) / Let it expire buttons. No click = expires as normal. Reuse `review-queue.js` and `morning-review.js`. Build after steps 3-6. Do not build now.
+
+## Step 4 design (approved 2026-11-06)
+
+Approved by Ang on 2026-11-06 from the BTC long card in `LEVELUP_AUDIT\preview_B5.png`, which carries three
+contradicting labels at once: a WATCHING badge with "Long Watch", a red "never triggered" sentence, and a
+"CANNOT TRIGGER - STOP BROKEN BEFORE ENTRY" chip.
+
+**Why it happens.** Not three bugs. Five independent writers each answering a DIFFERENT question, none able to
+see the others. The pill answers "what does the Sheet say". The chip answers "did the engine bar it". The
+banner answers "did price close past the stop". The headline answers "did it trigger" - and for this card it
+returns `null`, which is exactly why the stale Sheet pill survives. The fix is one question with one answer.
+
+### The one field
+
+`monitor-feed.json`, per side, always present, never null:
+
+```
+assets["BTC|LONG"].card_state = { value: "DORMANT", since: "2026-11-05T14:00:00.000Z" }
+```
+
+**Value and timestamp only - NO sentence** (Ang, 2026-11-06). The monitor decides the STATE; the board maps
+state to words in ONE table in ONE function. `DEAD_WATCH_SENTENCE` (`index.html:474`) moves into that table.
+This is the "one sentence, one owner" rule from the Diamond decision above, applied to all seven states.
+Candidate home for the table: `levelup-core.js` - the one file both pages already load (`index.html:678`,
+`sheet.html:597`) and the existing precedent for one shared implementation. Not yet decided.
+
+### Which engine facts map to each value
+
+| Value | Mapped from |
+| --- | --- |
+| `TRIGGERED` | `lifecycle.trigger.reached_at` set AND `state === 'TARGETS_IN_PROGRESS'` |
+| `FINISHED_WIN` | `OBJECTIVES_EXHAUSTED`, or `STOP_BOUNDARY_REACHED` with `public_display.outcome === 'CLOSED_WITH_PROGRESS'` and `tps_reached_before_stop.length` - the exact line `index.html:2109` already draws, carried over unchanged |
+| `FINISHED_STOPPED` | `STOP_BOUNDARY_REACHED` with zero TPs before the stop |
+| `EXPIRED` | `state === 'EXPIRED_UNTRIGGERED'`. Final, never re-evaluated |
+| `DORMANT` | `cannot_trigger != null`. That field already carries the comeback: `public-feed.js:166` returns null when `dormant === false`, which is `engine.js:412 dormantFor()` |
+| `WATCHING` | has a lifecycle, no trigger, `cannot_trigger == null` |
+| `NOT_TRACKED` | `not_tracked != null`, or no lifecycle at all (7 sides today) |
+
+`NOT_TRACKED` is the seventh value, added 2026-11-06. Without it the board needs a seventh branch and a copy
+comes straight back. `SIX_LINE_EXIT` maps to nothing yet - see the open decision above.
+
+`cannot_trigger`, `stop_breached` and `not_tracked` STAY in the feed as evidence (`reason`, `at`, `note`). The
+board stops reading them to decide anything.
+
+**One gate moves with it.** Every board function listed below carries `if (cls !== 'WATCHING' && cls !==
+'NO_TRADE') return null` (e.g. `index.html:1998`) - Chelsea's own Active Long/Short status wins over any
+mechanical clock. That gate becomes part of computing `card_state`, or the board has kept a decision.
+
+### Every status writer on that card, and its fate
+
+`index.html`:
+
+| file:line | Writes | Input | Fate |
+| --- | --- | --- | --- |
+| `:458`, `:546` | WATCHING pill | Sheet status string | **KEEP** - demoted for every non-WATCHING state, labelled `Chelsea status:` (`:2446`) |
+| `:535`, `:541` | "Long Watch" headline | Sheet headline regex | **DELETE** - direction is already the side chip |
+| `:543` | LONG side chip | board `side` | **UNTOUCHED** - direction, not status |
+| `:546` | "status set ..." | Sheet timestamp | **UNTOUCHED** |
+| `:1488` (`applyStopBreachFlags` :1401) | red dead-watch sentence | feed `stop_breached` | **DELETE this writer** |
+| `:2056` (`applyCannotTriggerPanels` :2019) | the same sentence | feed `cannot_trigger` | **KEEP** - the single sentence writer, reads `card_state` |
+| `:2003-2007` -> `:2455` | CANNOT TRIGGER chip | feed `cannot_trigger` | **DELETE** - same fact as the sentence, said twice, in operator words |
+| `:2161-2200` -> `:2508` | strength strip | feed `confirmation_strength` | **KEEP** - gated on `card_state`, not just `expiredFor` (`:2175`) |
+| `:2096-2121` -> `:2443` | `mech-headline` | feed lifecycle | **KEEP** - becomes THE status; must return text for DORMANT/EXPIRED/NOT_TRACKED instead of null |
+| `:2493-2497` | "SHORT SIDE COMPLETE - in Previous Calls" | feed + DOM | **KEEP**, but **DELETE `:2487`**, which reads the other card's rendered text (`mate.innerText`) to guess its state |
+| `:1939-1944`, `:2062-2066` | CONDITION NEVER MET / NOT TRACKED chips | feed | **DELETE** - become `card_state` values |
+| `:2205-2216` | TP ladder, STOPPED, COMPLETE | feed lifecycle | **KEEP** - a fact ladder; renders only for TRIGGERED/FINISHED_* |
+| `:1474`, `:2051` | `is-dead` / `ct-dead` classes | two passes | **COLLAPSE TO ONE** - the reason they are separate (the 2026-11-05 unresponsive-tab fight) disappears when one pass writes |
+
+`sheet.html` - and note it has **no `cannot_trigger` reader at all**, so the detail page cannot show the
+sentence or the chip today. The card and its own detail page already disagree about BTC long, before any of
+this changes:
+
+| file:line | Writes | Fate |
+| --- | --- | --- |
+| `:282`, `:446` | "WATCHING - NO TRIGGER YET" | **KEEP** - same treatment as the index pill |
+| `:1469` -> `:1598-1613` | `mech-headline` + Sheet-status sub-line | **KEEP** - but `resolveCurrentState(asset)` takes no `side`; it must |
+| `:1320`, `:1354` | sheet.html's OWN `mechanicalFor` / `expiredFor`, also side-blind | **DELETE** |
+| `:1765-1786` | "Waiting on price to open above the floor" | **DELETE** for any state but WATCHING - it renders on a dormant side today |
+| `:1868-1935` | "This side never triggered / is over / finished" from a LOCAL `OVER` map at `:1880` | **DELETE the local map**, map from `card_state` |
+| `:2108-2122` | strength meter | **KEEP** - same gate as the index strip |
+
+### What the BTC long card shows afterward
+
+```
+BTC  [LONG]
+No longer a live watch.                       <- the ONE status (mech-headline), wording OPEN
+This setup never triggered and is no longer
+valid. Shown for the record only - not
+something to watch.                           <- Chelsea's locked sentence, from the table,
+                                                 in the existing .mech-headline-sub slot
+Chelsea status: Watching                      <- demoted, labelled as her source status
+SHORT SIDE  Complete - in Previous Calls
+status set Nov 5, 7:05 AM EST
+```
+
+Gone: WATCHING as a status, "Long Watch", the CANNOT TRIGGER chip, the strength strip, the separate red box.
+One status, one explanation. `sheet.html?asset=BTC&side=long` renders the identical `card_state`.
+
+### Tests to add (prefix `OD-`, "one decider")
+
+| ID | Where | Asserts |
+| --- | --- | --- |
+| OD-1 | `public-feed.test.js` | Every published side carries exactly one `card_state` from the fixed list, over the full 70-asset replay (BNB-7 style) |
+| OD-2 | `cannot-trigger-feed.test.js` | BTC\|LONG on the 2026-11-05 fixture -> DORMANT; at a price inside the 6% band -> WATCHING. Ties `card_state` to `dormantFor()` |
+| OD-3 | `board-dom.js` | **The screenshot test.** Render the BTC\|LONG card; text matching `/WATCHING\|DORMANT\|TRIGGERED\|COMPLETE\|STOPPED\|EXPIRED\|CANNOT TRIGGER\|Long Watch/` appears exactly ONCE |
+| OD-4 | `board-dom.js` | That card has no `.mech-str-strip` and no `.mech-tick` |
+| OD-5 | `board-dom.js` | HYPE's completed long -> FINISHED_WIN, never the dead sentence, pink not red (carries `winner-never-red` through the new field) |
+| OD-6 | `board-dom.js`, both pages | The index card and `sheet.html?asset=BTC&side=long` show the same single status, same words. The direct guard for problem 1 |
+| OD-7 | `board-dom.js` | The pair line names the other side's state from its `card_state`; `mate.innerText` is never read |
+| OD-8 | source-level, like `board-fixture-sync` | Neither page still contains `expiredFor` / `stopBreachedFor` / `cannotTriggerFor` / `mechanicalFor` state logic. This is step 5's acceptance test and the only kind that stays true |
+| OD-9 | `public-feed.test.js` | A side whose Sheet status is Active Long/Short is never published DORMANT - today's gate at `index.html:1998`, moved into the monitor |
+
+### Why step 3 comes first
+
+Ordered 2026-11-06. Four reasons, heaviest first:
+
+1. **The acceptance criterion is visual.** "Exactly one status" is something Ang reads off a card. OD-3 counts labels in a harness; it cannot tell you the card reads right. No diff answers this.
+2. **It changes all 70 sides and four surfaces at once.** The moment the headline stops returning null, every card's pill demotes. There is no tenth of this change to ship.
+3. **This exact card has already taken the live board down.** `index.html:2019-2026` records it: the first cut of `applyCannotTriggerPanels` fought `applyStopBreachFlags` through the MutationObserver, the tab went unresponsive mid-market, and it was reverted. Step 4 deliberately merges those two passes - the riskiest possible edit at exactly that spot.
+4. **The fixture gate makes a split landing impossible.** `scripts/sync-board-fixtures.js:62` compares the monitor's fixtures to the board's origin/main. A monitor change publishing `card_state` and a board change reading it must land together, or the replay gate fails closed and a cycle publishes nothing - which is what happened at 23:31 on 2026-11-05. Staging is the only place both halves can land and be looked at before the live gate sees them.
 
 ## Evidence
 
