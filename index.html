@@ -1713,13 +1713,15 @@ load();setInterval(load,60000);
       if (!feedInstanceCurrent(asset, picked.entry)) return null;
       return cardStateValueOf(picked.entry);
     }
-    /* When this state began, for the one place that says it out loud (the retirement line). */
-    function cardStateSince(asset, side) {
-      if (!feed) return null;
-      var picked = feedEntryFor(asset, side); if (!picked) return null;
-      if (!feedInstanceCurrent(asset, picked.entry)) return null;
-      return (picked.entry.card_state && picked.entry.card_state.since) || null;
-    }
+    /* THE "RETIRED <date>" LINE WAS DROPPED, DELIBERATELY (2026-11-06).
+       expiredBadgeHtml drew "○ CONDITION NEVER MET  RETIRED 14h AGO" beneath the status, and the step 4
+       design deletes that chip: it said the same thing as the status line in operator words, which is the
+       duplication this step is about. The DATE half had no duplicate, though, and nothing shows it now.
+       The data has not gone anywhere - the monitor publishes it as card_state.since, dated from the moment
+       the watch window actually closed rather than the run that noticed. A reader for it lived here and has
+       been removed rather than left unused, because an unused reader is the start of a second copy.
+       Putting the line back is a wording decision and therefore Chelsea's: it is one entry in
+       levelup-words.js and one read of card_state.since. Recorded in CURRENT_STATE.md. */
     var FINISHED_CARD_STATES = { FINISHED_WIN: 1, FINISHED_STOPPED: 1, EXPIRED: 1, NOT_TRACKED: 1 };
     var PAIR_SUFFIXES = ['|LONG', '|SHORT'];
     function feedEntriesFor(asset) {
@@ -2535,7 +2537,7 @@ load();setInterval(load,60000);
     load();
     setInterval(load, 60000);
     obs.observe(grid.parentNode, { childList: true, subtree: true });
-    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, currentInstanceKeyFor: currentInstanceKeyFor, cardStateFor: cardStateFor, cardStateSince: cardStateSince, resolveCurrentState: resolveCurrentState, directionFor: directionFor, decorate: decorate, decorateActiveNow: decorateActiveNow, coinEligible: coinEligible, badgeHtml: badgeHtml, strengthStripFor: strengthStripFor, ensureTodayNote: ensureTodayNote, applyDeadWatchPanels: applyDeadWatchPanels, applyStaleTradeNotices: applyStaleTradeNotices, feedEntryFor: feedEntryFor };   // test hook (read-only)
+    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, currentInstanceKeyFor: currentInstanceKeyFor, cardStateFor: cardStateFor, resolveCurrentState: resolveCurrentState, directionFor: directionFor, decorate: decorate, decorateActiveNow: decorateActiveNow, coinEligible: coinEligible, badgeHtml: badgeHtml, strengthStripFor: strengthStripFor, ensureTodayNote: ensureTodayNote, applyDeadWatchPanels: applyDeadWatchPanels, applyStaleTradeNotices: applyStaleTradeNotices, feedEntryFor: feedEntryFor };   // test hook (read-only)
   } catch (e) { if (window.console) console.warn('mechanical feed addon disabled:', e); }
 })();
 </script>

@@ -329,8 +329,10 @@ async function load(){
      rather than `setupRows`, because setupRows is derived from cur and so cannot be used to choose it. */
   const mechSide=(d)=>{try{return (MECH&&MECH.assets&&MECH.assets[ASSET+"|"+String(d).toUpperCase()])||null;}catch(e){return null;}};
   /* WHICH SIDE OF A PAIR LEADS THIS PAGE - ONE IMPLEMENTATION, IN THE SHARED CORE (2026-11-06).
-     Deleted from here: SIDE_OVER_STATES, sideOver, sideRank, sideTrigMs, currentBatchDirs and pickSide -
-     this page's own copy of the ranking, the two-hour batch window and the tie-breaks. index.html's
+     Deleted from here: SIDE_OVER_STATES, sideOver, sideRank, currentBatchDirs and pickSide - this page's own
+     copy of the ranking, the two-hour batch window and the tie-breaks. sideTrigMs is NOT deleted; it is
+     still declared below, because it reads a FACT off the feed (when a side triggered) and decides nothing.
+     It is handed to the shared ordering as an input. index.html's
      mech-feed and this page's own mech-feed each carried the same thing again, with the same explanatory
      comment pasted at all three sites. That is CURRENT_STATE.md known problem 2, and it caused the BTC,
      LINK, HYPE and ADA side bugs - eight rounds in thirteen days. All three call

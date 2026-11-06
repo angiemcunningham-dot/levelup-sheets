@@ -281,6 +281,60 @@ Deleted from `sheet.html`: its own `expiredFor`, `SIDE_OVER_STATES`, `sideOver`,
 `ensureSideTruth`. `mechanicalFor` survives on both pages as a reader of FACTS - which targets were reached, what
 was banked before a stop, when it fired - with `stopped`, `complete` and `outcome` removed.
 
+### WHICH LIVE CARDS CHANGE, measured not assumed (2026-11-06)
+
+Built against `monitor-data/shadow`, 70 sides, every one of them given a `card_state`:
+
+| value | count | |
+| --- | --- | --- |
+| FINISHED_STOPPED | 25 | |
+| FINISHED_WIN | 21 | |
+| EXPIRED | 11 | |
+| DORMANT | 5 | ADA\|LONG, BTC\|LONG, DOGE\|LONG, ONDO\|LONG, XRP\|LONG |
+| NOT_TRACKED | 5 | HBAR, KAS, ZZTEST, SHIB\|LONG, SHIB\|SHORT |
+| TRIGGERED | 2 | ADA\|SHORT, ZEC |
+| WATCHING | 1 | |
+
+**The NOT_TRACKED five are not one group, and only one of them is a real change.**
+
+- **SHIB\|LONG, SHIB\|SHORT** carry `not_tracked` (IMPLAUSIBLE_LEVEL_SCALE) and already showed a NOT TRACKED
+  chip on main - the 2026-11-03 "please fix shib" fix. Same claim, different words.
+- **HBAR, KAS, ZZTEST** have NO `not_tracked` flag, Sheet status "No Trade", no lifecycle and no matching
+  receipt. **On main these carried no mechanical claim at all.** They now gain a NOT TRACKED status line and
+  the NOT_TRACKED sub-sentence - and that sentence is **the one genuinely invented piece of member-facing
+  wording in `levelup-words.js`**. Everything else in that file is either Chelsea's or wording already live
+  on the board, carried over.
+
+ZZTEST is a test row, so the cards a member can actually see change on are **HBAR and KAS**, both of which
+Chelsea has already marked No Trade. They also drop out of Live Attention, which is the 2026-11-03 SHIB rule
+generalised from "the engine refused this" to "the engine has produced no lifecycle for this".
+
+**If Ang or Chelsea would rather those two stayed silent**, the change is `NOT_TRACKED.status = null` in
+`levelup-words.js` and nothing else moves - the same mechanism WATCHING already uses. Pinned by NLC-1..NLC-4
+in `test/mechanical-feed-board.test.js`, which name the assets rather than describing them.
+
+### Two things the deletions dropped, recorded rather than quietly lost
+
+**1. The "RETIRED <date>" line on an expired card.** `expiredBadgeHtml` drew `○ CONDITION NEVER MET` plus
+`RETIRED 14h AGO`. The design deletes that chip because the first half duplicated the status line - but the
+DATE half had no duplicate, and nothing displays it now. The data is still published, as `card_state.since`,
+dated from the moment the watch window actually closed rather than the run that noticed. Putting the line
+back is one entry in `levelup-words.js` and one read of `card_state.since`; it was not done here because it
+is wording, and wording is Chelsea's. The reader that existed for it was removed rather than left unused.
+
+**2. The near-edge stop warning, for a side the engine has NOT barred.** `stop_breached` and `cannot_trigger`
+come from different engine facts and the sets genuinely differ - measured 2026-11-06, **APT carries
+`stop_breached` with no `cannot_trigger`**, and SHIB\|SHORT the reverse. `stop_breached` is the NEAR edge
+(price closed into the stop zone; it describes); `cannot_trigger` is the FAR edge (a 1H close through the
+stop; it gates). Step 4 deletes the writer that spoke for the near edge.
+
+For a never-triggered, still-firable side that is the RIGHT outcome: the old sentence said "this setup never
+triggered and is no longer valid" about a side the engine had not barred and which could still fire, which
+was simply false. What is dropped and not replaced is the quieter half - that the distance-to-trigger on such
+a card no longer means much once price has been inside the stop zone. Nothing says that now. Pinned by SBO-1
+and SBO-2 in `test/att-ui.test.js`. Today's only instance, APT, is unaffected: it is terminal through the
+receipt fallback and reads FINISHED_STOPPED.
+
 ### Five deviations from the design, each deliberate
 
 1. **`SIX_LINE_EXIT` was not mapped**, because its words are Chelsea's and still open. It publishes a null value
