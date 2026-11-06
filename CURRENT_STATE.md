@@ -52,7 +52,7 @@ The goal is exactly one scheduled writer: the 15-minute task on Ang's PC. Two ot
 These are product rules, not code questions. Until each has one written answer, code built around it will keep looping. Write the answer and the date next to each one.
 
 - [ ] **Diamond rule.** When one side of a pair is invalidated, can the other side still trigger later? Five longs (ADA, BTC, DOGE, ONDO, XRP) are stuck at "cannot trigger" with no way back. Answer:
-- [ ] **Auto-return within 10% of trigger.** Does a setup come back to watch when price returns within 10% of its trigger? Chelsea said yes in September and no in October. Open since 2026-10-29. Answer:
+- [x] **Auto-return (Chelsea, confirmed 2026-11-05).** When one side of a pair is invalidated or stopped, the OPPOSITE side goes back to Watching once price is within 6% of its trigger price (e.g. $100 trigger: $94 to $106). Watching is NOT triggered. The trigger is ALWAYS a 1-hour candle OPENING above (long) or below (short) the Simple and Smooth moving averages. A stopped trade is over and never comes back. (Supersedes the 10% figure asked about on 2026-10-29.)
 - [ ] **Written invalidation.** Should Chelsea's written invalidation line govern the strength meter everywhere? Measured cost: 9 cards change. Answer:
 - [ ] **"Not a live watch" wording.** Two different sentences are live (`index.html` lines 1477 and 2046). Pick one. Answer:
 - [ ] **Split pair.** When one side finishes and the other is live, do the two cards stay together or sit in separate sections? Answer:
