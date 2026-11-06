@@ -80,7 +80,7 @@ h1 em{font-style:normal;color:var(--pink)}
 .sidepair{display:grid;grid-template-columns:1fr 1fr;gap:26px;align-items:start;margin-top:4px}
 .sidepair-note{font-size:13px;line-height:1.55;color:#6c7488;margin:22px 0 0}
 .sidecol{min-width:0}                                 /* a grid item must be allowed to shrink or the ladder forces overflow */
-.sidecol-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-bottom:10px;border-bottom:2px solid var(--line)}
+.sidecol-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-height:30px;padding-bottom:10px;border-bottom:2px solid var(--line)}
 .sidecol-pub{font-size:11.5px;color:#6c7488}
 .sidecol-badge{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--pink);
   border:1px solid var(--pink-line);border-radius:999px;padding:2px 8px}
@@ -594,7 +594,10 @@ async function load(){
   const sideColumnHTML=(s,lead)=>`<section class="sidecol${lead?" is-lead":""}" data-dir="${esc(String(s.dir).toLowerCase())}">`
     +`<header class="sidecol-h"><span class="dirtag d-${esc(String(s.dir).toLowerCase())}">${esc(String(s.dir).toUpperCase())}</span>`
     +`<span class="sidecol-pub">published ${esc(stamp(get(s.row,"timestamp")))}</span>`
-    +(lead?`<span class="sidecol-badge">status at the top of this page</span>`:"")+`</header>`
+    /* Short enough to sit on ONE line beside the tag and the timestamp. The first build read "status at
+       the top of this page", which wrapped, so the leading column's header was two lines and the trailing
+       one was one - and every section bar below them sat at a different height between the columns. */
+    +(lead?`<span class="sidecol-badge">leads this page</span>`:"")+`</header>`
     +sideStatusHTML(s.dir)
     +setupHTML(s.row,lead,s.dir)
     +`</section>`;
