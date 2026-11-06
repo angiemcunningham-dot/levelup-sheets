@@ -88,6 +88,8 @@ h1 em{font-style:normal;color:var(--pink)}
 .sidecol-state.tone-complete .sidecol-state-h{color:var(--pink)}
 .sidecol-state.tone-stopped{border-left-color:var(--red);background:rgba(239,68,68,.06)}
 .sidecol-state.tone-stopped .sidecol-state-h{color:var(--red-d)}
+.sidecol-state.tone-watch{border-left-color:var(--pink);background:#FFF4FA}
+.sidecol-state.tone-watch .sidecol-state-h{color:#A4006A}
 .sidecol-state.tone-expired,.sidecol-state.tone-closed{border-left-color:#9aa1b2;background:#F1F2F6}
 .sidecol-state.tone-expired .sidecol-state-h,.sidecol-state.tone-closed .sidecol-state-h{color:#4C5663}
 .page-levels-note{margin-top:18px}
@@ -557,26 +559,22 @@ async function load(){
      live price. Once for the page: the chart, Chelsea's voice note and the disclaimers - media() was
      already emitted once above, and the disclaimers moved out of setupHTML() to join it. */
 
-  /* THE COLUMN STATES ITS SIDE'S STATE. IT DOES NOT RESTATE THE SIDE'S PROGRESS.
-     The words come from LevelUpWords - the one table both pages read - keyed on that side's own
-     `card_state` off the feed. Only {DIR} is filled here. TRIGGERED and FINISHED_WIN carry fragments for
-     banked targets ({PROGRESS}, {BANKED}) and those are deliberately left at their no-progress form,
-     because the page-top headline already composes the full sentence for the leading side by reading the
-     lifecycle, and composing it a second time here would be a second writer of one sentence - exactly the
-     duplication this board is being taken apart to remove. A column says WHICH STATE its side is in; the
-     headline says how far that side has got.
-     WATCHING has no status in the table on purpose: Chelsea's own pill is the status for an ordinary
-     watch, so the strip falls back to her published status for that row and says nothing mechanical. */
-  const sideStatusHTML=(dir)=>{
-    const W=(typeof window!=="undefined"&&window.LevelUpWords)||null;
-    const st=sideCardState(dir);
-    const e=W&&st?W.CARD_STATE_WORDS[st]:null;
-    const words=e?W.fill(e.status,{DIR:String(dir).toUpperCase(),PROGRESS:e.progress_none||"",BANKED:"",TPS:""}):null;
-    const tone=e&&e.tone?` tone-${e.tone}`:"";
-    if(!words)return "";
-    return `<div class="sidecol-state${tone}"><div class="sidecol-state-h">${esc(words)}</div>`
-      +(e.sub?`<p class="sidecol-state-sub">${esc(e.sub)}</p>`:"")+`</div>`;
-  };
+  /* THE COLUMN'S STATUS IS NOT COMPOSED HERE. THIS IS A SLOT, AND THAT IS THE WHOLE POINT.
+     (Ang + reviewer, 2026-11-06: "a column's status must use the SAME words as the page-top headline for
+     that side - call the same composer; do not write a second one.")
+
+     What was here: sideStatusHTML(), which read the side's card_state and worded it from
+     LevelUpWords itself. It used the one WORDS table but it was a second COMPOSER, and the two did not
+     agree: the headline reads the lifecycle and says "ACTIVE SHORT - TP1 REACHED", while this one left
+     {PROGRESS} at its no-progress form and said "ACTIVE SHORT - CONDITION MET" a few hundred pixels
+     below it. Ang saw both sentences on one screen on the first preview. A member cannot be expected to
+     work out that they describe the same trade.
+
+     So the base render emits an EMPTY slot carrying only the side it belongs to, and mech-feed's
+     ensureSideColumnStates() fills it by calling resolveCurrentState(ASSET_, dir) - the identical
+     function, with the identical arguments, that writes the headline. One composer, two surfaces.
+     If mech-feed never runs (no feed, a parse failure), the slot stays empty and the column renders with
+     its levels and ladder and no status - the same degradation every other ensure* pass has. */
 
   /* One function, both columns. `lead` only marks which one the page-top headline speaks for; it changes
      no words and decides nothing. The member-visible claim on the trailing column is its own card_state,
@@ -588,7 +586,7 @@ async function load(){
        the top of this page", which wrapped, so the leading column's header was two lines and the trailing
        one was one - and every section bar below them sat at a different height between the columns. */
     +(lead?`<span class="sidecol-badge">leads this page</span>`:"")+`</header>`
-    +sideStatusHTML(s.dir)
+    +`<div class="sidecol-state-slot" data-dir="${esc(String(s.dir).toLowerCase())}"></div>`
     +setupHTML(s.row,lead,s.dir)
     +`</section>`;
 
@@ -959,6 +957,7 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
 .mech-hit{display:inline-block;margin-left:8px;padding:2px 7px;border-radius:999px;background:rgba(34,197,94,.15);
   color:var(--green-d);font-family:Archivo,sans-serif;font-weight:800;font-size:10px;letter-spacing:.06em;text-transform:uppercase;vertical-align:middle}
 .mech-hit.stop{background:rgba(239,68,68,.15);color:var(--red-d)}
+.mech-hit.pre-entry{background:#EEF0F4;color:#4C5663;font-weight:700}
 .mech-hit-when{display:block;font-family:"JetBrains Mono",monospace;font-size:10.5px;font-weight:400;color:var(--gray);letter-spacing:0;text-transform:none;margin-top:2px}
 /* The strength bar: one long pill, five segments, filling as more readings agree. */
 .mech-str-bar{display:flex;gap:3px;height:18px;border-radius:999px;overflow:hidden;background:#EDEFF2;padding:3px;margin:2px 0 10px}
@@ -1038,9 +1037,11 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
 .rn{color:#2B333D;font-size:12.5px}
 .rp small{color:#4C5663;font-weight:600}
 .rl .now-ts{color:#4C5663}
-#ladder .row:has(.mech-hit){background:#F4FDF7}
+.ladder .row:has(.mech-hit){background:#F4FDF7}
+.ladder .row:has(.mech-hit.pre-entry){background:#F7F8FA}
 .mech-hit{background:#E3F9EC;border:1.5px solid var(--green)}
 .mech-hit.stop{background:#FDE8E8;border-color:var(--red)}
+.mech-hit.pre-entry{background:#EDEFF3;border:1.5px solid #9AA1B2;color:#3A424E}
 .mech-hit-when{color:#3A424D;font-weight:600}
 
 /* ENTRY STRENGTH. The word, then the count in a solid pill of the same colour - no light grey anywhere,
@@ -1101,12 +1102,14 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
 
 /* THE LADDER - row tints and ink straight off the mockup */
 .row{border-bottom:1px solid #DDE1E6}
-#ladder .row:has(.mech-hit){background:#EBFBF1}
+.ladder .row:has(.mech-hit){background:#EBFBF1}
+.ladder .row:has(.mech-hit.pre-entry){background:#F4F5F8}
 .row.now{background:#FFF4FA;border-top:1px solid #DDE1E6;border-bottom:1px solid #DDE1E6}
 .row.now .rl{color:#A4006A}
 .row .rl{color:#111114}
 .mech-hit{background:#EBFBF1;border:1.5px solid #0F6B46;color:#0F6B46}
 .mech-hit.stop{background:#FDE8E8;border-color:#9B1C1C;color:#9B1C1C}
+.mech-hit.pre-entry{background:#E9ECF1;border:1.5px solid #6B7383;color:#2B333D}
 
 /* ENTRY STRENGTH - the cream block, the big word, the solid count, the ruled list */
 #mech-str .card.mech-panel-card{background:#FDF8EC}
@@ -1165,11 +1168,12 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
 
 /* ROW TINTS. #EBFBF1 and #FFF4FA are a few percent off white; these are the same hues with enough
    saturation to read as shading rather than as paper. */
-#ladder .row:has(.mech-hit){background:#D9F2E4}
+.ladder .row:has(.mech-hit){background:#D9F2E4}
+.ladder .row:has(.mech-hit.pre-entry){background:#EDEFF3}
 /* A HIT STOP IS NOT A SUCCESS. :has(.mech-hit) tinted every reached row the same green, the stop included -
    FIL banked three targets and then stopped out, and its STOP row was the same colour as its TP rows. The bug
    predates this pass; at the old #EBFBF1 it was too pale to notice, and deepening the tint exposed it. */
-#ladder .row:has(.mech-hit.stop){background:#FBE0E0}
+.ladder .row:has(.mech-hit.stop){background:#FBE0E0}
 .row.now{background:#FFE1F1}
 .mech-trigger-marker{background:#E2F6EB}
 .mech-hit{background:#CDEEDC}
@@ -1286,9 +1290,15 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
       if (entry.lifecycle && entry.lifecycle.voided) return null;
       return entry.card_state.value || null;
     }
-    function cardStateFor(asset) {
+    /* `dir` (2026-11-06) NAMES A SIDE INSTEAD OF LETTING THE PAGE CHOOSE ONE.
+       Every reader in this layer used to resolve the side implicitly - WANT_SIDE, else pickPairSide - on
+       the premise stated at feedEntryFor() below, that "this page renders one side at a time". The
+       side-by-side layout retired that premise: both sides are on screen, and the trailing column has to
+       be able to ask about ITSELF. Passing the side is the smallest honest way to do it. Omitting it is
+       byte-for-byte the old behaviour, which is what every existing caller does. */
+    function cardStateFor(asset, dir) {
       if (!feed) return null;
-      var picked = feedEntryFor(asset); if (!picked) return null;
+      var picked = feedEntryFor(asset, dir); if (!picked) return null;
       if (!feedInstanceCurrent(asset, picked.entry)) return null;
       return cardStateValueOf(picked.entry);
     }
@@ -1321,7 +1331,15 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
        own side, this page renders one side at a time, so the side is read once from the URL and applied here
        rather than threaded through every caller. No side in the link leaves the choosing path untouched,
        which is what every single-sided asset uses. */
-    function feedEntryFor(asset) {
+    function feedEntryFor(asset, dir) {
+      /* AN EXPLICIT SIDE OUTRANKS THE URL (2026-11-06). The caller that passes one is a column asking
+         about itself, and it must never be answered with the side the PAGE leads with - that is how the
+         trailing column would end up wearing the leading side's status. */
+      if (dir) {
+        var dk = asset + '|' + String(dir).toUpperCase();
+        var de = feed && feed.assets && feed.assets[dk];
+        return de ? { key: dk, entry: de } : null;
+      }
       if (typeof WANT_SIDE !== 'undefined' && WANT_SIDE) {
         var sk = asset + '|' + WANT_SIDE.toUpperCase();
         var se = feed && feed.assets && feed.assets[sk];
@@ -1359,9 +1377,9 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
       return validKeys.length ? validKeys.indexOf(entry.setup_instance_key) >= 0
                               : (entry.setup_instance_key === currentInstanceKey);
     }
-    function mechanicalFor(asset, currentInstanceKey) {
+    function mechanicalFor(asset, currentInstanceKey, dir) {
       if (!feed) return null;
-      var picked = feedEntryFor(asset); if (!picked) return null;
+      var picked = feedEntryFor(asset, dir); if (!picked) return null;
       var a = picked.entry;
       if (currentInstanceKey) {
         var validKeys = instanceKeysForCurrent(asset);
@@ -1510,18 +1528,37 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
        Returns null - leaving Chelsea's own status primary, exactly as a feed outage does - for WATCHING, a
        voided observation, a non-current instance, and a feed with no card_state (an old cached feed, or the
        SIX_LINE_EXIT state whose display words are still an open decision waiting on Chelsea). */
-    function resolveCurrentState(asset) {
-      var state = cardStateFor(asset);
-      if (!state || state === 'WATCHING') return null;
+    /* `side` (2026-11-06) - ONE COMPOSER, TWO SURFACES.
+       The headline calls this with no side and gets the side the page leads with, exactly as before. A
+       side-by-side COLUMN calls it with its own side and gets a sentence built from the same words, the
+       same lifecycle read and the same progress fragments. That is what stops the top of the page saying
+       "TP1 REACHED" while the column under it says "CONDITION MET" - there is no second composer to drift.
+
+       `opts.includeWatching` is the one thing the two surfaces disagree about, and it is a SURFACE policy,
+       not a second opinion about the state. The headline suppresses WATCHING so Chelsea's own pill stays
+       primary at the top of the page (the step 4 design, unchanged). A column has no pill of its own and
+       an unlabelled column reads as a mystery, so it asks for the words. Same table, same function. */
+    function resolveCurrentState(asset, side, opts) {
+      var o = opts || {};
+      var state = cardStateFor(asset, side);
+      if (!state) return null;
+      if (state === 'WATCHING' && !o.includeWatching) return null;
       var W = window.LevelUpWords;
       var words = W && W.CARD_STATE_WORDS && W.CARD_STATE_WORDS[state];
       if (!words || !words.status) return null;     // no words file: say nothing rather than invent wording
-      var m = mechanicalFor(asset, directionAsset === asset ? currentInstanceKey : null);
+      var m = mechanicalFor(asset, directionAsset === asset ? currentInstanceKey : null, side);
+      if (state === 'WATCHING') {
+        /* Nothing mechanical has happened, so there is nothing to read off the lifecycle - only the side,
+           which the caller supplied or the page already knows. */
+        var wd = side ? String(side).toUpperCase() : directionFor(asset);
+        if (!wd) return null;                       // never fabricate a direction we cannot evidence
+        return { text: W.fill(words.status, { DIR: wd }), note: words.sub || null, kind: words.tone, state: state, dir: wd };
+      }
       if (state === 'TRIGGERED') {
         /* The ladder facts have to be attributable to THIS instance before the page can say a trade is
            running on them (the SEI-shaped case). */
         if (!m || !m.triggered) return null;
-        var dir = directionFor(asset);
+        var dir = side ? String(side).toUpperCase() : directionFor(asset);
         if (!dir) return null;                      // never fabricate a direction we cannot evidence
         var hit = -1;
         m.tp.forEach(function (v, i) { if (v) hit = i; });
@@ -1993,6 +2030,28 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
          they carried (2026-10-29) is carried by the column's `tone-complete` class instead, and the test
          that pinned it moved with it: see SBS-7 in test/pair-side-by-side.test.js. */
     }
+    /* EACH COLUMN'S STATUS, FROM THE FUNCTION THAT WRITES THE HEADLINE (Ang + reviewer, 2026-11-06).
+       The base render emits an empty .sidecol-state-slot per column carrying only its side. This fills it
+       by calling resolveCurrentState(ASSET_, dir, {includeWatching:true}) - the SAME composer, the same
+       words table, the same lifecycle read the headline uses. The only thing this function decides is
+       where the sentence goes.
+       Idempotent like every other ensure* here: it rewrites the slot's contents from scratch, so a second
+       pass after a feed refresh cannot stack two strips or leave a stale one behind. */
+    function ensureSideColumnStates() {
+      var slots = document.querySelectorAll('.sidecol-state-slot');
+      Array.prototype.forEach.call(slots || [], function (slot) {
+        var dir = slot.getAttribute && slot.getAttribute('data-dir');
+        if (!dir) return;
+        var r = null;
+        try { r = resolveCurrentState(ASSET_, dir, { includeWatching: true }); } catch (e) { r = null; }
+        if (!r || !r.text) { if (slot.innerHTML !== '') slot.innerHTML = ''; return; }
+        var html = '<div class="sidecol-state' + (r.kind ? ' tone-' + escH(r.kind) : '') + '">'
+          + '<div class="sidecol-state-h">' + escH(r.text) + '</div>'
+          + (r.note ? '<p class="sidecol-state-sub">' + escH(r.note) + '</p>' : '')
+          + '</div>';
+        if (slot.innerHTML !== html) slot.innerHTML = html;
+      });
+    }
     /* THE CONFIRMATION STRENGTH METER (2026-10-22). Chelsea asked for this on the 2026-10-16 class and said
        later she would rather have a strength meter than traffic lights. monitor/confirmation.js computed it
        from 2026-10-19 and nothing ever called it, so it has never been on the board; the monitor now
@@ -2141,7 +2200,19 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
       if (lc.trigger && lc.trigger.reached_at) hits['TRIGGER 1'] = { at: lc.trigger.reached_at, kind: 'tp', zone: lc.trigger.zone };
       (lc.targets || []).forEach(function (t) { if (t.reached_at) hits[t.level_id] = { at: t.reached_at, kind: 'tp', zone: t.zone }; });
       if (lc.extended && lc.extended.reached_at) hits.EXTENDED = { at: lc.extended.reached_at, kind: 'tp', zone: lc.extended.zone };
-      if (lc.stop_boundary && lc.stop_boundary.reached_at) hits.STOP = { at: lc.stop_boundary.reached_at, kind: 'stop', zone: lc.stop_boundary.zone };
+      /* A STOP THAT PRICE PASSED BEFORE ENTRY IS NOT A STOP-OUT (Ang, 2026-11-06).
+         This row said "Stop hit" for every reached stop, which claims a trade was stopped out of. Nobody
+         was in it. On BTC's long today that stamp sits on a side that came BACK to WATCHING under the
+         diamond comeback rule, so the ladder read as a loss on a setup that is live and waiting.
+         `in_trade` is the monitor's own fact and the board invents nothing: false means the stop was
+         passed with no trigger behind it. The side's CURRENT card_state then picks which of the two
+         pre-entry sentences applies - "back on watch" is only true if it actually is. Both come from
+         levelup-words.js; neither is composed here. */
+      if (lc.stop_boundary && lc.stop_boundary.reached_at) {
+        var preEntry = lc.stop_boundary.in_trade === false && !(lc.trigger && lc.trigger.reached_at);
+        hits.STOP = { at: lc.stop_boundary.reached_at, kind: 'stop', zone: lc.stop_boundary.zone,
+                      preEntry: preEntry, backOnWatch: preEntry && ladderCardState(dir, picked) === 'WATCHING' };
+      }
       if (!Object.keys(hits).length) return;
       Array.prototype.forEach.call(ladder.querySelectorAll('.row'), function (row) {
         var rl = row.querySelector('.rl'); if (!rl) return;
@@ -2167,11 +2238,21 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
           }
         }
         var tag = document.createElement('span');
-        tag.className = 'mech-hit' + (h.kind === 'stop' ? ' stop' : '');
+        /* A PRE-ENTRY STOP IS NOT PAINTED AS A LOSS EITHER. `.stop` is the red marker; a stop price passed
+           with nobody in the trade is information, not a result, so it takes the neutral marker. */
+        tag.className = 'mech-hit' + (h.kind === 'stop' && !h.preEntry ? ' stop' : '')
+          + (h.preEntry ? ' pre-entry' : '');
         /* "Hit", per OptionD.dc.html, which draws both the Trigger row and the TP rows as "&#10003; Hit".
            Ladder markers only - the headline and the evidence box still state a fact without declaring an
-           entry, which is the 2026-10-22 decision: keep Chelsea's word on the ladder and nowhere else. */
-        tag.innerHTML = (h.kind === 'stop' ? '&#10003; Stop hit' : '&#10003; Hit')
+           entry, which is the 2026-10-22 decision: keep Chelsea's word on the ladder and nowhere else.
+           2026-11-06: the four strings moved to levelup-words.js LADDER_MARKS. A missing words file falls
+           back to the plain mark rather than printing nothing on a reached level. */
+        var M = (window.LevelUpWords && window.LevelUpWords.LADDER_MARKS) || null;
+        var mark = h.kind !== 'stop' ? (M ? M.hit : '✓ Hit')
+          : h.preEntry ? (h.backOnWatch ? (M ? M.stop_pre_entry_on_watch : 'Stop passed before entry — back on watch')
+                                        : (M ? M.stop_pre_entry : 'Stop passed before entry'))
+          : (M ? M.stop_hit : '✓ Stop hit');
+        tag.innerHTML = escH(mark)
           + '<span class="mech-hit-when">' + escH(fmtEt(h.at)) + '</span>';
         rl.appendChild(tag);
       });
@@ -2332,7 +2413,7 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
       if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(el, anchor.nextSibling);
       else { var app2 = document.getElementById('app'); if (app2) app2.appendChild(el); }
     }
-    function applyAll() { ensure(); ensureStaleTradeNotice(); ensureHeadline(); ensureReadiness(); ensureSixLineFlag(); ensureSideTruth(); ensureStrengthMeter(); ensureLadderHits(); ensureNowRowTruth(); ensureHeroState(); suppressStaleChip(); ensureAttnChip(); loadLivePrice(); loadReadinessPrice(); }
+    function applyAll() { ensure(); ensureStaleTradeNotice(); ensureHeadline(); ensureReadiness(); ensureSixLineFlag(); ensureSideTruth(); ensureSideColumnStates(); ensureStrengthMeter(); ensureLadderHits(); ensureNowRowTruth(); ensureHeroState(); suppressStaleChip(); ensureAttnChip(); loadLivePrice(); loadReadinessPrice(); }
     var obs = new MutationObserver(function () { obs.disconnect(); applyAll(); obs.observe(app, { childList: true }); });
     function load() { return fetchFeed().then(function (f) { feed = f; applyAll(); }); }
     load();
@@ -2345,7 +2426,7 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
        check on its own short interval - it is two DOM reads and a class toggle. */
     setInterval(ensureNowRowTruth, 2000);
     obs.observe(app, { childList: true });
-    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, getCurrentInstanceKey: function () { return currentInstanceKey; }, resolveCurrentState: resolveCurrentState, directionFor: directionFor, ensure: ensure, ensureHeadline: ensureHeadline, suppressStaleChip: suppressStaleChip, attnTarget: attnTarget, attnChipHtml: attnChipHtml, ensureAttnChip: ensureAttnChip, loadLivePrice: loadLivePrice, coinEligible: coinEligible, coinBadgeHtml: coinBadgeHtml, ensureCoinHero: ensureCoinHero, triggerMarkerHtml: triggerMarkerHtml, conditionalTrigger: conditionalTrigger, readinessHtml: readinessHtml, ensureReadiness: ensureReadiness, loadReadinessPrice: loadReadinessPrice, panelHtml: panelHtml, sixLineReadinessFor: sixLineReadinessFor, ensureSixLineFlag: ensureSixLineFlag, ensureLadderHits: ensureLadderHits, shownSideFor: shownSideFor, ensureSideTruth: ensureSideTruth, cardStateFor: cardStateFor, feedEntryFor: feedEntryFor, ensureStaleTradeNotice: ensureStaleTradeNotice, ensureHeroState: ensureHeroState, ensureNowRowTruth: ensureNowRowTruth, ensureStrengthMeter: ensureStrengthMeter };   // test hook (read-only)
+    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, getCurrentInstanceKey: function () { return currentInstanceKey; }, resolveCurrentState: resolveCurrentState, directionFor: directionFor, ensure: ensure, ensureHeadline: ensureHeadline, suppressStaleChip: suppressStaleChip, attnTarget: attnTarget, attnChipHtml: attnChipHtml, ensureAttnChip: ensureAttnChip, loadLivePrice: loadLivePrice, coinEligible: coinEligible, coinBadgeHtml: coinBadgeHtml, ensureCoinHero: ensureCoinHero, triggerMarkerHtml: triggerMarkerHtml, conditionalTrigger: conditionalTrigger, readinessHtml: readinessHtml, ensureReadiness: ensureReadiness, loadReadinessPrice: loadReadinessPrice, panelHtml: panelHtml, sixLineReadinessFor: sixLineReadinessFor, ensureSixLineFlag: ensureSixLineFlag, ensureLadderHits: ensureLadderHits, shownSideFor: shownSideFor, ensureSideTruth: ensureSideTruth, ensureSideColumnStates: ensureSideColumnStates, cardStateFor: cardStateFor, feedEntryFor: feedEntryFor, ensureStaleTradeNotice: ensureStaleTradeNotice, ensureHeroState: ensureHeroState, ensureNowRowTruth: ensureNowRowTruth, ensureStrengthMeter: ensureStrengthMeter };   // test hook (read-only)
   } catch (e) { if (window.console) console.warn('mechanical feed addon disabled:', e); }
 })();
 </script>

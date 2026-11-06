@@ -475,8 +475,119 @@ when `haveMech()` is true, and `haveMech()` asks for a **lifecycle**, not a `car
 missing a field the board gates on tests the degradation path and reports nothing - the same trap
 `H.withCardStates()` exists to close for `card_state`.
 
+### Preview review round 2 (Ang + reviewer, 2026-11-06)
+
+Five items came back off the first preview. Four were real and are done. The fifth was not a bug, and the
+false report traces back to this session's own screenshots - recorded below rather than quietly dropped.
+
+**Committed on a branch, not main.** `side-by-side` in BOTH work clones: board `e924add`, monitor `bf56da7`.
+The board clone is back on `main` with the change in the WORKING TREE (unstaged), because
+`scripts/publish-staging.js` pushes `main` and commits the INDEX. Note for next time:
+`git checkout <branch> -- <paths>` STAGES as well as restoring, and a staged file defeats the script's
+"commit without -a" guard, which exists so the parked PLS-20b change can never be swept into a preview
+commit. `git restore --staged` after.
+
+**1. A WATCHING column shows a strip.** `CARD_STATE_WORDS.WATCHING.status` was `null` by design -
+"Chelsea's pill IS the status for an ordinary watch". That is STILL the rule for the page-top headline and
+has not changed. It was wrong for a column: with both sides open, a column with no status reads as an
+unlabelled second setup. WATCHING now carries `'{DIR} WATCH — WAITING FOR TRIGGER'` (PROVISIONAL), and
+WHICH SURFACE SHOWS IT is a flag at the call site, not a second string.
+
+**2. One composer, two surfaces.** This is the important one. The base render used to compose the column
+strip itself. It read the one words table but it was a second COMPOSER, and it drifted on the first preview:
+the headline said `ACTIVE SHORT — TP1 REACHED` and the column a few hundred pixels below said
+`ACTIVE SHORT — CONDITION MET`, because the column left `{PROGRESS}` at its no-progress form.
+`sideStatusHTML()` is DELETED. The base render emits an empty `.sidecol-state-slot[data-dir]`, and
+mech-feed's `ensureSideColumnStates()` fills it from `resolveCurrentState(ASSET_, dir, {includeWatching:true})`
+— the same function, the same words, the same lifecycle read the headline uses. SBS-13 asserts the two are
+byte-identical for the same side; SBS-14 asserts the banked target appears.
+
+To make that possible, `feedEntryFor`, `cardStateFor`, `mechanicalFor` and `resolveCurrentState` take an
+optional explicit side. Omitting it is byte-for-byte the old behaviour, which is what every pre-existing
+caller does. This retires the premise written at `feedEntryFor()` — "this page renders one side at a time,
+so the side is read once from the URL rather than threaded through every caller" — which the layout had
+already falsified.
+
+**3. A stop passed before entry is not a stop-out.** BTC's long came back to WATCHING under the diamond
+comeback rule and its ladder still read "Stop hit", claiming a trade was stopped out that nobody was in.
+`lifecycle.stop_boundary.in_trade === false` with no trigger is the monitor's own fact; the board reads it
+and invents nothing. Three outcomes, all worded in `levelup-words.js LADDER_MARKS` (the four ladder strings
+moved there from inline in `sheet.html`; `index.html` draws no ladder, so there is no second copy):
+
+| condition | mark | marker |
+| --- | --- | --- |
+| stop reached in the trade | `✓ Stop hit` | red, unchanged |
+| pre-entry, side back at WATCHING | `Stop passed before entry — back on watch` | neutral |
+| pre-entry, side not back on watch | `Stop passed before entry` | neutral |
+
+The reached-row tint also moved from `#ladder` to `.ladder` (a pair's trailing column never got it) and a
+pre-entry row is tinted grey, not green.
+
+**4. THE PHONE OVERFLOW IS NOT REAL, AND I REPORTED IT MYSELF LAST ROUND. MEASURED, NOT ASSUMED.**
+
+| page | viewport | document scrollWidth | horizontal scroll | real content past the sheet |
+| --- | --- | --- | --- | --- |
+| `sheet.html?asset=ADA` | 390 | 390 | no | 0 |
+| `sheet.html?asset=ADA` | 430 | 430 | no | 0 |
+| `sheet.html?asset=BTC` | 390 / 430 | = viewport | no | 0 |
+| `index.html` | 390 / 430 | = viewport | no | 0 |
+
+`.sheet` does report `scrollWidth` 200px wider than `clientWidth`, and that is entirely the two decorative
+`.glow` radial-gradient divs: hide them and `scrollWidth === clientWidth` exactly. They are
+`position:absolute`, `pointer-events:none`, and clipped by `.sheet{overflow:hidden}` by design.
+
+**Where the false report came from.** On Windows, headless Chrome FLOORS the window width at about 485px,
+so `--window-size=430,844` renders a 485px layout and writes a 430px-wide image - the right-hand 55px of
+the page is CROPPED OUT of the picture. That looks exactly like a sideways overflow. I produced those
+screenshots last round and reported "at 430px the page overflows horizontally"; that conclusion was wrong,
+and item 5 came back off it. A true viewport needs `Emulation.setDeviceMetricsOverride`, i.e. Playwright or
+puppeteer-core driving the installed Chrome - `--window-size` alone cannot do it on this machine.
+
+No CSS was changed for item 5. Inventing a fix for a bug that is not there would add a layer to a board
+whose whole problem is accumulated layers (rule 4). **If Ang or the reviewer saw this on a real device or
+browser, say which and it gets chased** - the probes are kept and re-runnable.
+
+### A second instance of the step-4 rollback bug, found and contained
+
+`test/helpers.js boardRoot()` delegates to `sync-board-fixtures.boardDir()`, which answers *"which clone has
+the newest origin/main"* — the right question for the replay gate, the wrong one for *"which clone holds the
+files under test"*. Measured 2026-11-06 it returned `C:/dev/monitor-task/sheets`, the RUNNER's clone, because
+the runner had fetched the preview push.
+
+`test/pair-side-by-side.test.js` was reading `sheet.html` from the work clone but its parser and words file
+through those helpers. The result was silent and total: `WATCHING.status` was `null` in the stale copy and
+`null` in the assertion, so `assert.equal(got, want)` passed on `null === null` and four tests reported on
+nothing. Fixed in that file — the page AND both script files now come from `publish-staging.BOARD_DIR`,
+named once.
+
+**The helper itself is NOT changed**, because for the gate-parity tests reading the runner's clone is
+arguably correct: it is a hard reset of `origin/main`, i.e. the board as actually served. Two different
+questions, two different right answers. Flagged here because any new board test can walk into it.
+
+### Tests: 1161 run, 1157 pass, 0 fail, 4 todo — green BOTH ways
+
+Verified twice, which is the point: with **no env var** (the step-4 rule — the board as actually deployed)
+and with `LEVELUP_SHEETS_DIR` pointed at the work clone (what happens the day this ships). Identical totals.
+Nothing in the suite will turn red on deploy.
+
+`test/pair-side-by-side.test.js` is now **SBS-1 to SBS-18**. The status and ladder tests run the real
+mech-feed block against a small tree built from `board-dom.js`'s element rather than a third DOM stand-in.
+New: SBS-13 (column and headline are the same sentence), SBS-14 (the banked target, not the generic
+condition), SBS-15 (WATCHING shown in a column, suppressed in the headline), SBS-16/17/18 (the three stop
+marks). SBS-7b is REVERSED and says so in place.
+
+Two tests elsewhere would have gone red on deploy and were rewritten to hold either way, each with the
+reversal recorded at its own site:
+
+- `OD-8b` (`one-decider`) pinned `WATCHING.status === null`. The protection moved from "there are no words"
+  to "the headline does not use them", which is what a member sees, and is asserted on the page by SBS-15.
+- `OD-8e` (`board-option-d-legibility`) matched the exact ternary `'&#10003; Stop hit' : '&#10003; Hit'` in
+  the source. It asserts Angela's WORDS now, not one spelling of one expression.
+
 ### Still open on this change
 
+- **The WATCHING wording is new and PROVISIONAL**: `'{DIR} WATCH — WAITING FOR TRIGGER'` is a
+  placeholder written so the column could be looked at. Not Chelsea's words, not shown to her.
 - **The column wording is PROVISIONAL, like every other `card_state` string.** `levelup-words.js` flags it:
   only the DORMANT sub-line is Chelsea's. The columns inherit that table, so when she answers, her words
   replace these and nothing in the layout changes.
