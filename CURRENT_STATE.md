@@ -2,7 +2,7 @@
 
 Nov 5, 2026 · @Ang
 
-**Next session starts with: Review publish-staging.js diff with Ang, then run it once and open the preview link.**
+**Next session starts with: Ang reviews the four card screenshots in `C:\Users\angie\LEVELUP_AUDIT\overnight\`, then step 4 lands - monitor and board pushed TOGETHER. Step 3 (publish-staging.js) still has not been run.**
 
 The board works, but the same decisions are made in too many places, so every fix moves the bug somewhere else. The fix is one decider (the monitor) and one doc (this one). This doc replaces all 449 earlier handoffs.
 
@@ -63,14 +63,13 @@ These are product rules, not code questions. Until each has one written answer, 
 - [x] **"Not a live watch" wording (Chelsea, 2026-11-05).** One sentence, exactly: "This setup never triggered and is no longer valid. Shown for the record only - not something to watch." (Replaces both sentences currently live at `index.html` lines 1477 and 2046.)
 - [x] **Split pair (Chelsea, 2026-11-05).** The two cards STAY TOGETHER - it shows students the "if this, then that".
 - [x] **Old ChatGPT prompt (Chelsea, 2026-11-05).** Never used. No action.
-- [ ] **Display words for each `card_state` (Chelsea, OPEN 2026-11-06).** Step 4 publishes a state and the board maps it to words in ONE table. Chelsea gives the exact words for each of the seven values, the way she gave the "Not a live watch" sentence. Proposed for DORMANT: "No longer a live watch." The other six are unwritten. The table is not built until she answers.
-- [ ] **What `SIX_LINE_EXIT` maps to (OPEN 2026-11-06).** The lifecycle state appears in three separate "is it over" maps (`sheet.html:336`, `:1217`, `:1880`) and belongs to none of the seven `card_state` values. Most likely FINISHED_STOPPED, but it is a trade outcome a member reads, so it is Chelsea's answer, not a guess.
-- [x] **A dead or dormant side NEVER leads (Ang, DECIDED 2026-11-06).** The live side - triggered and still running - always leads the card and the detail page, regardless of which side was published more recently. ADA is the worked example: the 2026-10-23 SHORT (triggered, TP1 and TP2 hit, still running) leads; the 2026-11-05 LONG (dormant) goes underneath. Agent B applies this to `card_state` ordering on BOTH pages, with a test using ADA.
-  - **This does NOT contradict PLS-20 or PLS-20b, and they must not be weakened.** Both of those rank two sides that are BOTH FINISHED (`STOP_BOUNDARY_REACHED` / `OBJECTIVES_EXHAUSTED`), where nothing is running and recency rightly decides. This decision inserts a PRIOR test: **liveness first, recency only among equals.** A running side outranks a non-running one; when no side is running, the existing batch/recency rules decide exactly as they do today.
-  - **One case this does not yet answer (flagged 2026-11-06, needs Ang):** when NEITHER side is running - e.g. BTC, whose short is FINISHED_WIN and whose long is DORMANT - "the live side leads" selects nothing. Today's reading is that the fallback is the existing recency rule, unchanged. Confirm before it is relied on.
+- [ ] **Display words for each `card_state` (Chelsea, STILL OPEN 2026-11-06).** The table is BUILT and live in `levelup-words.js`, but every entry except one is a clearly-marked **placeholder**, not her words. What she has given: the DORMANT sub-line, verbatim, from 2026-11-05. What is proposed but not hers: the DORMANT headline "No longer a live watch." What is a placeholder: TRIGGERED, FINISHED_WIN, FINISHED_STOPPED, EXPIRED, NOT_TRACKED - though EXPIRED's two strings are the wording already live on the board, carried over unchanged rather than rewritten. WATCHING deliberately has no status at all: her own pill is the status for an ordinary watch. `LevelUpWords.provisionalStates()` lists what is still waiting, and OD-8b fails if that list is ever quietly emptied. When she answers, the only file that changes is `levelup-words.js`.
+- [ ] **What `SIX_LINE_EXIT` maps to (STILL OPEN 2026-11-06).** It belongs to none of the seven `card_state` values and was NOT guessed. A side in that state publishes `card_state: { value: null, since, ended: true, awaiting: 'SIX_LINE_EXIT' }` - a null value routes the card down the board's existing "no claim" path, the same one a feed outage takes, so Chelsea's own status stays primary and nothing is invented. `ended` says only that the instance is OVER, which the monitor knows for certain; it carries no wording and names no outcome, and the one thing the board uses it for is to stop the live-price row pulsing under a finished trade. Nothing live can reach the state (`config/monitor.config.json` has the exit rule off), and OD-1 measures that the real replay has zero of them. Still Chelsea's answer: most likely FINISHED_STOPPED, but it is a trade outcome a member reads.
+- [ ] **When NEITHER side of a pair is running, which leads? (Ang, OPEN 2026-11-06.)** The liveness rule below answers "a running side always leads". It says nothing about BTC's shape today - short FINISHED_WIN, long DORMANT, neither running - and that case falls to the EXISTING batch-window-and-recency rule, unchanged, which today puts the DORMANT long in front of the finished short. That is not a new decision and nothing was built on it; it is flagged so Ang can confirm it is what she wants.
 - [ ] **What ends a triggered trade that never reaches its stop OR its last target? (Chelsea, OPEN 2026-11-06.)** Raised by ADA\|SHORT, live on the board for 14 days - see known problems 14. Today the answer is "nothing": the trade runs forever. Three candidates, none of them chosen: (a) nothing changes, a trade is open until the market resolves it; (b) a maximum age for a TRIGGERED trade, the way Watching has a 24-hour window; (c) when Chelsea publishes a new batch for an asset and does NOT republish a side, that side's old triggered instance retires at the new batch's publish time - which is what would have closed ADA\|SHORT on 2026-11-05, when she republished the ADA long and not the short. (c) is the only one that needs no new number. **Do not build any of them until she answers.**
 - [ ] **CONFLICT - option (c) versus the live ADA short (Chelsea, OPEN 2026-11-06). DO NOT SWITCH ON OPTION (c) UNTIL THIS IS ANSWERED.** Option (c) would have retired this very ADA short on 2026-11-05, when Chelsea posted a new ADA long - and Ang has decided the opposite for display: that short is the live trade and must lead the card. The two cannot both be right. **The question for Chelsea: when you post a new setup for one side, does an already-running trade on the other side keep running, or close?** Until she answers, option (c) stays built and OFF, and the temporary ADA notice (known problem 17) stays on the board.
-
+  - **(c) IS BUILT AND SWITCHED OFF (2026-11-06).** `lifecycle.batch_retirement` in `config/monitor.config.json`, `false`, with the same `_`-prefixed explanation convention as `_six_line_exit`. One gate (`monitor/run.js`, where the evidence is gathered), one decider (`monitor/lifecycle.js` `batchRetirementMs` + the state chain in `derive()`) and one new terminal state, `RETIRED_BY_NEW_BATCH`, which makes **no public claim** because the words a member reads are Chelsea's. Tests RSC-3..RSC-9; RSC-3 is the todo that goes live when the flag flips. It needs no window constant: the gate is "the batch was published strictly after this side's trigger candle", which excludes a batch-mate by construction (BTC's live pair is 3 seconds apart, PEPE's 20).
+  - **AND IT CONTRADICTS THE 2026-11-06 DISPLAY DECISION.** Ang decided the same day that a dead or dormant side never leads a card and the live side always does, using ADA as the worked example: the 2026-10-23 SHORT (triggered, TP1+TP2 banked, still running) must LEAD the ADA card, with the 2026-11-05 LONG underneath. Option (c) would have retired that exact short on 2026-11-05. Both cannot be right. **The question for Chelsea, verbatim: "When you post a new setup for one side, does an already-running trade on the other side keep running, or close?"** Measured with the flag on in memory only: ADA\|SHORT is the ONLY side on the whole board option (c) would retire, and it is the running trade in question - so her answer costs exactly one card either way. Full list: `LEVELUP_AUDIT\overnight\agent_a_option_c_dryrun.md`.
 
 ## Known problems, ranked
 
@@ -79,9 +78,9 @@ The root cause is one decision made in several places that drift apart. Problems
 | # | Problem | Where | Why it matters |
 | --- | --- | --- | --- |
 | 1 | `mech-feed` exists twice and has diverged: 72 KB in `index.html`, 83 KB in `sheet.html`, only about 240 lines shared | both pages | The card and the detail page can tell a member different things |
-| 2 | "Which side leads a pair" is decided 3 ways; only one follows the 2026-10-30 rule that the Sheet sets publish time | `sheet.html:376`, `sheet.html:1251`, `index.html:1817` | Caused the BTC, LINK, HYPE and ADA side bugs (8 rounds in 13 days) |
-| 3 | "Is this trade over" is decided in the monitor and again in both pages | `monitor/lifecycle.js`, `index.html:1893`, `sheet.html:1347` | Caused the HYPE red box |
-| 4 | Two code paths write "Not a live watch" with different wording | `index.html:1477`, `index.html:2046` | Members don't understand it; the same warning reads two ways |
+| 2 | ~~"Which side leads a pair" is decided 3 ways~~ **FIXED 2026-11-06**: one implementation, `LevelUpCore.pickPairSide` in `core/levelup-core.js`, called by all three surfaces. Each caller still supplies its own CLOCK - sheet.html's base render passes the SHEET's publication time, the two mech layers pass the feed's - which is deliberate and is what known problem 18 is about | `core/levelup-core.js` | Caused the BTC, LINK, HYPE and ADA side bugs (8 rounds in 13 days) |
+| 3 | ~~"Is this trade over" is decided in the monitor and again in both pages~~ **FIXED 2026-11-06** by `card_state`. Four separate terminal-state lists across the two pages are gone; OD-8 fails if one comes back | `monitor/public-feed.js` | Caused the HYPE red box |
+| 4 | ~~Two code paths write "Not a live watch"~~ **FIXED 2026-11-06**: one pass, `applyDeadWatchPanels`, one class `.dead-watch-flag`, and the sentence itself is in `levelup-words.js`, which BOTH pages load. Neither page contains the sentence any more (B5 asserts it) | `index.html`, `levelup-words.js` | Members don't understand it; the same warning reads two ways |
 | 5 | Live price fetched by 4 separate timers per page | `sheet.html:574, 787, 1555, 1686` | Different prices on screen at once |
 | 6 | Whole detail page rebuilt every 60 seconds | `sheet.html:560, 587` | Restarts the voice memo and closes open sections |
 | 7 | Every change ships straight to the live board | process | No safe place to test; "APPROVED & FROZEN" on 2026-09-29 was followed by 270+ commits |
@@ -111,6 +110,7 @@ Do these in order. Each step is done only when its check passes, and the result 
 - [x] **1. Answer the open decisions** (section above). Done 2026-11-05: every decision in that section now has a written answer and a date.
 - [x] **2. Lock in past bugs as tests** - done 2026-11-05 except B4 and B6, which stay todo until built. BTC, HYPE, LINK, ADA and PEPE all have live regression tests (PLS-1, PFS-1, PLS-18, PLS-20b, PLS-19, WNR-1, NTL-1..6, A7), and Chelsea’s new rules are live as B1, B2, B3, B7 and B8. B5 is **done** - one "Not a live watch" sentence from one function, shipped 2026-11-05 (board d4c3e0c, monitor 976baab); the test is live. Still todo: **B4** (written invalidation never moves the strength meter, feed carries the warning flag) and **B6** (a pair’s two cards stay together).
   - Diamond comeback built 2026-11-05 (56902dc): `dormantFor()` in `monitor/engine.js`. Note: the 24h watch window still applies, so a dormant side can only come back within 24h of publication.
+  - **RSC-1 and RSC-2 added 2026-11-06** (`test/receipt-state-consistency.test.js`), the first tests of the journal-versus-state class. RSC-1 sweeps the whole live feed: no published receipt may carry an `outcome` its own side's live `lifecycle.state` contradicts. It excludes two things on principle, both asserted rather than assumed - a receipt for a PAST instance (history, nothing live to contradict; RSC-1c) and a side whose lifecycle is `null` (absence of a state, not a conflicting one; RSC-1d, which is TURBO and APT today). RSC-2 proves a retroactive void withdraws the claim and writes nothing to the lifecycle, so ADA\|SHORT still reads TARGETS_IN_PROGRESS afterwards.
 - [ ] **3. Staging board. DO THIS BEFORE STEP 4** (ordered 2026-11-06). A copy of the board where every change lands first. Done when Ang can open a staging link and approve before anything goes live.
   - **THE PREVIEW FOLDER IS `preview-c4e8de`** (random and unguessable by instruction, Ang 2026-11-06 - deliberately NOT "staging"). It is named in exactly two places, `scripts/publish-staging.js` and this line; nothing derives it. URL once published: `https://angiemcunningham-dot.github.io/levelup-sheets/preview-c4e8de/`
   - **Built 2026-11-06, NOT YET RUN, NOTHING PUSHED.** `scripts/publish-staging.js` (monitor repo) generates the folder in the board repo from the two WORKING TREES - the pages from `C:\dev\work\levelup-sheets`, the feed from this repo's freshly restored state via the same `buildFromDir` the live feed uses. That is what lets a monitor change and a board change be viewed together before either ships.
@@ -119,9 +119,12 @@ Do these in order. Each step is done only when its check passes, and the result 
   - Guards: refuses any board clone but `C:\dev\work\levelup-sheets`; every write is checked to land inside the preview folder; `pull --rebase` with autostash before pushing (the runner pushes main every 15 minutes, and the clone carries the parked PLS-20b change); path-scoped `git add` and a commit WITHOUT `-a`, so PLS-20b can never be swept into a preview commit.
   - Covered by **STG-1 to STG-10** in `test/publish-staging.test.js`. STG-3 caught a real defect on the first run - the injected banner did not strip back out cleanly on `<body><div class="sheet">`, so a preview page was not the working-tree page plus the banner. Fixed before commit.
   - Still to do: review the diff, run it once, open the link. Then this step is done.
-- [ ] **4. Make the monitor the only decider.** The feed states, per side: which side leads and what state it is in. The pages only display it. Done when the browser-side copies in step 5 have nothing left to decide.
-  - **Designed and approved 2026-11-06 - see "Step 4 design" below.** BLOCKED on two things: step 3 (staging) must exist first, and Chelsea must supply the display words. Do not build before both.
+- [x] **4. Make the monitor the only decider. BUILT 2026-11-06**, on local branches `overnight/b` (monitor) and `overnight/b-board` (board). NOTHING PUSHED. `monitor-feed.json` carries `card_state: { value, since }` per side, seven values, always present; the five browser-side deciders are deleted. See "Step 4 design" below for the spec and "What step 4 actually changed" for what landed and what deviated.
+  - **THE TWO HALVES MUST LAND TOGETHER.** `scripts/sync-board-fixtures.js` compares the monitor's fixtures to the board's origin/main, so a monitor change publishing `card_state` and a board change reading it have to be pushed in the same window or the replay gate fails closed and a cycle publishes nothing - which is what happened at 23:31 on 2026-11-05. Neither direction actually breaks on its own: an old board ignores the new field, and a new board reading an old feed shows no mechanical status at all and leaves Chelsea's pill primary. Both are degraded, neither is wrong.
+  - **Built before step 3 rather than after**, which is not the order the design set. The work was done in dedicated worktrees against a locally served copy of the board instead, with four screenshots in `LEVELUP_AUDIT\overnight\`. Nothing was pushed, so the live board is untouched - but the visual acceptance step 3 exists to provide has been done on a local server, not a preview link.
+  - **Chelsea's words are still open** (see the decision above). The wording lives in one file and nothing else changes when she answers.
 - [ ] **5. Delete the browser copies.** Remove the duplicated side, state and warning logic from both `mech-feed` blocks. Done when `currentBatch`, `expiredFor` and both "Not a live watch" writers are gone from the pages.
+  - **Mostly done by step 4** (2026-11-06), because the copies could not be left behind once one field answered them. Gone from both pages: `expiredFor`, `stopBreachedFor`, `cannotTriggerFor`, `notTrackedFor`, `expiredBadgeHtml`, `cannotTriggerBadgeHtml`, `notTrackedBadgeHtml`, `applyStopBreachFlags`, `currentBatch`, `activityRank`, `beatsAtRank`, `sideFinished`, `sideRank`, `sideOver`, `pickSide`, `currentBatchDirs`, and the three state booleans `mechanicalFor` used to hand out. OD-8 is the guard and reads the pages with their comments stripped, so a tombstone comment cannot satisfy it. What is LEFT for step 5: the two `mech-feed` blocks are still two blocks (known problem 1), which is a different job from removing the duplicated decisions.
 - [ ] **6. One shared price fetch and one Sheet read per page.** Done when each page has one price timer and one Sheet fetch.
 - [ ] **7. Clean up.** Commit or drop PLS-20b, rename the OneDrive clone to `_OLD_DO_NOT_USE`, and replace the TURBO hardcode with a Sheet status.
   - Rename `C:\dev\levelup-sheets` to `_OLD_DO_NOT_USE` (frozen since 2026-11-05) and remove it from the `boardDir()` candidates (`scripts/sync-board-fixtures.js:62`). Fewer copies, not smarter ones.
@@ -253,6 +256,131 @@ Ordered 2026-11-06. Four reasons, heaviest first:
 3. **This exact card has already taken the live board down.** `index.html:2019-2026` records it: the first cut of `applyCannotTriggerPanels` fought `applyStopBreachFlags` through the MutationObserver, the tab went unresponsive mid-market, and it was reverted. Step 4 deliberately merges those two passes - the riskiest possible edit at exactly that spot.
 4. **The fixture gate makes a split landing impossible.** `scripts/sync-board-fixtures.js:62` compares the monitor's fixtures to the board's origin/main. A monitor change publishing `card_state` and a board change reading it must land together, or the replay gate fails closed and a cycle publishes nothing - which is what happened at 23:31 on 2026-11-05. Staging is the only place both halves can land and be looked at before the live gate sees them.
 
+
+## What step 4 actually changed (2026-11-06)
+
+Built on `overnight/b` (monitor) and `overnight/b-board` (board). **Nothing pushed.** The spec is the "Step 4
+design" section above; this records what landed, and the five places the build deviated from it.
+
+### The monitor
+
+`monitor/public-feed.js` grew `cardState()` and publishes `assets[key].card_state = { value, since }` for every
+side. Seven values, always present, never null for a mapped state. Chelsea's-status gate (`clockOverruledBySheet`)
+moved here from four separate places in the browser; it gates only DORMANT and EXPIRED, which is exactly the set
+those four copies gated, and measured against the live 70-side feed on 2026-11-06 it gates nothing.
+
+`core/levelup-core.js` grew `pickPairSide()` - the one pair-side ordering, replacing three. Liveness first,
+recency only among equals (Ang, 2026-11-06, from ADA): a side whose `card_state` is TRIGGERED outranks every side
+that is not running, whatever the clock says; when no side is running the batch window and the existing ranking
+decide exactly as before. PLS-20 and PLS-20b rank two FINISHED sides, so rule 1 never reaches them and both still
+pass untouched.
+
+### The board
+
+`levelup-words.js` is NEW and board-owned: the one table from `card_state` to words, plus the temporary ADA
+notice sentence. Both pages load it beside `levelup-core.js` as `<script id="att-words">`. It holds words only.
+
+Deleted from `index.html`: `expiredFor`, `stopBreachedFor`, `cannotTriggerFor`, `notTrackedFor`,
+`expiredBadgeHtml`, `cannotTriggerBadgeHtml`, `notTrackedBadgeHtml`, `applyStopBreachFlags`, `currentBatch`,
+`activityRank`, `beatsAtRank`, `sideFinished`, and the `.stop-breach-flag` / `.ct-dead` classes with their CSS.
+Deleted from `sheet.html`: its own `expiredFor`, `SIDE_OVER_STATES`, `sideOver`, `sideRank`, `currentBatchDirs`,
+`pickSide`, `SIDE_FINISHED_STATES`, `activityRank`, `beatsAtRank`, `currentBatch`, and the local `OVER` map in
+`ensureSideTruth`. `mechanicalFor` survives on both pages as a reader of FACTS - which targets were reached, what
+was banked before a stop, when it fired - with `stopped`, `complete` and `outcome` removed.
+
+### WHICH LIVE CARDS CHANGE, measured not assumed (2026-11-06)
+
+Built against `monitor-data/shadow`, 70 sides, every one of them given a `card_state`:
+
+| value | count | |
+| --- | --- | --- |
+| FINISHED_STOPPED | 25 | |
+| FINISHED_WIN | 21 | |
+| EXPIRED | 11 | |
+| DORMANT | 5 | ADA\|LONG, BTC\|LONG, DOGE\|LONG, ONDO\|LONG, XRP\|LONG |
+| NOT_TRACKED | 5 | HBAR, KAS, ZZTEST, SHIB\|LONG, SHIB\|SHORT |
+| TRIGGERED | 2 | ADA\|SHORT, ZEC |
+| WATCHING | 1 | |
+
+**The NOT_TRACKED five are not one group, and only one of them is a real change.**
+
+- **SHIB\|LONG, SHIB\|SHORT** carry `not_tracked` (IMPLAUSIBLE_LEVEL_SCALE) and already showed a NOT TRACKED
+  chip on main - the 2026-11-03 "please fix shib" fix. Same claim, different words.
+- **HBAR, KAS, ZZTEST** have NO `not_tracked` flag, Sheet status "No Trade", no lifecycle and no matching
+  receipt. **On main these carried no mechanical claim at all.** They now gain a NOT TRACKED status line and
+  the NOT_TRACKED sub-sentence - and that sentence is **the one genuinely invented piece of member-facing
+  wording in `levelup-words.js`**. Everything else in that file is either Chelsea's or wording already live
+  on the board, carried over.
+
+ZZTEST is a test row, so the cards a member can actually see change on are **HBAR and KAS**, both of which
+Chelsea has already marked No Trade. They also drop out of Live Attention, which is the 2026-11-03 SHIB rule
+generalised from "the engine refused this" to "the engine has produced no lifecycle for this".
+
+**If Ang or Chelsea would rather those two stayed silent**, the change is `NOT_TRACKED.status = null` in
+`levelup-words.js` and nothing else moves - the same mechanism WATCHING already uses. Pinned by NLC-1..NLC-4
+in `test/mechanical-feed-board.test.js`, which name the assets rather than describing them.
+
+### Two things the deletions dropped, recorded rather than quietly lost
+
+**1. The "RETIRED <date>" line on an expired card.** `expiredBadgeHtml` drew `○ CONDITION NEVER MET` plus
+`RETIRED 14h AGO`. The design deletes that chip because the first half duplicated the status line - but the
+DATE half had no duplicate, and nothing displays it now. The data is still published, as `card_state.since`,
+dated from the moment the watch window actually closed rather than the run that noticed. Putting the line
+back is one entry in `levelup-words.js` and one read of `card_state.since`; it was not done here because it
+is wording, and wording is Chelsea's. The reader that existed for it was removed rather than left unused.
+
+**2. The near-edge stop warning, for a side the engine has NOT barred.** `stop_breached` and `cannot_trigger`
+come from different engine facts and the sets genuinely differ - measured 2026-11-06, **APT carries
+`stop_breached` with no `cannot_trigger`**, and SHIB\|SHORT the reverse. `stop_breached` is the NEAR edge
+(price closed into the stop zone; it describes); `cannot_trigger` is the FAR edge (a 1H close through the
+stop; it gates). Step 4 deletes the writer that spoke for the near edge.
+
+For a never-triggered, still-firable side that is the RIGHT outcome: the old sentence said "this setup never
+triggered and is no longer valid" about a side the engine had not barred and which could still fire, which
+was simply false. What is dropped and not replaced is the quieter half - that the distance-to-trigger on such
+a card no longer means much once price has been inside the stop zone. Nothing says that now. Pinned by SBO-1
+and SBO-2 in `test/att-ui.test.js`. Today's only instance, APT, is unaffected: it is terminal through the
+receipt fallback and reads FINISHED_STOPPED.
+
+### Five deviations from the design, each deliberate
+
+1. **`SIX_LINE_EXIT` was not mapped**, because its words are Chelsea's and still open. It publishes a null value
+   with `awaiting` and `ended`. See the open decision above.
+2. **The "Long Watch" headline is SUPPRESSED, not deleted.** The design's table says delete the writer at
+   `index.html:535`. `cardHtml()` also serves every ordinary watch card, where that label is the only thing on
+   the tile naming a direction (Angela, 2026-10-21: "where did the red and green go"). It is blanked in the same
+   decorate pass, at the same moment and on the same condition as the pill demotion - and restored if the
+   mechanical layer stops speaking.
+3. **`card_state` falls back to a READY RECEIPT** when a side's lifecycle has gone. APT, HBAR and TURBO are in
+   that shape today, and both pages' `mechanicalFor` already did this (ONDO's case). Without it those cards
+   would read NOT_TRACKED over a trade that finished and has a receipt proving how.
+4. **A null lifecycle with no receipt is NOT_TRACKED**, which is what the design says, and it is the one place
+   this changes behaviour for cards that are not broken: such a side now drops out of Live Attention and carries
+   a NOT TRACKED status line. Seven sides today, all of them odd or old (SHIB x2, HBAR, KAS, APT, TURBO, ZZTEST).
+5. **The dead-watch panel is still a red box.** The design's "what the card shows afterward" has the sentence in
+   the headline's sub-line, and index cards have no such slot. It is the single sentence writer the design's own
+   keep/delete table says to keep, so it stays a panel on the card; `sheet.html` does put it in the sub-line.
+
+### Tests
+
+`OD-1`, `OD-1b` (`public-feed.test.js`), `OD-2`, `OD-2b`, `OD-2c` (`cannot-trigger-feed.test.js`), `OD-3` to
+`OD-8b` (new `test/one-decider.test.js`), `OD-9` (`public-feed.test.js`). `PLS-23`, `PLS-24`, `PLS-25` pin the
+liveness rule on both surfaces using ADA's real shape. `node --test`: 1119 tests, 1116 pass, 0 fail, 3 todo (B4,
+B6/IPC-9 and PLS-20c, all pre-existing).
+
+Two harness changes were needed and are worth knowing about. `test/board-dom.js` now builds each card with the
+pill and Sheet headline `cardHtml()` really writes, and parses a single-element `innerHTML` assignment - without
+both, `decorate()` threw into its own catch and the entire status pass silently did nothing in every DOM test.
+And `H.withCardStates()` stamps every hand-built test feed using the MONITOR'S OWN `cardStateForEntry`, so a
+fixture cannot drift from what production publishes.
+
+### Known problem 18, new
+
+`PLS-20c` is still a todo and step 4 did not fix it: the three surfaces now share ONE ordering but still feed it
+different CLOCKS. `sheet.html`'s base render passes the Sheet's publication time (the 2026-10-30 HYPE fix); both
+mech layers pass the feed's. When the monitor is behind, the card and the detail page can still name different
+sides. The ordering is one function now, so this is a one-line argument change at two call sites rather than a
+third implementation - but it is a real decision about which clock is right, and it is not made here.
 ## Evidence
 
 The full audit from 2026-11-05 is at `C:\Users\angie\LEVELUP_AUDIT`. Start with `INVENTORY.md`. It holds the claims check, loops, rewrites, skipped work and duplicates, with file and line for each.

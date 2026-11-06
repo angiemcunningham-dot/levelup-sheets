@@ -328,71 +328,35 @@ async function load(){
      clock gave BTC the retired long, two seconds newer than the short that actually triggered. Searches `rows`
      rather than `setupRows`, because setupRows is derived from cur and so cannot be used to choose it. */
   const mechSide=(d)=>{try{return (MECH&&MECH.assets&&MECH.assets[ASSET+"|"+String(d).toUpperCase()])||null;}catch(e){return null;}};
-  /* 2026-10-24: both of these used to ask lifecycle.retired, and pair retirement no longer exists - each side
-     of a pair now lives and dies on its own (Angela: "once the long was stopped... the short should then become
-     active again"). So the question "is this side over?" is answered by its terminal STATE instead. lc.retired
-     is still honoured so an older published feed keeps working. Without this, "the live side leads" below had no
-     input at all and quietly fell back to recency, which put BTC's stopped long over its running short. */
-  const SIDE_OVER_STATES={STOP_BOUNDARY_REACHED:1,OBJECTIVES_EXHAUSTED:1,SIX_LINE_EXIT:1,EXPIRED_UNTRIGGERED:1};
-  const sideOver=(d)=>{const lc=(mechSide(d)||{}).lifecycle;return !!(lc&&(lc.retired||SIDE_OVER_STATES[lc.state]));};
-  /* WHICH SIDE OF A PAIR THIS SURFACE SPEAKS FOR - ONE ORDER, THREE IMPLEMENTATIONS (2026-10-24).
-     index.html's card, sheet.html's mech-feed and sheet.html's own base render each have to make this
-     choice, and until today they made it differently: the mech layers ranked by "did it fire" and broke
-     ties on the earliest trigger, while the base render asked whether a side was retired and otherwise took
-     the newest publication. Pair retirement was removed from the engine, so that second rule became pure
-     recency, the two drifted apart, and the page contradicted itself - BTC drew the stopped long's ladder
-     under the running short's headline, ADA printed STOPPED over the running short's ladder. The order is
-     now the same everywhere, and this comment is repeated at each site so no one of them gets changed alone.
+  /* WHICH SIDE OF A PAIR LEADS THIS PAGE - ONE IMPLEMENTATION, IN THE SHARED CORE (2026-11-06).
+     Deleted from here: SIDE_OVER_STATES, sideOver, sideRank, currentBatchDirs and pickSide - this page's own
+     copy of the ranking, the two-hour batch window and the tie-breaks. sideTrigMs is NOT deleted; it is
+     still declared below, because it reads a FACT off the feed (when a side triggered) and decides nothing.
+     It is handed to the shared ordering as an input. index.html's
+     mech-feed and this page's own mech-feed each carried the same thing again, with the same explanatory
+     comment pasted at all three sites. That is CURRENT_STATE.md known problem 2, and it caused the BTC,
+     LINK, HYPE and ADA side bugs - eight rounds in thirteen days. All three call
+     LevelUpCore.pickPairSide now; the rule, and why liveness comes before recency, is documented once in
+     core/levelup-core.js.
 
-       1  STILL RUNNING  triggered and not finished.  Among several, the EARLIEST trigger - the trade a
-                         member has actually been in longest.
-       2  STILL OPEN     not finished, not yet triggered.  Among several, the NEWEST publication.
-       3  FINISHED       stopped, all targets reached, exited back through the six lines, or retired without
-                         ever triggering.  Among several, the earliest trigger; one with no trigger defers.
-       4  NOTHING KNOWN  no lifecycle in the feed at all (an asset whose Sheet status is Closed, whose facts
-                         come from a receipt instead).
-
-     A finished side never outranks a live one. That is the whole point: whatever the long did yesterday, if
-     the short is still running then the short is the trade. */
-  const sideRank=(d)=>{const lc=(mechSide(d)||{}).lifecycle;if(!lc)return 0;if(sideOver(d))return 1;return (lc.trigger&&lc.trigger.reached_at)?3:2;};
-  const sideTrigMs=(d)=>{const lc=(mechSide(d)||{}).lifecycle;const t=(lc&&lc.trigger&&lc.trigger.reached_at)?Date.parse(lc.trigger.reached_at):NaN;return isFinite(t)?t:null;};
+     THE SHEET STILL SUPPLIES THE CLOCK HERE (2026-10-30, HYPE). `pubOf` is the caller's SHEET publication
+     time for a side, falling back to the feed's. That morning the feed was five hours behind and held
+     HYPE's 10/26 long and 10/29 short, so "the newest batch" resolved to the 10/29 short and today's 5:08
+     AM long - the setup a member had come to read - was dropped before anything ranked it. The Sheet is the
+     authority on when Chelsea published; the feed is the authority on what has happened since. */
   const sidePubMs=(d)=>{const e=mechSide(d);const t=(e&&e.instance_published_at)?Date.parse(e.instance_published_at):NaN;return isFinite(t)?t:null;};
   const haveMech=(dirs)=>dirs.some(d=>!!((mechSide(d)||{}).lifecycle));
-  /* ONLY THE CURRENT BATCH IS A CANDIDATE TO LEAD (2026-10-24). The same two-hour pair window the mech layers
-     apply in currentBatch(), for the same reason set out there: Chelsea republishes one side without the
-     other all the time, and yesterday's side has no business leading today's page. LINK is the live case -
-     its long is 2026-10-22 and its short 2026-10-23, both finished, and without this the detail page led with
-     the long while the card reported the short. The out-of-batch side is NOT dropped; it still renders in the
-     disclosure, because nothing Chelsea published is ever removed. */
-  const BATCH_WINDOW_MS_=2*60*60*1000;
-  /* 2026-10-30 (Angela, HYPE): this window was measured with the FEED's publication times, which are only as
-     current as the last monitor run. That morning the feed was five hours behind and held HYPE's 10/26 long
-     and 10/29 short, so "the newest batch" resolved to the 10/29 short and today's 5:08 AM long - the setup
-     a member had actually come to read - was dropped from the running before pickSide() ever saw it. The
-     page then drew yesterday's short under a proximity strip quoting today's long trigger. The SHEET is the
-     authority on when Chelsea published; the feed is the authority on what has happened since. pubOf is the
-     caller's Sheet time for a side; it falls back to the feed per side, which is the behaviour this
-     replaces, so a caller that cannot supply one is no worse off than before. */
-  const currentBatchDirs=(dirs,pubOf)=>{
+  /* The side's state is the monitor's card_state, read straight off the feed entry. A voided observation has
+     had its claim withdrawn and must not be allowed to rank (2026-10-18). */
+  const sideCardState=(d)=>{const e=mechSide(d);if(!e||!e.card_state)return null;if(e.lifecycle&&e.lifecycle.voided)return null;return e.card_state.value||null;};
+  const sideTrigMs=(d)=>{const lc=(mechSide(d)||{}).lifecycle;const t=(lc&&lc.trigger&&lc.trigger.reached_at)?Date.parse(lc.trigger.reached_at):NaN;return isFinite(t)?t:null;};
+  const leadSide=(dirs,pubOf)=>{
+    const Core=(typeof window!=="undefined"&&window.LevelUpCore)||null;
+    if(!Core||!Core.pickPairSide)return dirs.length===1?dirs[0]:null;
     const at=(d)=>{let t=null;try{t=pubOf?pubOf(d):null;}catch(e){t=null;}
       return (t!==null&&t!==undefined&&isFinite(t))?t:sidePubMs(d);};
-    const ts=dirs.map(at).filter(t=>t!==null);if(!ts.length)return dirs;
-    const newest=Math.max.apply(null,ts);
-    const keep=dirs.filter(d=>{const t=at(d);return t===null||(newest-t)<=BATCH_WINDOW_MS_;});
-    return keep.length?keep:dirs;};
-  const pickSide=(dirs)=>{let best=null;
-    dirs.forEach(d=>{
-      if(!best){best=d;return;}
-      const r=sideRank(d),rb=sideRank(best);
-      if(r>rb){best=d;return;}
-      if(r<rb)return;
-      if(r===3||r===1){const t=sideTrigMs(d),tb=sideTrigMs(best);
-        if(t!==null&&tb!==null){if(t<tb)best=d;return;}
-        if(t!==null){best=d;return;}
-        if(tb!==null)return;}
-      const p=sidePubMs(d),pb=sidePubMs(best);
-      if(p!==null&&pb!==null&&p>pb)best=d;});
-    return best;};
+    const picked=Core.pickPairSide(dirs.map(d=>({id:d,state:sideCardState(d),trigger_ms:sideTrigMs(d),published_ms:at(d)})));
+    return picked?picked.id:null;};
   const mechLiveRow=()=>{
     try{
       const Core=(typeof window!=="undefined"&&window.LevelUpCore)||null;
@@ -404,9 +368,9 @@ async function load(){
       /* 2026-10-24: one call to the shared order above, replacing two ad-hoc "exactly one of these"
          questions that could not separate ADA's two triggered sides at all. */
       const asked=WANT_SIDE&&dirs.indexOf(WANT_SIDE)>=0?WANT_SIDE:null;
-      const want=asked||(haveMech(dirs)?pickSide(currentBatchDirs(dirs,d=>{
+      const want=asked||(haveMech(dirs)?leadSide(dirs,d=>{
         const sr=(entry.sides[d]||{}).setup_row||{};
-        return (sr.utcMs!==null&&sr.utcMs!==undefined)?sr.utcMs:null;})):null);
+        return (sr.utcMs!==null&&sr.utcMs!==undefined)?sr.utcMs:null;}):null);
       if(!want)return null;
       const pt=entry.sides[want].published_text||{};
       const ts=pt.timestamp_text||"", t1=(pt.triggers||[])[0]||"";
@@ -523,8 +487,8 @@ async function load(){
          the page by a two-second publication margin. Mechanical evidence outranks the clock, and the order
          it uses is the shared one documented above - not a second opinion about it. */
       const asked=WANT_SIDE&&dirs.indexOf(WANT_SIDE)>=0?WANT_SIDE:null;
-      const byEvidence=asked||(haveMech(dirs)?pickSide(currentBatchDirs(dirs,d=>{
-        const r=byDir[d];const t=r?rowTs(r):NaN;return isFinite(t)?t:null;})):null);
+      const byEvidence=asked||(haveMech(dirs)?leadSide(dirs,d=>{
+        const r=byDir[d];const t=r?rowTs(r):NaN;return isFinite(t)?t:null;}):null);
       const pDir=byEvidence||dirs.find(d=>byDir[d]===S)||entry.primary_side||dirs[0];
       const qDir=dirs.find(d=>d!==pDir);
       return {primary:{dir:pDir,row:byDir[pDir]},quiet:{dir:qDir,row:byDir[qDir]}};
@@ -587,6 +551,11 @@ async function livePrice(L){
 load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
 </script>
 <script id="att-core" src="levelup-core.js"></script>
+<!-- THE WORDS (step 4, 2026-11-06). The monitor publishes a card_state per side; levelup-words.js is the
+     only place the words for each one exist, and index.html loads the same file, so this page and the card
+     that links to it can no longer word the same fact two ways. Deliberately NOT inside levelup-core.js,
+     which is GENERATED from the monitor repo - member-facing wording must never become a monitor deploy. -->
+<script id="att-words" src="levelup-words.js"></script>
 <script id="att-module">
 /*
  * LevelUp board — trigger-proximity ("LIVE ATTENTION") logic.  STAGING.
@@ -1191,104 +1160,65 @@ details.sideflip{counter-reset:sect}
       }
       return out;
     }
-    /* WHICH SIDE OF A PAIR THIS SURFACE SPEAKS FOR - ONE ORDER, THREE IMPLEMENTATIONS (2026-10-24).
-       index.html's card, sheet.html's mech-feed and sheet.html's own base render each have to make this
-       choice, and until today they made it differently: the mech layers ranked by "did it fire" and broke
-       ties on the earliest trigger, while the base render asked whether a side was retired and otherwise took
-       the newest publication. Pair retirement was removed from the engine, so that second rule became pure
-       recency, the two drifted apart, and the page contradicted itself - BTC drew the stopped long's ladder
-       under the running short's headline, ADA printed STOPPED over the running short's ladder. The order is
-       now the same everywhere, and this comment is repeated at each site so no one of them gets changed alone.
+    /* ====================================================================================================
+       card_state - THE ONE FIELD THIS PAGE READS TO DECIDE WHAT IT SAYS (step 4, 2026-11-06).
 
-         1  STILL RUNNING  triggered and not finished.  Among several, the EARLIEST trigger - the trade a
-                           member has actually been in longest.
-         2  STILL OPEN     not finished, not yet triggered.  Among several, the NEWEST publication.
-         3  FINISHED       stopped, all targets reached, exited back through the six lines, or retired without
-                           ever triggering.  Among several, the earliest trigger; one with no trigger defers.
-         4  NOTHING KNOWN  no lifecycle in the feed at all (an asset whose Sheet status is Closed, whose facts
-                           come from a receipt instead).
+       The monitor decides, once, per side, and publishes card_state: { value, since }. Everything that used
+       to re-decide it in this layer is gone. The two guards that remain are about IDENTITY, not state: a
+       VOIDED observation has had its claim withdrawn (2026-10-18), and a fact must belong to the instance
+       Chelsea has published now (2026-10-30, HYPE). Both degrade open while the Sheet parse is in flight.
+       ==================================================================================================== */
+    function cardStateValueOf(entry) {
+      if (!entry || !entry.card_state) return null;
+      if (entry.lifecycle && entry.lifecycle.voided) return null;
+      return entry.card_state.value || null;
+    }
+    function cardStateFor(asset) {
+      if (!feed) return null;
+      var picked = feedEntryFor(asset); if (!picked) return null;
+      if (!feedInstanceCurrent(asset, picked.entry)) return null;
+      return cardStateValueOf(picked.entry);
+    }
+    var FINISHED_CARD_STATES = { FINISHED_WIN: 1, FINISHED_STOPPED: 1, EXPIRED: 1, NOT_TRACKED: 1 };
 
-       A finished side never outranks a live one. That is the whole point: whatever the long did yesterday, if
-       the short is still running then the short is the trade. */
-    var SIDE_FINISHED_STATES = { STOP_BOUNDARY_REACHED: 1, OBJECTIVES_EXHAUSTED: 1, SIX_LINE_EXIT: 1, EXPIRED_UNTRIGGERED: 1 };
-    /* lc.retired is still honoured for an older cached feed; nothing sets it any more. */
-    function sideFinished(lc) { return !!(lc && (lc.retired || SIDE_FINISHED_STATES[lc.state])); }
-    function activityRank(entry) {
-      var lc = entry && entry.lifecycle;
-      if (!lc) return 0;
-      if (sideFinished(lc)) return 1;
-      return (lc.trigger && lc.trigger.reached_at) ? 3 : 2;
-    }
-    function entryTrigMs(entry) {
-      var lc = entry && entry.lifecycle;
-      var t = (lc && lc.trigger && lc.trigger.reached_at) ? Date.parse(lc.trigger.reached_at) : NaN;
-      return isFinite(t) ? t : null;
-    }
-    function entryPubMs(entry) {
-      var t = (entry && entry.instance_published_at) ? Date.parse(entry.instance_published_at) : NaN;
-      return isFinite(t) ? t : null;
-    }
-    /* Preferred within the SAME rank, per the tie-breaks above. */
-    function beatsAtRank(a, b, rank) {
-      if (rank === 3 || rank === 1) {
-        var ta = entryTrigMs(a), tb = entryTrigMs(b);
-        if (ta !== null && tb !== null) return ta < tb;
-        if (ta !== null) return true;
-        if (tb !== null) return false;
-      }
-      var pa = entryPubMs(a), pb = entryPubMs(b);
-      return (pa !== null && pb !== null) ? pa > pb : false;
-    }
-    /* Only the CURRENT batch counts. Chelsea republishes one side without the other all the time: on
-       2026-10-21 AVAX's long was that morning's fresh call (waiting) while its short was the previous day's,
-       already stopped - and reporting the stopped side put "STOPPED" on a card whose actual call of the day
-       had not even triggered. UNI was the mirror: the long was that day's and HAD stopped, the short was
-       yesterday's, and there STOPPED was right. The difference is not which side is terminal, it is which side
-       belongs to the batch being shown. So: take the newest side, keep any side published within the same
-       pair window of it, and only then prefer activity among those. */
-    var BATCH_WINDOW_MS = 2 * 60 * 60 * 1000;
-    function publishedMs(item) {
-      var v = item && item.entry && item.entry.instance_published_at;
-      var t = v ? Date.parse(v) : NaN;
-      return isFinite(t) ? t : null;
-    }
-    function currentBatch(all) {
-      var times = all.map(publishedMs).filter(function (t) { return t !== null; });
-      if (!times.length) return all;
-      var newest = Math.max.apply(null, times);
-      return all.filter(function (it) {
-        var t = publishedMs(it);
-        return t === null || (newest - t) <= BATCH_WINDOW_MS;
+    /* WHICH SIDE OF A PAIR THIS SURFACE SPEAKS FOR - THE THREE COPIES ARE GONE (2026-11-06).
+       This layer, index.html's mech-feed and this page's own base render each carried their own ranking,
+       batch window and tie-breaks, with the same explanatory comment pasted at each site. That is
+       CURRENT_STATE.md known problem 2 and it caused the BTC, LINK, HYPE and ADA side bugs. All three now
+       call LevelUpCore.pickPairSide; the rule, including why liveness comes before recency, is documented
+       once in core/levelup-core.js.
+       THIS SIDE SUPPLIES THE CLOCK from the feed, which is what this layer has always used. The base render
+       below passes the SHEET's publication time instead, because it has it and the feed can be hours stale
+       (the 2026-10-30 HYPE case). */
+    function pairCandidatesFor(asset) {
+      return feedEntriesFor(asset).map(function (it) {
+        var lc = it.entry && it.entry.lifecycle;
+        var t = (lc && lc.trigger && lc.trigger.reached_at) ? Date.parse(lc.trigger.reached_at) : NaN;
+        var p = (it.entry && it.entry.instance_published_at) ? Date.parse(it.entry.instance_published_at) : NaN;
+        return { id: it, state: cardStateValueOf(it.entry), trigger_ms: isFinite(t) ? t : null, published_ms: isFinite(p) ? p : null };
       });
     }
-    /* THE PAGE'S OWN SIDE WINS (2026-10-28). The board now links one card per side, and this page is
-       rendering whichever side the member clicked - the base script already picks that side's ladder. Every
-       reader in this layer must describe the SAME trade, or the page says COMPLETE (the long's state) over
-       the short's ladder, which is exactly what it did before this guard. Unlike index.html, where each card
-       carries its own side, this page renders one side at a time, so the side is read once from the URL and
-       applied here rather than threaded through every caller. No side in the link leaves the original
-       choosing path untouched, which is what every single-sided asset uses. */
+    /* THE PAGE'S OWN SIDE WINS (2026-10-28). The board links one card per side, and this page renders
+       whichever side the member clicked - the base script already picks that side's ladder. Every reader in
+       this layer must describe the SAME trade, or the page says COMPLETE (the long's state) over the short's
+       ladder, which is exactly what it did before this guard. Unlike index.html, where each card carries its
+       own side, this page renders one side at a time, so the side is read once from the URL and applied here
+       rather than threaded through every caller. No side in the link leaves the choosing path untouched,
+       which is what every single-sided asset uses. */
     function feedEntryFor(asset) {
       if (typeof WANT_SIDE !== 'undefined' && WANT_SIDE) {
         var sk = asset + '|' + WANT_SIDE.toUpperCase();
         var se = feed && feed.assets && feed.assets[sk];
         if (se) return { key: sk, entry: se };
       }
-      var all = currentBatch(feedEntriesFor(asset));
-      if (!all.length) return null;
-      /* One candidate: hand it back untouched. Gating this on activity broke the receipt fallback - an
-         asset whose lifecycle is null because its Sheet status is Closed (ONDO's real shape) scores zero
-         activity, and returning null here meant mechanicalFor() never reached the receipt that still holds
-         its facts. The activity rule exists to CHOOSE BETWEEN SIDES, nothing more; everything downstream
-         already declines to speak without a confirmed trigger. */
-      if (all.length === 1) return all[0];
-      var best = null;
-      for (var i = 0; i < all.length; i++) {
-        var r = activityRank(all[i].entry);
-        if (!best || r > best.rank) { best = { rank: r, item: all[i] }; continue; }
-        if (r === best.rank && beatsAtRank(all[i].entry, best.item.entry, r)) best = { rank: r, item: all[i] };
-      }
-      return best ? best.item : null;   // the chosen side; the trigger check downstream still decides
+      var cands = pairCandidatesFor(asset);
+      if (!cands.length) return null;
+      var Core = window.LevelUpCore;
+      /* No shared core loaded (it is a separate file): take the single candidate, which is most of the
+         board, and otherwise decline rather than invent a second ordering here. */
+      if (!Core || !Core.pickPairSide) return cands.length === 1 ? cands[0].id : null;
+      var picked = Core.pickPairSide(cands);
+      return picked ? picked.id : null;
     }
     /* The direction the card should wear, taken from the side actually being reported. null for a single-sided
        asset (the existing headline logic decides), and null for a pair with no activity yet. */
@@ -1340,36 +1270,28 @@ details.sideflip{counter-reset:sect}
       var tp = (lc.targets || []).filter(function (t) { return /^TP[0-9]+$/.test(t.level_id); })
         .sort(function (x, y) { return x.level_id.localeCompare(y.level_id, undefined, { numeric: true }); })
         .map(function (t) { return !!t.reached_at; });
-      return { triggered: true, tp: tp, stopped: lc.state === 'STOP_BOUNDARY_REACHED', complete: lc.state === 'OBJECTIVES_EXHAUSTED', outcome: (lc.public_display && lc.public_display.outcome) || null, tpsBeforeStop: (lc.stop_boundary && lc.stop_boundary.tps_reached_before_stop) || [], triggerAt: lc.trigger.reached_at, triggerZone: lc.trigger.zone };
+      /* FACTS ONLY SINCE STEP 4 (2026-11-06). stopped, complete and outcome used to come out of here -
+         three STATE decisions re-derived in the browser from a lifecycle the monitor had already judged, and
+         index.html carried the identical three. card_state answers all of them now, once. What is left is a
+         ladder of facts the monitor publishes no other way. */
+      return { triggered: true, tp: tp, tpsBeforeStop: (lc.stop_boundary && lc.stop_boundary.tps_reached_before_stop) || [], triggerAt: lc.trigger.reached_at, triggerZone: lc.trigger.zone };
     }
-    /* NO TRADE - RETIRED WITHOUT EVER TRIGGERING (2026-10-24). See index.html's copy of this function for
-       the full rationale; the short version is that mechanicalFor() above returns null whenever there is no
-       confirmed trigger, which is right for TP and stop ticks and exactly wrong for an ending that happens
-       BECAUSE nothing ever fired. Chelsea: "mark no trade and retire trade and do not reactivate until i put
-       another one". Gated on her own status, so an Active Long/Short cell is never overruled by a clock. */
-    function expiredFor(asset, currentInstanceKey) {
-      if (!feed) return null;
-      var picked = feedEntryFor(asset); if (!picked) return null;
-      var a = picked.entry, lc = a.lifecycle;
-      if (!lc || lc.voided) return null;
-      if (lc.state !== 'EXPIRED_UNTRIGGERED') return null;
-      if (lc.trigger && lc.trigger.reached_at) return null;
-      var cls = a.sheet_status && a.sheet_status.class;
-      if (cls && cls !== 'WATCHING' && cls !== 'NO_TRADE') return null;
-      if (currentInstanceKey) {
-        var validKeys = instanceKeysForCurrent(asset);
-        var keyOk = validKeys.length ? validKeys.indexOf(a.setup_instance_key) >= 0 : (a.setup_instance_key === currentInstanceKey);
-        if (!keyOk) return null;
-      }
-      return { expired: true, retiredAt: lc.terminal_at || null, publishedAt: a.instance_published_at || null };
-    }
+    /* THIS PAGE'S OWN expiredFor() WAS DELETED HERE (step 4, 2026-11-06).
+
+       It decided "is this retired" from lifecycle.state plus Chelsea's status class - the fourth copy of
+       that decision on the board, and side-blind, so for a two-sided asset it judged whichever side
+       feedEntryFor() happened to land on. The state is cardStateFor(ASSET_) === 'EXPIRED' now, and
+       Chelsea's-status gate lives in the monitor (public-feed.js clockOverruledBySheet). */
     /* COMPLETION COIN eligibility (2026-09-29) - reuses mechanicalFor() as-is, so it inherits the same
        instance-safety for free and never names a ticker. Approved member-facing rule (explicit, final - 2026-09-29
        correction): TP1 + TP2 + TP3 all reached, exactly. Not "however many TPs are defined" - a setup that only
        reaches TP1+TP2 (with or without a later stop) never earns the coin, even if it is otherwise terminal. */
     function coinEligible(asset) {
       var m = mechanicalFor(asset, directionAsset === asset ? currentInstanceKey : null);
-      return !!(m && m.complete && m.tp.length >= 3 && m.tp[0] && m.tp[1] && m.tp[2]);
+      /* 2026-11-06: "every objective reached" is FINISHED_WIN from the monitor, not m.complete re-derived
+         here. The coin rule itself is untouched and still exactly TP1 + TP2 + TP3. */
+      if (cardStateFor(asset) !== 'FINISHED_WIN') return false;
+      return !!(m && m.tp.length >= 3 && m.tp[0] && m.tp[1] && m.tp[2]);
     }
     function coinBadgeHtml() {
       // 8 sparks at 45deg increments; --a is just used to stagger each spark's animation start via CSS nth-child,
@@ -1462,36 +1384,46 @@ details.sideflip{counter-reset:sect}
       if (cls === 'ACTIVE_SHORT') return 'SHORT';
       return null;
     }
+    /* ONE STATE IN, ONE STATUS OUT (rewritten for step 4, 2026-11-06).
+       Both pages had their own copy of this and the two had drifted - this one carried a sub-line for the
+       retirement and index.html did not, and neither could show the dormant sentence at all because this
+       page has never had a cannot_trigger reader. Both now read the monitor's single card_state and look
+       the words up in the same levelup-words.js table, which is what makes OD-6 possible: the card and its
+       own detail page cannot word the same fact two ways when there is only one set of words.
+
+       Returns null - leaving Chelsea's own status primary, exactly as a feed outage does - for WATCHING, a
+       voided observation, a non-current instance, and a feed with no card_state (an old cached feed, or the
+       SIX_LINE_EXIT state whose display words are still an open decision waiting on Chelsea). */
     function resolveCurrentState(asset) {
-      /* Checked before mechanicalFor() because that function has nothing to return for this case by
-         design - no trigger, so no m at all. The `note` rides along for the headline's sub-line: a member
-         landing here deserves the sentence, not just the two words. */
-      var x = expiredFor(asset, directionAsset === asset ? currentInstanceKey : null);
-      if (x) {
-        return { text: 'NO TRADE\u00a0\u2014\u00a0CONDITION NEVER MET', kind: 'expired',
-          note: 'This setup waited a full day without the condition below ever being met, so it is retired. '
-            + 'Chelsea\u2019s levels stay on the page as published - nothing here is deleted - but nothing is being tracked against them any more.' };
-      }
+      var state = cardStateFor(asset);
+      if (!state || state === 'WATCHING') return null;
+      var W = window.LevelUpWords;
+      var words = W && W.CARD_STATE_WORDS && W.CARD_STATE_WORDS[state];
+      if (!words || !words.status) return null;     // no words file: say nothing rather than invent wording
       var m = mechanicalFor(asset, directionAsset === asset ? currentInstanceKey : null);
-      if (!m || !m.triggered) return null;   // not mechanically confirmed yet - Sheet stays primary (SEI-shaped)
-      if (m.stopped) {
-        // 2026-09-29 fix: a stop that already banked real TP progress (m.outcome/m.tpsBeforeStop, from the
-        // monitor's own stop_boundary.tps_reached_before_stop - never invented here) must not read as a plain
-        // failed stop. A genuine zero-TP stop (outcome !== 'CLOSED_WITH_PROGRESS') is unchanged: still 'STOPPED'.
-        // 2026-10-02: reads as a win (kind 'complete', same pink as a full TP1+TP2+TP3 completion) rather than a
-        // plain closure - banking real TP progress before the stop is a completed, successful trade to Angela.
-        // The coin graphic stays reserved for the exact TP1+TP2+TP3 case (coinEligible() below is unchanged).
-        if (m.outcome === 'CLOSED_WITH_PROGRESS' && m.tpsBeforeStop.length) return { text: 'COMPLETE — ' + m.tpsBeforeStop.join(' + ') + ' REACHED', kind: 'complete' };
-        return { text: 'STOPPED', kind: 'stopped' };
+      if (state === 'TRIGGERED') {
+        /* The ladder facts have to be attributable to THIS instance before the page can say a trade is
+           running on them (the SEI-shaped case). */
+        if (!m || !m.triggered) return null;
+        var dir = directionFor(asset);
+        if (!dir) return null;                      // never fabricate a direction we cannot evidence
+        var hit = -1;
+        m.tp.forEach(function (v, i) { if (v) hit = i; });
+        /* 2026-10-22: states a fact, never declares. */
+        var progress = hit >= 0 ? W.fill(words.progress_tp, { N: hit + 1 }) : words.progress_none;
+        return { text: W.fill(words.status, { DIR: dir, PROGRESS: progress }), note: words.sub || null, kind: words.tone, state: state, dir: dir, tpHit: hit + 1 };
       }
-      if (m.complete) return { text: 'COMPLETE', kind: 'complete' };
-      var dir = directionFor(asset);
-      if (!dir) return null;                  // never fabricate a direction we can't evidence
-      var hit = -1;
-      m.tp.forEach(function (v, i) { if (v) hit = i; });
-      var suffix = hit >= 0 ? ('TP' + (hit + 1) + ' REACHED') : 'CONDITION MET';   // 2026-10-22: states a fact, never declares
-      // non-breaking spaces around the dash - keeps it glued to a neighboring word (see index.html's copy for why)
-      return { text: 'ACTIVE ' + dir + ' — ' + suffix, kind: 'active', dir: dir, tpHit: hit + 1 };
+      if (state === 'FINISHED_WIN') {
+        /* A stop that banked real target progress is a win, not a failure (Angela, 2026-10-02) - and the
+           MONITOR decides that now. Naming the targets it banked is a fact off
+           stop_boundary.tps_reached_before_stop and nothing else. */
+        var banked = (m && m.tpsBeforeStop && m.tpsBeforeStop.length) ? W.fill(words.banked, { TPS: m.tpsBeforeStop.join(' + ') }) : '';
+        return { text: W.fill(words.status, { BANKED: banked }), note: words.sub || null, kind: words.tone, state: state };
+      }
+      /* `note` is the headline's existing .mech-headline-sub slot. This page has had one since the
+         retirement sentence was written for it; the table supplies it for every state that has one now,
+         which is how the dormant sentence reaches this page for the first time. */
+      return { text: W.fill(words.status, {}), note: words.sub || null, kind: words.tone, state: state };
     }
     function escH(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 
@@ -1517,7 +1449,8 @@ details.sideflip{counter-reset:sect}
        source resolveCurrentState() already uses - so an older instance's receipts can never supply this target. */
     function attnTarget(asset) {
       var m = mechanicalFor(asset, directionAsset === asset ? currentInstanceKey : null);
-      if (!m || !m.triggered || m.stopped || m.complete) return null;
+      /* 2026-11-06: 'running, and not finished' is one card_state value now, not two re-derived flags. */
+      if (!m || !m.triggered || cardStateFor(asset) !== 'TRIGGERED') return null;
       var hitIdx = -1; m.tp.forEach(function (v, i) { if (v) hitIdx = i; });
       var nextIdx = hitIdx + 1;
       if (nextIdx >= m.tp.length) return null;   // every defined TP already hit - should already be `complete`, but never invent a phantom next level
@@ -1642,17 +1575,20 @@ details.sideflip{counter-reset:sect}
         if (b && b.textContent === 'Current status') { b.textContent = 'Original Chelsea published status'; return; }
       }
     }
-    function panelHtml(m) {
+    /* THE LADDER IS A ROW OF FACTS, AND THE ENDING IS THE STATE (2026-11-06) - index.html's badgeHtml()
+       carries the identical change for the identical reason. `state` is passed in so this panel and the
+       headline above it cannot disagree about whether the trade ended, or how. */
+    function panelHtml(m, state) {
       if (!m) return '';
       var rows = ['<div class="mech-item on">&#10003; MET</div>'];
       m.tp.forEach(function (hit, i) { rows.push('<div class="mech-item' + (hit ? ' on' : '') + '">' + (hit ? '&#10003;' : '&#9675;') + ' TP' + (i + 1) + (hit ? ' HIT' : '') + '</div>'); });
-      if (m.stopped) {
-        // 2026-09-29: banked TP progress before the stop reads as a plain (non-alarm) item - the raw
-        // STOP_BOUNDARY_REACHED fact is unchanged (m.stopped stays true), only this presentation differs.
-        if (m.outcome === 'CLOSED_WITH_PROGRESS' && m.tpsBeforeStop.length) rows.push('<div class="mech-item">COMPLETE AFTER ' + m.tpsBeforeStop[m.tpsBeforeStop.length - 1] + '</div>');
-        else rows.push('<div class="mech-item stop">&#9632; STOPPED</div>');
+      if (state === 'FINISHED_STOPPED') rows.push('<div class="mech-item stop">&#9632; STOPPED</div>');
+      else if (state === 'FINISHED_WIN') {
+        // 2026-09-29: banked TP progress before the stop reads as a plain (non-alarm) item, never the
+        // STOPPED alarm - the trade banked something. A full completion banks nothing before a stop.
+        if (m.tpsBeforeStop.length) rows.push('<div class="mech-item">COMPLETE AFTER ' + m.tpsBeforeStop[m.tpsBeforeStop.length - 1] + '</div>');
+        else rows.push('<div class="mech-item complete">&#10003; COMPLETE</div>');
       }
-      else if (m.complete) rows.push('<div class="mech-item complete">&#10003; COMPLETE</div>');
       var note = feed ? ('Feed updated ' + fmtAgo(feed.generated_at) + ((Date.now() - Date.parse(feed.generated_at)) > STALE_MS ? ' (may be stale)' : '')) : '';
       return '<div id="mech-panel">'
         + '<div class="sect"><div class="bar"></div><h2>Market Evidence</h2></div>'
@@ -1664,7 +1600,7 @@ details.sideflip{counter-reset:sect}
     function ensure() {
       var banner = app.querySelector('.banner'); if (!banner) return;
       var old = document.getElementById('mech-panel');
-      var html = panelHtml(mechanicalFor(ASSET_, directionAsset === ASSET_ ? currentInstanceKey : null));
+      var html = panelHtml(mechanicalFor(ASSET_, directionAsset === ASSET_ ? currentInstanceKey : null), cardStateFor(ASSET_));
       if (!html) { if (old) old.remove(); return; }
       var d = document.createElement('div'); d.innerHTML = html; var panel = d.firstChild;
       var chip = document.getElementById('att-chip');
@@ -1871,11 +1807,19 @@ details.sideflip{counter-reset:sect}
 
       var shown = shownSideFor(ASSET_);
       var reported = pairDirectionFor(ASSET_);
-      /* Same correction as sideOver() in the base script above: a side is over because its own state says so,
-         not because a flag nothing sets any more says so. These messages had stopped appearing entirely. */
-      var OVER = { STOP_BOUNDARY_REACHED: 1, OBJECTIVES_EXHAUSTED: 1, SIX_LINE_EXIT: 1, EXPIRED_UNTRIGGERED: 1 };
-      var isRetired = function (d) { var lc = sides[d].lifecycle; return !!(lc && (lc.retired || OVER[lc.state])); };
-      var didTrigger = function (d) { var lc = sides[d].lifecycle; return !!(lc && lc.trigger && lc.trigger.reached_at); };
+      /* THE LOCAL "IS IT OVER" MAP WAS DELETED HERE (step 4, 2026-11-06).
+         A third copy of the same four-state set lived on this line - after SIDE_OVER_STATES in the base
+         script and SIDE_FINISHED_STATES in this layer, both also gone now - and it is the one the step 4
+         design named at sheet.html:1880. The side's own card_state answers it. sideState() reads the
+         per-side feed entry directly rather than through cardStateFor(), because this function is asking
+         about the side the member is NOT currently looking at. */
+      var sideState = function (d) {
+        var e = sides[d];
+        if (!e || !e.card_state) return null;
+        if (e.lifecycle && e.lifecycle.voided) return null;
+        return e.card_state.value || null;
+      };
+      var isRetired = function (d) { return !!FINISHED_CARD_STATES[sideState(d)]; };
 
       var msgs = [];
       /* THE "THIS TRADE IS OVER" NOTICE WAS REMOVED HERE (2026-10-29, Angela: "hype has a red box saying it
@@ -1915,16 +1859,20 @@ details.sideflip{counter-reset:sect}
           n.id = 'sideflip-retired'; n.className = 'sideflip-retired';
           /* THE COLOUR FOLLOWS THE RESULT (2026-10-29). This note was hard-coded red, and red means stopped
              on this board - so a side that reached every one of Chelsea's targets was being reported in the
-             loss colour. A finished trade is not automatically a bad one. */
-          var oLc = sides[otherDir].lifecycle || {};
-          var oOut = (oLc.public_display || {}).outcome;
-          var oWon = oLc.state === 'OBJECTIVES_EXHAUSTED' || oOut === 'COMPLETED' || oOut === 'CLOSED_WITH_PROGRESS';
+             loss colour. A finished trade is not automatically a bad one.
+             2026-11-06: "did it win" was re-derived here from the lifecycle state plus two public_display
+             outcome strings - a fourth reading of the same evidence. It is the other side's card_state now.
+             The three sentences below stay on this page deliberately: they describe the OTHER side inside a
+             disclosure, not the card's status, so they are not part of the one card_state words table. If
+             Chelsea wants to word them, they move to levelup-words.js as their own table. */
+          var oState = sideState(otherDir);
+          var oWon = oState === 'FINISHED_WIN';
           if (oWon) n.className = 'sideflip-retired is-win';
           n.innerHTML = oWon
             ? '<b>This side finished.</b> It triggered and reached what it was aiming for - the state at the top'
               + ' of this page is the other side. Shown because Chelsea published it and nothing published is'
               + ' ever deleted, not because these levels are still live.'
-            : didTrigger(otherDir)
+            : oState === 'FINISHED_STOPPED'
             ? '<b>This side is over.</b> It triggered and has since finished - the state at the top of this page'
               + ' is the other side. Shown because Chelsea published it and nothing published is ever deleted -'
               + ' not because these levels are live.'
@@ -1971,14 +1919,18 @@ details.sideflip{counter-reset:sect}
          HYPE long - published 5:08 AM, never triggered - carried "This setup is closed. The price above is
          for reference only" because the feed still held the 10/26 long at OBJECTIVES_EXHAUSTED. */
       if (!feedInstanceCurrent(ASSET_, picked && picked.entry)) picked = null;
-      var lc = picked && picked.entry && picked.entry.lifecycle;
-      /* 2026-10-24: SIX_LINE_EXIT and the retirement join the two original terminal states here. Both were
-         added to the engine after this function was written, and a live-pulsing "Live price" row under a
-         finished setup is exactly the claim the comment above this function says the page must not make. The
-         retirement goes through expiredFor() rather than a raw state check so it inherits that function's
-         gate on Chelsea's own status. */
-      var done = !!(lc && (lc.state === 'STOP_BOUNDARY_REACHED' || lc.state === 'OBJECTIVES_EXHAUSTED' || lc.state === 'SIX_LINE_EXIT'))
-        || !!expiredFor(ASSET_, directionAsset === ASSET_ ? currentInstanceKey : null);
+      /* 2026-10-24: a live-pulsing "Live price" row under a finished setup is exactly the claim the comment
+         above this function says the page must not make, and the retirement and the six-line exit count as
+         finished for it just as a stop or a completion do.
+         2026-11-06: this was a FOURTH list of terminal lifecycle states, OR'd with the deleted expiredFor().
+         One read now. NOT_TRACKED is deliberately not in it: nothing is being tracked, which is not the same
+         claim as "this setup is closed", and the row has never said so for SHIB. */
+      var nowState = picked ? cardStateFor(ASSET_) : null;
+      /* `ended` is the one thing the monitor can say about a state whose WORDS are still an open decision -
+         today only SIX_LINE_EXIT, and the legacy retired flag. It carries no wording and names no outcome;
+         it says the instance is over, which is all this row needs to know to stop pulsing. */
+      var endedFlag = !!(picked && picked.entry && picked.entry.card_state && picked.entry.card_state.ended);
+      var done = nowState === 'FINISHED_WIN' || nowState === 'FINISHED_STOPPED' || nowState === 'EXPIRED' || endedFlag;
       row.classList.toggle('mech-now-closed', done);
       var note = row.querySelector('.rn');
       if (note) {
@@ -2001,15 +1953,19 @@ details.sideflip{counter-reset:sect}
       var m = mechanicalFor(ASSET_, directionAsset === ASSET_ ? currentInstanceKey : null);
       var word = null;
       /* 2026-10-24: the same reason the triggered states are here. TAO's page read "SHORT WATCH" in the
-         largest text on it for a setup the engine retired weeks ago. */
-      if (expiredFor(ASSET_, directionAsset === ASSET_ ? currentInstanceKey : null)) word = 'NO TRADE';
-      else if (m && m.triggered) {
-        if (m.stopped) word = 'STOPPED';
-        else if (m.complete) word = 'COMPLETE';
-        else {
-          var dir = directionFor(ASSET_);
-          word = dir === 'SHORT' ? 'ACTIVE SHORT' : dir === 'LONG' ? 'ACTIVE LONG' : null;
-        }
+         largest text on it for a setup the engine retired weeks ago.
+         2026-11-06: a FIFTH place this page decided between retired / stopped / complete / running. One read
+         now. The hero is the one surface that still composes its own two words, because it is the biggest
+         text on the page and must stay short - the full status, in Chelsea's eventual wording, is the
+         headline directly beneath it. DORMANT and NOT_TRACKED fall through to her own headline, which is
+         what they did before: neither has a two-word form, and the headline says what they are. */
+      var heroState = cardStateFor(ASSET_);
+      if (heroState === 'EXPIRED') word = 'NO TRADE';
+      else if (heroState === 'FINISHED_STOPPED') word = 'STOPPED';
+      else if (heroState === 'FINISHED_WIN') word = 'COMPLETE';
+      else if (heroState === 'TRIGGERED' && m && m.triggered) {
+        var dir = directionFor(ASSET_);
+        word = dir === 'SHORT' ? 'ACTIVE SHORT' : dir === 'LONG' ? 'ACTIVE LONG' : null;
       }
       var want = word || em.dataset.chelsea;
       if (em.textContent !== want) em.textContent = want;
@@ -2107,7 +2063,8 @@ details.sideflip{counter-reset:sect}
        with "STALE_TRADE_NOTICE_TICKERS is not defined" the first time this lived up top. Same lesson the B5
        sentence learned at index.html:474. Same ticker and same sentence as index.html; delete together. */
     var STALE_TRADE_NOTICE_TICKERS = ['ADA'];
-    var STALE_TRADE_NOTICE = "⚠ This ADA short was posted Oct 23 (TP1 and TP2 already hit). Check Chelsea's latest post before acting on it.";
+    /* 2026-11-06: the SENTENCE moved to levelup-words.js with the rest of the member-facing wording, so
+       both pages read one string. The ticker list stays here, because that is a condition. */
     /* TEMPORARY - remove when the stale-triggered-trade rule (problem 16 / option c) ships.
        Deliberately dumb: a named ticker, a fixed sentence, no state read and no decision of its own. The side
        comes from WANT_SIDE (the ?side= param this page already reads, declared once above) and falls back to
@@ -2124,7 +2081,7 @@ details.sideflip{counter-reset:sect}
       var el = document.createElement('div');
       el.id = 'stale-trade-notice';
       el.className = 'stale-trade-notice';
-      el.textContent = STALE_TRADE_NOTICE;
+      el.textContent = (window.LevelUpWords && window.LevelUpWords.STALE_TRADE_NOTICE) || '';
       banner.parentNode.insertBefore(el, banner);
     }
     function ensureStrengthMeter() {
@@ -2151,7 +2108,11 @@ details.sideflip{counter-reset:sect}
          and her ladder all still render. A FROZEN reading is deliberately exempt: that is a snapshot of a
          real entry and belongs to the trade's history. A retirement can never carry one, since it never
          triggered, but the rule is stated rather than assumed. */
-      if (!r.frozen && expiredFor(ASSET_, directionAsset === ASSET_ ? currentInstanceKey : null)) return;
+      /* 2026-11-06 (step 4 design, "same gate as the index strip"): a live reading on a side that is
+         dormant, retired or untracked contradicts the status line directly above it. One read, three
+         states, no new question. */
+      var strState = cardStateFor(ASSET_);
+      if (!r.frozen && (strState === 'EXPIRED' || strState === 'DORMANT' || strState === 'NOT_TRACKED')) return;
       var cls = { 'Weak': 'mech-str-weak', 'Mixed': 'mech-str-mixed', 'Strong': 'mech-str-strong', 'Very strong': 'mech-str-vstrong' }[r.word] || 'mech-str-mixed';
       /* Chelsea's own order of importance, with Simple+Smooth shown as a CONDITION rather than a hidden
          precondition - she ranked it second, and Angela's instruction is that the panel shows which boxes
@@ -2231,7 +2192,7 @@ details.sideflip{counter-reset:sect}
        check on its own short interval - it is two DOM reads and a class toggle. */
     setInterval(ensureNowRowTruth, 2000);
     obs.observe(app, { childList: true });
-    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, getCurrentInstanceKey: function () { return currentInstanceKey; }, resolveCurrentState: resolveCurrentState, directionFor: directionFor, ensure: ensure, ensureHeadline: ensureHeadline, suppressStaleChip: suppressStaleChip, attnTarget: attnTarget, attnChipHtml: attnChipHtml, ensureAttnChip: ensureAttnChip, loadLivePrice: loadLivePrice, coinEligible: coinEligible, coinBadgeHtml: coinBadgeHtml, ensureCoinHero: ensureCoinHero, triggerMarkerHtml: triggerMarkerHtml, conditionalTrigger: conditionalTrigger, readinessHtml: readinessHtml, ensureReadiness: ensureReadiness, loadReadinessPrice: loadReadinessPrice, panelHtml: panelHtml, sixLineReadinessFor: sixLineReadinessFor, ensureSixLineFlag: ensureSixLineFlag, ensureLadderHits: ensureLadderHits, shownSideFor: shownSideFor, ensureSideTruth: ensureSideTruth, expiredFor: expiredFor, ensureHeroState: ensureHeroState, ensureNowRowTruth: ensureNowRowTruth, ensureStrengthMeter: ensureStrengthMeter };   // test hook (read-only)
+    window.__mechFeed = { get: function () { return feed; }, mechanicalFor: mechanicalFor, getCurrentInstanceKey: function () { return currentInstanceKey; }, resolveCurrentState: resolveCurrentState, directionFor: directionFor, ensure: ensure, ensureHeadline: ensureHeadline, suppressStaleChip: suppressStaleChip, attnTarget: attnTarget, attnChipHtml: attnChipHtml, ensureAttnChip: ensureAttnChip, loadLivePrice: loadLivePrice, coinEligible: coinEligible, coinBadgeHtml: coinBadgeHtml, ensureCoinHero: ensureCoinHero, triggerMarkerHtml: triggerMarkerHtml, conditionalTrigger: conditionalTrigger, readinessHtml: readinessHtml, ensureReadiness: ensureReadiness, loadReadinessPrice: loadReadinessPrice, panelHtml: panelHtml, sixLineReadinessFor: sixLineReadinessFor, ensureSixLineFlag: ensureSixLineFlag, ensureLadderHits: ensureLadderHits, shownSideFor: shownSideFor, ensureSideTruth: ensureSideTruth, cardStateFor: cardStateFor, feedEntryFor: feedEntryFor, ensureStaleTradeNotice: ensureStaleTradeNotice, ensureHeroState: ensureHeroState, ensureNowRowTruth: ensureNowRowTruth, ensureStrengthMeter: ensureStrengthMeter };   // test hook (read-only)
   } catch (e) { if (window.console) console.warn('mechanical feed addon disabled:', e); }
 })();
 </script>
