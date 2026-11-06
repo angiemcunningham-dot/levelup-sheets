@@ -866,6 +866,10 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
 .mech-sidetruth .sidetruth-dyor{font-size:11.5px;color:var(--gray);line-height:1.5}
 .sideflip-retired.is-win{border-left-color:var(--pink);background:rgba(250,3,152,.06)}
 .sideflip-retired.is-win b{color:var(--pink)}
+/* TEMPORARY - remove when the stale-triggered-trade rule (problem 16 / option c) ships. */
+.stale-trade-notice{display:block;width:100%;font-family:Archivo,sans-serif;font-weight:800;font-size:13px;
+  letter-spacing:.01em;color:#8A4B00;background:#FFF4E0;border:2px solid var(--orange);border-radius:12px;
+  padding:13px 16px;margin:0 0 18px;line-height:1.55}
 .sideflip-retired{margin:0 0 10px;padding:10px 12px;border-left:4px solid var(--red);background:rgba(239,68,68,.06);
   font-size:12.5px;line-height:1.55;color:var(--ink)}
 .sideflip-retired b{color:var(--red-d)}
@@ -2097,6 +2101,32 @@ details.sideflip{counter-reset:sect}
         + 'the move has extended - both happen, and neither ends a trade. Only Chelsea&#39;s listed targets '
         + 'being reached, or the stop being hit, does that.</p>';
     }
+    /* TEMPORARY - remove when the stale-triggered-trade rule (problem 16 / option c) ships.
+       DECLARED IN THIS BLOCK, not the first one, and that is load-bearing: the board-dom harness loads this
+       mech-feed IIFE on its own, so a const from the first <script> is simply not there - 71 tests went red
+       with "STALE_TRADE_NOTICE_TICKERS is not defined" the first time this lived up top. Same lesson the B5
+       sentence learned at index.html:474. Same ticker and same sentence as index.html; delete together. */
+    var STALE_TRADE_NOTICE_TICKERS = ['ADA'];
+    var STALE_TRADE_NOTICE = "⚠ This ADA short was posted Oct 23 (TP1 and TP2 already hit). Check Chelsea's latest post before acting on it.";
+    /* TEMPORARY - remove when the stale-triggered-trade rule (problem 16 / option c) ships.
+       Deliberately dumb: a named ticker, a fixed sentence, no state read and no decision of its own. The side
+       comes from WANT_SIDE (the ?side= param this page already reads, declared once above) and falls back to
+       shownSideFor() for a bare link. Insert-only and no-op guarded, like the other ensure* passes. */
+    function ensureStaleTradeNotice() {
+      var banner = app.querySelector('.banner'); if (!banner) return;
+      var side = (typeof WANT_SIDE !== 'undefined' && WANT_SIDE) || (function () {
+        var sh = shownSideFor(ASSET_); return sh ? String(sh).toLowerCase() : null;
+      })();
+      var want = STALE_TRADE_NOTICE_TICKERS.indexOf(ASSET_) >= 0 && side === 'short';
+      var old = document.getElementById('stale-trade-notice');
+      if (!want) { if (old) old.remove(); return; }
+      if (old) return;
+      var el = document.createElement('div');
+      el.id = 'stale-trade-notice';
+      el.className = 'stale-trade-notice';
+      el.textContent = STALE_TRADE_NOTICE;
+      banner.parentNode.insertBefore(el, banner);
+    }
     function ensureStrengthMeter() {
       /* A is bound locally in five other functions here and was NOT in scope in this one - referencing it
          would have thrown the moment a live reading rendered. Same shape as the 2026-10-21 TDZ outage, so
@@ -2188,7 +2218,7 @@ details.sideflip{counter-reset:sect}
       if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(el, anchor.nextSibling);
       else { var app2 = document.getElementById('app'); if (app2) app2.appendChild(el); }
     }
-    function applyAll() { ensure(); ensureHeadline(); ensureReadiness(); ensureSixLineFlag(); ensureSideTruth(); ensureStrengthMeter(); ensureLadderHits(); ensureNowRowTruth(); ensureHeroState(); suppressStaleChip(); ensureAttnChip(); loadLivePrice(); loadReadinessPrice(); }
+    function applyAll() { ensure(); ensureStaleTradeNotice(); ensureHeadline(); ensureReadiness(); ensureSixLineFlag(); ensureSideTruth(); ensureStrengthMeter(); ensureLadderHits(); ensureNowRowTruth(); ensureHeroState(); suppressStaleChip(); ensureAttnChip(); loadLivePrice(); loadReadinessPrice(); }
     var obs = new MutationObserver(function () { obs.disconnect(); applyAll(); obs.observe(app, { childList: true }); });
     function load() { return fetchFeed().then(function (f) { feed = f; applyAll(); }); }
     load();
