@@ -386,12 +386,13 @@ different CLOCKS. `sheet.html`'s base render passes the Sheet's publication time
 mech layers pass the feed's. When the monitor is behind, the card and the detail page can still name different
 sides. The ordering is one function now, so this is a one-line argument change at two call sites rather than a
 third implementation - but it is a real decision about which clock is right, and it is not made here.
-## Pairs side by side on the detail page (2026-11-06)
+## Pairs side by side on the detail page - DONE, LIVE 2026-11-06
 
 **Ang, 2026-11-06: pairs show side by side on the detail page, no dropdown.**
 
-IN THE PREVIEW ONLY. Nothing is pushed to the live board. Preview:
-`https://angiemcunningham-dot.github.io/levelup-sheets/preview-c4e8de/sheet.html?asset=BTC` and `...?asset=ADA`.
+**LIVE.** Approved by Ang on the preview from her phone and shipped the same day: board `e5edd34`,
+monitor `f367488`, both halves in the same window with `STOP` in place so no cycle landed in the gap.
+The preview folder `preview-c4e8de` stays and now matches what is live.
 
 ### What changed on `sheet.html`
 
@@ -596,6 +597,44 @@ reversal recorded at its own site:
   and reads as consistent with it, but it has not been checked against the landing page.
 - `index.html` is untouched. A card still links to `sheet.html?asset=X&side=Y`; the detail page now shows both
   sides whichever side was clicked, and `WANT_SIDE` still decides which one LEADS.
+
+## Next item
+
+- [ ] **On phones, add a "Jump to the {other side} side" link at the top of a paired page (a link, not a
+  dropdown).** Ang, 2026-11-06, from reviewing the live layout on her phone. At 860px and below the two
+  columns stack, so the second side is a full column-length scroll away and nothing at the top says it is
+  there. A LINK, not a disclosure: the dropdown was just deleted and must not come back in another form -
+  both sides stay fully open and nothing collapses. The wording `{other side}` is filled from the side the
+  link points at, and belongs in `levelup-words.js` with the rest of the member-facing wording.
+
+## Going live, 2026-11-06, and the one thing that went wrong
+
+The step-4 sequence, followed exactly: merge, test both ways, `STOP`, board first, regenerate fixtures,
+test with no env var, monitor second, remove `STOP`, watch the cycle.
+
+**The 12:01 cycle passed and published.** `run-2026-11-06-1201.log`: synced to `f367488`, replay gate
+green at 12:02:59, state restored, feed built and published at 12:03:41, `=== run complete ===`. The board
+took it as `781850f`, `generated_at 2026-11-06T17:03:02Z`. No rollback. (The `STALE_TRADE_NOTICE_TICKERS
+is not defined` line in the gate output is pre-existing - it appears in logs back to 01:46 and is caught,
+not fatal.)
+
+**27 tests went red after the fixtures were regenerated, and every one was a test stand-in, not the page.**
+This is the known cost of problem 20 - a board change cannot be fully tested until it is deployed, because
+the fixtures come from `git show origin/main`. The failures appeared at exactly the right moment and were
+contained by `STOP`; nothing published while they were being fixed.
+
+| file | what was actually wrong |
+| --- | --- |
+| `pair-live-side-leads` | `leadLadder()` sliced from `id="ladder"` to the next `<details>`. The dropdown is gone, so `indexOf` returned -1, the slice ran to the end of the document and `leadSide()` saw BOTH ladders - `'both (impossible)'` on seven tests. The boundary is `<section class="sidecol"` now. Its document stub also answered `[]` to `.ladder`, so the per-ladder passes did nothing and three tests asserted an empty array against a correct page |
+| `live-price-pulse` | `#nowp`/`#nowts` became `.now-px`/`.now-ts` - two columns draw two live rows and two elements cannot share an id. The stub indexed ids only, and its document had no `querySelectorAll` at all |
+| `expired-untriggered-board` | `ensureNowRowTruth()` asks each ladder for its own `.row.now` instead of the document for `'#ladder .row.now'` |
+| `board-option-d-legibility` | the reached-row tint moved from `#ladder` to `.ladder` |
+| `PLS-16` | pinned the old mismatch sentence, reworded because it told members to open a disclosure that no longer exists. The guard is unchanged and still proves the two sides are named the right way round |
+
+**The lesson, and it is cheap to apply next time:** regenerate the fixtures from the BRANCH before pushing
+the board, not after. `scripts/sync-board-fixtures.js --write` reads whichever clone has the newest
+`origin/main`; run the suite against a locally-written fixture of the branch and these 27 would have been
+found before anything shipped, instead of in the window between the two pushes.
 
 ## Evidence
 
