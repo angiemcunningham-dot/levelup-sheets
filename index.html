@@ -465,6 +465,14 @@ const ORDER=["b-active","b-short","b-watch","b-none","b-invalid","b-closed"];
    there), only what this page renders. Remove this array (and its two usages below) if Angela ever wants TURBO
    visible on the board again. */
 const CHELSEA_RECORD_EXCLUSIONS=["TURBO"];
+/* ONE SENTENCE, ONE OWNER (Chelsea, 2026-11-05). Two code paths used to write this warning and they
+   worded it differently, so the same fact read two ways depending on which pass got there first - and
+   Angela's note was that members did not understand either of them. Chelsea gave the exact wording;
+   this is the only place it exists. The MONITOR decides whether a side is dormant (engine.js
+   dormantFor, published as cannot_trigger); the board only maps that state to these words.
+   Lives in the main script because att-ui and mech-feed are separate IIFEs and both must call it. */
+const DEAD_WATCH_SENTENCE = "This setup never triggered and is no longer valid. Shown for the record only — not something to watch.";
+const deadWatchSentence = () => DEAD_WATCH_SENTENCE;
 const DETAIL="sheet.html";
 const isPC=r=>{const s=get(r,"source type");return s?/price/i.test(s):/^\s*price[- ]?check/i.test(get(r,"headline"));};
 /* Reset Watch: a DELIBERATE marker only - the Sheet's existing "source type" column (the same column that already
@@ -1474,9 +1482,10 @@ load();setInterval(load,60000);
                  be dead at the same time. Now it states the fact plainly, says what it means for the card it
                  is sitting on, and asks nothing of the member. Still flags only - it never changes a status,
                  never removes a setup, and nothing Chelsea published disappears. */
-              el.innerHTML = '<b>⚠ Not a live watch</b>' + ' — this never triggered, and price has since closed past '
-                + 'Chelsea&#39;s stop (' + A.fmtPrice(res.level) + '). The level it was built on is gone, so the '
-                + 'distance-to-trigger shown here no longer means anything. Kept visible for the record, not as something to watch.';
+              /* B5 (Chelsea, 2026-11-05): one sentence, from deadWatchSentence(). The old wording composed
+                 here is gone, including the stop price it used to quote - she gave the exact words and they
+                 do not include it. */
+              el.innerHTML = '<b>&#9888;</b> ' + deadWatchSentence();
               /* FIRST in the card, above the percentage and the tier label. A member reads top-down, and
                  the fact that a setup is dead has to arrive before the number saying how close it is. */
               if (c.firstChild) c.insertBefore(el, c.firstChild); else c.appendChild(el);
@@ -2043,9 +2052,8 @@ load();setInterval(load,60000);
           if (mine) return;
           var el = document.createElement('div');
           el.className = 'cannot-trigger-flag';
-          el.innerHTML = '<b>&#9888; Not a live watch</b>'
-            + ' — price closed through Chelsea&#39;s stop before this ever triggered, so it can no longer fire. '
-            + 'The distance-to-trigger shown here no longer means anything. Kept visible for the record, not as something to watch.';
+          /* B5 (Chelsea, 2026-11-05): the same one sentence as the other writer, from deadWatchSentence(). */
+          el.innerHTML = '<b>&#9888;</b> ' + deadWatchSentence();
           if (c.firstChild) c.insertBefore(el, c.firstChild); else c.appendChild(el);
         });
       } catch (e) { if (window.console) console.warn('cannot-trigger panels skipped:', e); }
