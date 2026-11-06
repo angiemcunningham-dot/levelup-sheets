@@ -1,0 +1,1 @@
+READ CURRENT_STATE.md FIRST, before anything else. It is the only source of truth. Older handoff files are history, not instructions. At the end of every session, update CURRENT_STATE.md. Never create a new handoff file.
