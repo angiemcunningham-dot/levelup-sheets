@@ -66,10 +66,21 @@
    * fill() below: {DIR} the side, {PROGRESS} / {BANKED} the fragments named in the same entry.
    */
   var CARD_STATE_WORDS = {
-    /* Nothing has happened yet, and the board says nothing mechanical about it. Chelsea's pill IS the
-       status for an ordinary watch - that is the design, not an omission. If she ever wants words
-       here, they go here and the status line appears; no page changes. */
-    WATCHING: { status: null, sub: null, tone: null, provisional: false },
+    /* WATCHING GOT WORDS ON 2026-11-06 (Ang, from the side-by-side preview review).
+       This read `status: null`, with the note that Chelsea's pill IS the status for an ordinary watch.
+       That is still TRUE OF THE PAGE-TOP HEADLINE and has not changed: resolveCurrentState() suppresses
+       WATCHING unless a caller asks for it, so the big status at the top of a detail page and the card on
+       the landing page still leave her pill undemoted. What changed is that a PAIR now draws both sides as
+       open columns, and a column with no status at all reads as an unlabelled second setup rather than a
+       side that is waiting. Ang: "a WATCHING column must show a status strip too."
+       So the words live here, in the one table, and WHICH SURFACE SHOWS THEM is a flag at the call site -
+       not a second string and not a second composer. PROVISIONAL, like the rest: these are not her words. */
+    WATCHING: {
+      status: '{DIR} WATCH — WAITING FOR TRIGGER',
+      sub: null,
+      tone: 'watch',
+      provisional: true,
+    },
 
     /* Price closed through her published stop before entry, so the engine will not fire it. It can
        come back: engine.js dormantFor() puts the side back to WATCHING when price returns to within
@@ -131,6 +142,34 @@
     },
   };
 
+  /*
+   * THE LADDER MARKERS (moved here 2026-11-06, with two new ones).
+   *
+   * What a reached level says on the ladder row. These four strings were inline in sheet.html; they are
+   * member-facing words, so they belong in the one file that holds member-facing words. index.html draws
+   * no ladder, so there is no second copy to keep in step.
+   *
+   * THE TWO NEW ONES ARE THE POINT (Ang, 2026-11-06). A stop that price passed BEFORE the setup ever
+   * triggered was stamped "Stop hit", which claims a trade was stopped out. Nobody was in it. On BTC's
+   * long today that stamp sits on a side that is back on watch via the diamond comeback rule, so the
+   * ladder read as a loss on a setup that is live and waiting.
+   *
+   * The monitor already publishes the fact that tells them apart and the board invents nothing:
+   * `lifecycle.stop_boundary.in_trade` is false when the stop was passed with no trigger behind it.
+   *
+   *   stop_hit                 in_trade - a real stop-out, unchanged
+   *   stop_pre_entry_on_watch  pre-entry, and the side is back at WATCHING (the diamond comeback)
+   *   stop_pre_entry           pre-entry, and the side is not back on watch - says what happened and
+   *                            claims nothing about where the side is now, because the column's own
+   *                            status strip is what says that
+   */
+  var LADDER_MARKS = {
+    hit: '✓ Hit',
+    stop_hit: '✓ Stop hit',
+    stop_pre_entry: 'Stop passed before entry',
+    stop_pre_entry_on_watch: 'Stop passed before entry — back on watch',
+  };
+
   /* A string substitution and nothing more: {NAME} is replaced by vars.NAME, and an unsupplied name
      becomes empty rather than appearing on a member's screen as a brace. */
   function fill(tpl, vars) {
@@ -153,6 +192,7 @@
 
   root.LevelUpWords = {
     CARD_STATE_WORDS: CARD_STATE_WORDS,
+    LADDER_MARKS: LADDER_MARKS,
     DEAD_WATCH_SENTENCE: DEAD_WATCH_SENTENCE,
     STALE_TRADE_NOTICE: STALE_TRADE_NOTICE,
     fill: fill,
