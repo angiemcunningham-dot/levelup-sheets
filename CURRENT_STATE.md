@@ -2,6 +2,8 @@
 
 Nov 5, 2026 · @Ang
 
+**Next session starts with: Fix plan step 4 PLAN, target = BTC long card in LEVELUP_AUDIT\preview_B5.png (three contradicting labels).**
+
 The board works, but the same decisions are made in too many places, so every fix moves the bug somewhere else. The fix is one decider (the monitor) and one doc (this one). This doc replaces all 449 earlier handoffs.
 
 ## Rules for every session
@@ -32,7 +34,7 @@ Chelsea's setups flow one way into the Sheet, then get read twice: once by the m
 | `monitor/public-feed.js` | monitor repo | What the board is allowed to show |
 | `mech-feed` script | inside `index.html` AND `sheet.html` | Re-decides side, state and warnings in the browser (the problem) |
 
-**Working folders.** Do all monitor code work in `C:\dev\work\levelup-trade-monitor`. NEVER edit in `C:\dev\monitor-task\repo` or `C:\dev\monitor-task\sheets`; the 15-minute runner resets those. Board work goes in `C:\dev\levelup-sheets`. The OneDrive `LevelUp_Monitor_Rebuild` copy is 47 commits behind; do not use it.
+**Working folders.** Monitor code work goes in `C:\dev\work\levelup-trade-monitor`, board work in `C:\dev\work\levelup-sheets`. Both are clones nothing else touches. NEVER edit in `C:\dev\monitor-task\repo` or `C:\dev\monitor-task\sheets` - the 15-minute runner resets them - and not in `C:\dev\levelup-sheets` either, which is the checkout the monitor compares its fixtures against. The OneDrive `LevelUp_Monitor_Rebuild` copy is 47 commits behind; do not use it.
 
 ## What runs on a schedule
 
@@ -78,6 +80,7 @@ The root cause is one decision made in several places that drift apart. Problems
 | 8 | Uncommitted fix (PLS-20b) parked in `C:\dev\levelup-sheets\sheet.html` since 2026-11-04 | working folder | Easy to lose or ship by accident |
 | 9 | TURBO hidden by a hardcoded list in 4 places, still present in the data | `index.html:467` and others | Fragile; the file's own comment warns against it |
 | 10 | Intake posts sometimes arrive slowly | intake app to Sheet | Not urgent; investigate after the fix plan |
+| 11 | Monitor replay gate read the board working folder’s local HEAD; fixed 2026-11-05 by comparing to origin/main | `scripts/sync-board-fixtures.js` | A board change committed locally and deliberately not pushed made the gate fail closed, and the 23:31 cycle published nothing. Guarded by BFS-7 |
 
 ## Fix plan
 
@@ -85,11 +88,11 @@ Do these in order. Each step is done only when its check passes, and the result 
 
 - [x] **0. Stop extra writers.** Cloudflare dispatcher cron removed on 2026-11-05.
 - [x] **0b. Remove the `monitor-shadow` hourly cron.** monitor-shadow hourly cron removed 2026-11-05 (d68b515); tests now assert no schedule.
-- [x] **0c. Give Claude Code its own working folder.** Done 2026-11-05: `C:\dev\work\levelup-trade-monitor` is a separate clone of levelup-trade-monitor that the runner never touches. All monitor code work happens there.
+- [x] **0c. Give Claude Code its own working folder.** Done 2026-11-05, both repos: `C:\dev\work\levelup-trade-monitor` and `C:\dev\work\levelup-sheets`, clones nothing else touches. The parked PLS-20b change moved to the board clone with it, and `C:\dev\levelup-sheets` was left clean.
 - [ ] **0d. Review the 2026-11-04 stash in monitor-task\repo.** Done when it is kept or dropped.
 - [ ] **0e. config/monitor.config.json target_cadence_minutes is still 60; real cadence is 15.** Decide and align (affects the staleness check).
 - [x] **1. Answer the open decisions** (section above). Done 2026-11-05: every decision in that section now has a written answer and a date.
-- [x] **2. Lock in past bugs as tests** - done 2026-11-05 except B4, B5 and B6, which stay todo until built. BTC, HYPE, LINK, ADA and PEPE all have live regression tests (PLS-1, PFS-1, PLS-18, PLS-20b, PLS-19, WNR-1, NTL-1..6, A7), and Chelsea’s new rules are live as B1, B2, B3, B7 and B8. Still todo: **B4** (written invalidation never moves the strength meter, feed carries the warning flag), **B5** (one "Not a live watch" sentence from one function), **B6** (a pair’s two cards stay together).
+- [x] **2. Lock in past bugs as tests** - done 2026-11-05 except B4 and B6, which stay todo until built. BTC, HYPE, LINK, ADA and PEPE all have live regression tests (PLS-1, PFS-1, PLS-18, PLS-20b, PLS-19, WNR-1, NTL-1..6, A7), and Chelsea’s new rules are live as B1, B2, B3, B7 and B8. B5 is **done** - one "Not a live watch" sentence from one function, shipped 2026-11-05 (board d4c3e0c, monitor 976baab); the test is live. Still todo: **B4** (written invalidation never moves the strength meter, feed carries the warning flag) and **B6** (a pair’s two cards stay together).
   - Diamond comeback built 2026-11-05 (56902dc): `dormantFor()` in `monitor/engine.js`. Note: the 24h watch window still applies, so a dormant side can only come back within 24h of publication.
 - [ ] **3. Staging board.** A copy of the board where every change lands first. Done when Ang can open a staging link and approve before anything goes live.
 - [ ] **4. Make the monitor the only decider.** The feed states, per side: which side leads, whether it is over, and the exact warning text. The pages only display it. Done when the browser-side copies in step 5 have nothing left to decide.
