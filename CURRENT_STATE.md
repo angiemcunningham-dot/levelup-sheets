@@ -80,7 +80,10 @@ The root cause is one decision made in several places that drift apart. Problems
 Do these in order. Each step is done only when its check passes, and the result is recorded here.
 
 - [x] **0. Stop extra writers.** Cloudflare dispatcher cron removed on 2026-11-05.
-- [ ] **0b. Remove the `monitor-shadow` hourly cron.** Done when the workflow file has `workflow_dispatch` only and the GitHub Actions tab shows no new scheduled runs.
+- [x] **0b. Remove the `monitor-shadow` hourly cron.** monitor-shadow hourly cron removed 2026-11-05 (d68b515); tests now assert no schedule.
+- [ ] **0c. Give Claude Code its own working folder.** The runner runs git reset --hard in C:\dev\monitor-task\repo, wiping uncommitted work. Done when Claude Code works in a separate clone the runner never touches.
+- [ ] **0d. Review the 2026-11-04 stash in monitor-task\repo.** Done when it is kept or dropped.
+- [ ] **0e. config/monitor.config.json target_cadence_minutes is still 60; real cadence is 15.** Decide and align (affects the staleness check).
 - [ ] **1. Answer the open decisions** (section above). Done when every box there has a written answer and date.
 - [ ] **2. Lock in past bugs as tests:** BTC (2026-10-23), HYPE (2026-10-29/30), LINK, ADA and PEPE. Done when the tests fail on the old code and pass on the current code.
 - [ ] **3. Staging board.** A copy of the board where every change lands first. Done when Ang can open a staging link and approve before anything goes live.
