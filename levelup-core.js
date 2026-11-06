@@ -851,10 +851,119 @@
     return out;
   }
 
+  /* ================================================================================================
+   * WHICH SIDE OF A PAIR SPEAKS FOR IT - ONE IMPLEMENTATION (2026-11-06)
+   *
+   * This was CURRENT_STATE.md known problem 2: "which side leads a pair" decided three ways, in
+   * sheet.html's base render, sheet.html's mech-feed and index.html's mech-feed, with the same
+   * explanatory comment pasted at each site and the instruction that no one of them be changed alone.
+   * It caused the BTC, LINK, HYPE and ADA side bugs - eight rounds in thirteen days. A comment cannot
+   * keep three implementations in step, so there is now one, here, and the pages call it.
+   *
+   * It lives in the shared core rather than on the board because the board's other shared file,
+   * levelup-words.js, holds member-facing WORDS only, and because this is testable in the monitor
+   * repo where the regressions that named it (PLS-*) already live.
+   *
+   * LIVENESS FIRST, RECENCY ONLY AMONG EQUALS (Ang, 2026-11-06, from ADA):
+   *
+   *   1. A side that is RUNNING - card_state TRIGGERED - outranks every side that is not, whatever
+   *      the clock says. ADA's 2026-10-23 short had triggered, banked TP1 and TP2 and was still
+   *      running; her 2026-11-05 long was dormant. The long led both surfaces, because the two-hour
+   *      batch window below dropped the thirteen-day-old short before anything ranked it. A dead or
+   *      dormant side never leads a card or a page.
+   *   2. When NO side is running, the batch window and the ranking below decide exactly as they did
+   *      before - unchanged. That is deliberately where PLS-20 and PLS-20b land: both of those rank
+   *      two FINISHED sides, nothing is running, so recency rightly decides and rule 1 never reaches
+   *      them. If this function ever makes those two fail, this rule is wrong, not those tests.
+   *
+   * THE RANKING AND TIE-BREAKS, carried over verbatim from the three copies it replaces:
+   *
+   *   3  STILL RUNNING  triggered and not finished.  Among several, the EARLIEST trigger - the trade
+   *                     a member has actually been in longest.
+   *   2  STILL OPEN     not finished, not yet triggered.  Among several, the NEWEST publication.
+   *   1  FINISHED       stopped, every target reached, exited back through the six lines, or expired
+   *                     without ever triggering.  Among several, the earliest trigger; one with no
+   *                     trigger defers.
+   *   0  NOTHING KNOWN  the engine is not measuring this side, or has not reached it.
+   *
+   * THE CALLER OWNS THE CLOCK. `published_ms` is passed in, never read off the feed here: the SHEET
+   * is the authority on when Chelsea published a side and the feed is only as current as the last
+   * monitor run. On 2026-10-30 a five-hour-stale feed made "the newest batch" resolve to yesterday's
+   * HYPE short and dropped the 5:08 AM long a member had come to read. That fix stays the caller's,
+   * which is the only place that can see the Sheet.
+   *
+   * Pure: it takes plain numbers and a card_state value, touches no DOM, no feed shape and no fetch.
+   * ============================================================================================ */
+  const PAIR_BATCH_WINDOW_MS = 2 * 60 * 60 * 1000;
+  const RUNNING_RANK = 3;
+  const CARD_STATE_RANK = {
+    TRIGGERED: 3,
+    WATCHING: 2, DORMANT: 2,
+    FINISHED_WIN: 1, FINISHED_STOPPED: 1, EXPIRED: 1,
+    NOT_TRACKED: 0,
+  };
+  /* An UNMAPPED terminal state - today only SIX_LINE_EXIT, whose display words are an open decision
+     waiting on Chelsea - still ranks as a side that has ENDED, which is exactly what all three copies
+     this replaces already did with it. That is an ORDERING fact and was never the open question; what
+     a member READS off such a card is, and this function says nothing about that. */
+  const UNMAPPED_TERMINAL_RANK = 1;
+  function pairSideRank(state) {
+    if (state === null || state === undefined) return UNMAPPED_TERMINAL_RANK;
+    return Object.prototype.hasOwnProperty.call(CARD_STATE_RANK, state) ? CARD_STATE_RANK[state] : UNMAPPED_TERMINAL_RANK;
+  }
+  const finiteOrNull = (v) => (v === null || v === undefined || !isFinite(v) ? null : Number(v));
+  /* Only the CURRENT batch is a candidate. Chelsea republishes one side without the other constantly:
+     on 2026-10-21 AVAX's long was that morning's fresh call while its short was the previous day's,
+     already stopped - and reporting the stopped side put "STOPPED" on a card whose actual call of the
+     day had not even triggered. A side with no publication time is never dropped. */
+  function pairBatch(cands, windowMs) {
+    const w = windowMs == null ? PAIR_BATCH_WINDOW_MS : windowMs;
+    const times = cands.map((c) => finiteOrNull(c.published_ms)).filter((t) => t !== null);
+    if (!times.length) return cands;
+    const newest = Math.max.apply(null, times);
+    const keep = cands.filter((c) => { const t = finiteOrNull(c.published_ms); return t === null || (newest - t) <= w; });
+    return keep.length ? keep : cands;
+  }
+  /* `a` preferred over `b` within the SAME rank, per the tie-breaks above. */
+  function pairBeatsAtRank(a, b, rank) {
+    if (rank === 3 || rank === 1) {
+      const ta = finiteOrNull(a.trigger_ms), tb = finiteOrNull(b.trigger_ms);
+      if (ta !== null && tb !== null) return ta < tb;
+      if (ta !== null) return true;
+      if (tb !== null) return false;
+    }
+    const pa = finiteOrNull(a.published_ms), pb = finiteOrNull(b.published_ms);
+    return (pa !== null && pb !== null) ? pa > pb : false;
+  }
+  /* cands: [{ id, state, trigger_ms, published_ms }] - `state` is that side's card_state value from
+     the feed, `id` whatever the caller wants back ('long', 'BTC|LONG', an object). Returns the chosen
+     candidate, or null when there is nothing to choose from. */
+  function pickPairSide(cands, opts) {
+    const all = (cands || []).filter(Boolean);
+    if (!all.length) return null;
+    if (all.length === 1) return all[0];
+    const o = opts || {};
+    /* RULE 1. The running sides are considered on their own and the batch window is not applied to
+       them: that window is what dropped ADA's running short for being thirteen days old. */
+    const running = all.filter((c) => pairSideRank(c.state) === RUNNING_RANK);
+    const pool = running.length > 1 ? running
+      : running.length === 1 ? [running[0]]
+      : pairBatch(all, o.windowMs);
+    if (pool.length === 1) return pool[0];
+    let best = null, bestRank = -1;
+    for (let i = 0; i < pool.length; i++) {
+      const r = pairSideRank(pool[i].state);
+      if (!best || r > bestRank) { best = pool[i]; bestRank = r; continue; }
+      if (r === bestRank && pairBeatsAtRank(pool[i], best, r)) best = pool[i];
+    }
+    return best;
+  }
+
   return {
     hash, parseCSV, loadRows, rowRef, rowId, F, srcType, isPC, hasLevels, statusClass,
     parseSheetTimestamp, scanNumbers, firstZone, parseTrigger, parseTargets, parseStop, parseSafety,
     extractLevels, levelFingerprint, edges, groupByAsset, groupBySetup, directionProbe, selectRows, buildSetup,
     buildAll, buildAllByAsset, assetOf, sideOf, keyOf, KEY_SEP,
+    PAIR_BATCH_WINDOW_MS, CARD_STATE_RANK, pairSideRank, pairBatch, pickPairSide,
   };
 });
