@@ -89,13 +89,15 @@ Do these in order. Each step is done only when its check passes, and the result 
 - [ ] **0d. Review the 2026-11-04 stash in monitor-task\repo.** Done when it is kept or dropped.
 - [ ] **0e. config/monitor.config.json target_cadence_minutes is still 60; real cadence is 15.** Decide and align (affects the staleness check).
 - [x] **1. Answer the open decisions** (section above). Done 2026-11-05: every decision in that section now has a written answer and a date.
-- [ ] **2. Lock in past bugs as tests:** BTC (2026-10-23), HYPE (2026-10-29/30), LINK, ADA and PEPE. Done when the tests fail on the old code and pass on the current code.
+- [x] **2. Lock in past bugs as tests** - done 2026-11-05 except B4, B5 and B6, which stay todo until built. BTC, HYPE, LINK, ADA and PEPE all have live regression tests (PLS-1, PFS-1, PLS-18, PLS-20b, PLS-19, WNR-1, NTL-1..6, A7), and Chelsea’s new rules are live as B1, B2, B3, B7 and B8. Still todo: **B4** (written invalidation never moves the strength meter, feed carries the warning flag), **B5** (one "Not a live watch" sentence from one function), **B6** (a pair’s two cards stay together).
+  - Diamond comeback built 2026-11-05 (56902dc): `dormantFor()` in `monitor/engine.js`. Note: the 24h watch window still applies, so a dormant side can only come back within 24h of publication.
 - [ ] **3. Staging board.** A copy of the board where every change lands first. Done when Ang can open a staging link and approve before anything goes live.
 - [ ] **4. Make the monitor the only decider.** The feed states, per side: which side leads, whether it is over, and the exact warning text. The pages only display it. Done when the browser-side copies in step 5 have nothing left to decide.
 - [ ] **5. Delete the browser copies.** Remove the duplicated side, state and warning logic from both `mech-feed` blocks. Done when `currentBatch`, `expiredFor` and both "Not a live watch" writers are gone from the pages.
 - [ ] **6. One shared price fetch and one Sheet read per page.** Done when each page has one price timer and one Sheet fetch.
 - [ ] **7. Clean up.** Commit or drop PLS-20b, rename the OneDrive clone to `_OLD_DO_NOT_USE`, and replace the TURBO hardcode with a Sheet status.
 - [ ] **8. Stale-feed alert.** Notify Ang when the feed is more than 45 minutes old.
+- [ ] **9. Morning "Expiring today" review for Chelsea.** When she logs into the intake app (~4 AM), show every setup expiring that day with Keep active (adds 24h) / Let it expire buttons. No click = expires as normal. Reuse `review-queue.js` and `morning-review.js`. Build after steps 3-6. Do not build now.
 
 ## Evidence
 
