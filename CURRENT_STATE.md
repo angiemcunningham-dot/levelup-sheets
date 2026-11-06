@@ -34,7 +34,7 @@ Chelsea's setups flow one way into the Sheet, then get read twice: once by the m
 | `monitor/public-feed.js` | monitor repo | What the board is allowed to show |
 | `mech-feed` script | inside `index.html` AND `sheet.html` | Re-decides side, state and warnings in the browser (the problem) |
 
-**Working folders.** Monitor code work goes in `C:\dev\work\levelup-trade-monitor`, board work in `C:\dev\work\levelup-sheets`. Both are clones nothing else touches. NEVER edit in `C:\dev\monitor-task\repo` or `C:\dev\monitor-task\sheets` - the 15-minute runner resets them - and not in `C:\dev\levelup-sheets` either, which is the checkout the monitor compares its fixtures against. The OneDrive `LevelUp_Monitor_Rebuild` copy is 47 commits behind; do not use it.
+**Working folders.** Monitor code work goes in `C:\dev\work\levelup-trade-monitor`, board work in `C:\dev\work\levelup-sheets`. Both are clones nothing else touches. NEVER edit in `C:\dev\monitor-task\repo` or `C:\dev\monitor-task\sheets` - the 15-minute runner resets them - and not in `C:\dev\levelup-sheets` either - nothing fetches it any more, so it is frozen and should be treated as dead. The monitor compares its fixtures against whichever board clone has the newest origin/main, so a frozen one simply stops being read. The OneDrive `LevelUp_Monitor_Rebuild` copy is 47 commits behind; do not use it.
 
 ## What runs on a schedule
 
@@ -81,6 +81,7 @@ The root cause is one decision made in several places that drift apart. Problems
 | 9 | TURBO hidden by a hardcoded list in 4 places, still present in the data | `index.html:467` and others | Fragile; the file's own comment warns against it |
 | 10 | Intake posts sometimes arrive slowly | intake app to Sheet | Not urgent; investigate after the fix plan |
 | 11 | Monitor replay gate read the board working folder’s local HEAD; fixed 2026-11-05 by comparing to origin/main | `scripts/sync-board-fixtures.js` | A board change committed locally and deliberately not pushed made the gate fail closed, and the 23:31 cycle published nothing. Guarded by BFS-7 |
+| 12 | …and origin/main itself went stale: nothing fetches `C:\dev\levelup-sheets` any more, so once board work moved it froze one commit behind. Fixed 2026-11-06 - the guard reads whichever clone has the NEWEST origin/main | `scripts/sync-board-fixtures.js` | Reading one fixed path either blesses a stale fixture or reds the gate a cycle after every board push. Guarded by BFS-8 and BFS-9 |
 
 ## Fix plan
 
