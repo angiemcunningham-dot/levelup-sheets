@@ -93,11 +93,39 @@
     },
 
     /* The condition was met and the trade has not ended. {PROGRESS} is `progress_tp` with the highest
-       target reached, else `progress_none`. The board states a fact; it never declares (2026-10-22). */
+       target reached, else `progress_none`. The board states a fact; it never declares (2026-10-22).
+
+       REWORDED 2026-11-07 (Ang). It used to read:
+
+           ACTIVE SHORT - CONDITION MET      ->   SHORT TRIGGERING
+           ACTIVE SHORT - TP1 REACHED        ->   SHORT TRIGGERED - TP1 REACHED
+
+       The two forms now differ in SHAPE and not only in the trailing fragment, so the verb moved INTO
+       `progress_*` and `status` holds just the side and the fragment. That is what keeps this a
+       WORDS-ONLY change: both composers (index.html resolveCurrentState :1990, sheet.html
+       resolveCurrentState :1541) already fill `progress_*` FIRST - which is what resolves {N} - and
+       then fill `status` with {DIR} and {PROGRESS}. So neither page needed an edit and no second
+       writer was introduced. Every surface that shows this state reads one of those two functions:
+       the landing cards, the Active Now tiles (decorateActiveNow patches `.act-status` with the same
+       text), the page-top headline, the side-by-side column strips (ensureSideColumnStates) and the
+       pair signpost line ("▼ SHORT SIDE ...").
+
+       BOTH STRINGS ARE PROVISIONAL - Ang's words, pending Chelsea's confirmation. Same standing as
+       every other string in this table, and reported under this state's key by provisionalStates().
+
+       Two details that are deliberate, not accidents:
+       - The separator in progress_tp is NBSP + em dash + NBSP, as the old status string had. It is
+         the longest string this state produces, and index.html:1562 records what happens without it:
+         the label wraps across three or four lines with the dash stranded on its own.
+       - "TRIGGERING" is present tense on purpose. It replaces "CONDITION MET", which was chosen on
+         2026-10-22 precisely because it states a fact instead of declaring a trade. "TRIGGERING"
+         keeps that - it says what price is doing, not what a member should do - and it is the live
+         half of the same word the TP form uses, so the two read as one sequence instead of as two
+         separate vocabularies. */
     TRIGGERED: {
-      status: 'ACTIVE {DIR} — {PROGRESS}',
-      progress_tp: 'TP{N} REACHED',
-      progress_none: 'CONDITION MET',
+      status: '{DIR} {PROGRESS}',
+      progress_tp: 'TRIGGERED — TP{N} REACHED',
+      progress_none: 'TRIGGERING',
       sub: null,
       tone: 'active',
       provisional: true,
