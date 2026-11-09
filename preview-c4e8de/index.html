@@ -260,13 +260,6 @@ a.att-card:hover{transform:translateY(-2px);box-shadow:0 10px 26px var(--tg)}
    on a phone. The border and the glow carry most of the movement for the same reason.
    prefers-reduced-motion is honoured by stopping the animation outright rather than slowing it: the
    label still reads, in full colour, it simply does not move. */
-@keyframes att-approach-pulse{
-  0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(250,3,152,.42)}
-  50%    {opacity:.55;box-shadow:0 0 0 7px rgba(250,3,152,0)}
-}
-.att-tag.att-approaching{border-color:var(--pink);color:var(--pink);background:#fff;
-  animation:att-approach-pulse 1.5s ease-in-out infinite}
-@media(prefers-reduced-motion:reduce){.att-tag.att-approaching{animation:none}}
 .att-bar{height:6px;border-radius:99px;background:#F3F4F6;margin-top:10px;overflow:hidden}
 .att-bar i{display:block;height:100%;border-radius:99px;background:var(--tc);transition:width .6s}
 .att-meta{font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--gray);margin-top:8px;line-height:1.55}
@@ -730,8 +723,8 @@ load();setInterval(load,60000);
  */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory(require(process.env.LEVELUP_CORE || '../../LevelUp_Monitor_Rebuild/core/levelup-core.js'));
-  else root.LevelUpAttention = factory(root.LevelUpCore);
-})(typeof self !== 'undefined' ? self : this, function (C) {
+  else root.LevelUpAttention = factory(root.LevelUpCore, root.LevelUpWords);
+})(typeof self !== 'undefined' ? self : this, function (C, W) {
   'use strict';
 
   /* ---- IDENTICAL to monitor/engine.js (lines 18, 19, 52, 53) ---- */
@@ -851,11 +844,28 @@ load();setInterval(load,60000);
       /* `.key` indexes `setups` and the price map; `.asset` is the TICKER, which is what gets compared
          against ticker lists and what a price is fetched for. They are the same string for a single-sided
          asset and differ for a side of a pair - see assetOf() below. */
-      if (cls === 'ACTIVE_LONG' || cls === 'ACTIVE_SHORT') out.push({ key: k, asset: assetOf(k), cls, side: cls === 'ACTIVE_LONG' ? 'long' : 'short', label: cls === 'ACTIVE_LONG' ? 'ACTIVE LONG' : 'ACTIVE SHORT', status_text: s.status.text, status_iso: s.status.iso || null, setup: s });
+      if (cls === 'ACTIVE_LONG' || cls === 'ACTIVE_SHORT') out.push({ key: k, asset: assetOf(k), cls, side: cls === 'ACTIVE_LONG' ? 'long' : 'short', label: sheetStatusLabel(cls), status_text: s.status.text, status_iso: s.status.iso || null, setup: s });
     });
     return out;
   }
-  const triggeredLabel = (cls) => 'TRIGGERED — ' + (cls === 'ACTIVE_SHORT' ? 'ACTIVE SHORT' : 'ACTIVE LONG');
+  /* MEMBER-FACING STATUS WORDS COME FROM levelup-words.js, NEVER FROM HERE (Ang, 2026-11-09).
+     These two were literals in this block, in BOTH pages, which is the second-writer shape the words file
+     exists to end - the card_state wording was changed on 2026-11-07 and these did not move, because
+     nothing connected them. They label CHELSEA'S administrative status, not a card_state, so they live
+     under SHEET_STATUS_LABELS rather than in the card_state table.
+     `W` is the words table handed in by the UMD above. Without it these return null and the caller shows
+     nothing - the same "say nothing rather than invent wording" every other surface here follows, and the
+     reason the literals are not kept as a fallback: a fallback IS a second copy. */
+  const sheetStatusLabel = (cls) => {
+    const L = W && W.SHEET_STATUS_LABELS;
+    if (!L) return null;
+    return cls === 'ACTIVE_SHORT' ? L.active_short : L.active_long;
+  };
+  const triggeredLabel = (cls) => {
+    const L = W && W.SHEET_STATUS_LABELS;
+    const lbl = sheetStatusLabel(cls);
+    return (L && lbl) ? W.fill(L.triggered, { LABEL: lbl }) : null;
+  };
 
   /* Visual tier from the engine band (0..4) — presentation only. */
   function tier(prox) {
@@ -891,7 +901,7 @@ load();setInterval(load,60000);
     return { prices: out, sources: src, at: Date.now() };
   }
 
-  return { BAND_NAMES, bandOrd, sidePre, distTo, SCALE_SLIP_FACTOR, offScale, applicable, triggerProximity, sortAttention, fmtPct, fmtPrice, zoneText, tier, fetchPrices, RANK, activeNow, triggeredLabel };
+  return { BAND_NAMES, bandOrd, sidePre, distTo, SCALE_SLIP_FACTOR, offScale, applicable, triggerProximity, sortAttention, fmtPct, fmtPrice, zoneText, tier, fetchPrices, RANK, activeNow, triggeredLabel, sheetStatusLabel };
 });
 
 </script>
@@ -1160,14 +1170,13 @@ load();setInterval(load,60000);
 
        NOT shown for INSIDE/cleared: price is there, not approaching. That distinction is the whole reason
        this label is on a pre-trigger surface and not on a running trade. */
-    function approachingTag(p) {
-      if (!p || p.state !== 'APPROACHING' || p.band_ord !== 4) return null;
-      var W = window.LevelUpWords;
-      return (W && W.ATTENTION_LABELS && W.ATTENTION_LABELS.approaching_zone) || null;
-    }
+    /* ONE PLACE BUILDS AN att-tag SPAN, and it stays a function even though it now only wraps its
+       fallback. The APPROACHING TRIGGER ZONE label that used to branch here is HELD, not abandoned
+       (Ang, 2026-11-09: fix plan rule 2, and it was driven by the browser's own price - known problem
+       5 - which is the thing that just misread BEAM). `p` is kept in the signature for the same
+       reason: when proximity comes from the monitor feed at step 6, the label returns here and no
+       call site has to change. See CURRENT_STATE.md, "APPROACHING TRIGGER ZONE - built, held". */
     function tagHtml(p, fallback) {
-      var near = approachingTag(p);
-      if (near) return '<span class="att-tag att-approaching">' + esc(near) + '</span>';
       return fallback ? '<span class="att-tag">' + esc(fallback) + '</span>' : '';
     }
     function tagFor(p) { return p.state === 'INSIDE' ? 'Trigger zone' : (p.band_ord >= 1 ? p.band : ''); }
@@ -1353,7 +1362,7 @@ load();setInterval(load,60000);
           var m = mf.mechanicalFor(a, mf.currentInstanceKeyFor(a));
           if (!m || !m.triggered) return;
           var dir = mf.directionFor(a); if (!dir) return;
-          list.push({ asset: a, cls: dir === 'SHORT' ? 'ACTIVE_SHORT' : 'ACTIVE_LONG', side: dir === 'SHORT' ? 'short' : 'long', label: dir === 'SHORT' ? 'ACTIVE SHORT' : 'ACTIVE LONG', status_text: s.status && s.status.text, status_iso: null, setup: s });
+          list.push({ asset: a, cls: dir === 'SHORT' ? 'ACTIVE_SHORT' : 'ACTIVE_LONG', side: dir === 'SHORT' ? 'short' : 'long', label: A.sheetStatusLabel(dir === 'SHORT' ? 'ACTIVE_SHORT' : 'ACTIVE_LONG'), status_text: s.status && s.status.text, status_iso: null, setup: s });
         });
         /* 2026-10-06 (Angela, explicit: "any trades that are also closed or all tp's have been hit needs to move
            to previous call history"): once the mechanical feed confirms a terminal outcome (stopped, or every
@@ -2194,7 +2203,13 @@ load();setInterval(load,60000);
       if (!m) return '';
       var parts = ['<span class="mech-tick on">&#10003; MET</span>'];
       m.tp.forEach(function (hit, i) { parts.push('<span class="mech-tick' + (hit ? ' on' : '') + '">' + (hit ? '&#10003;' : '&#9675;') + ' TP' + (i + 1) + '</span>'); });
-      if (state === 'FINISHED_STOPPED') parts.push('<span class="mech-tick stop">&#9632; STOPPED</span>');
+      /* The word comes from the table, not from here (Ang, 2026-11-09). It is the SAME fact the status
+         line above already names, so two copies of it could only ever drift apart - and FINISHED_STOPPED
+         is one of the states still waiting on Chelsea. The glyph stays: that is decoration, not words. */
+      var SW = window.LevelUpWords;
+      var stoppedWord = SW && SW.CARD_STATE_WORDS && SW.CARD_STATE_WORDS.FINISHED_STOPPED
+        ? SW.CARD_STATE_WORDS.FINISHED_STOPPED.status : null;
+      if (state === 'FINISHED_STOPPED' && stoppedWord) parts.push('<span class="mech-tick stop">&#9632; ' + stoppedWord + '</span>');
       else if (state === 'FINISHED_WIN') {
         // 2026-09-29: banked TP progress before the stop reads as a plain (non-alarm) tick, never the
         // STOPPED alarm - the trade banked something. A full completion banks nothing before a stop.

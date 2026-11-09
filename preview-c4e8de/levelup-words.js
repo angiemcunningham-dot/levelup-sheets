@@ -181,22 +181,27 @@
   };
 
   /*
-   * THE PRE-TRIGGER ATTENTION LABEL (new 2026-11-09, Ang).
+   * THE SHEET-STATUS LABELS (moved here 2026-11-09, Ang's review verdict: "move triggeredLabel into
+   * levelup-words.js so every member-facing string lives in that one file").
    *
-   * Said of a setup that has NOT triggered and is sitting right on top of its trigger zone. It is the
-   * one place the word "approaching" is correct, and keeping it here is what stops it drifting onto a
-   * RUNNING trade - which is what Ang first asked for and which would have told members a live trade
-   * had not entered yet. APPROACHING is already the internal state name for this case
-   * (index.html triggerProximity), it was simply never printed.
+   * These are NOT card_state words. They label CHELSEA'S OWN administrative status - the Active Long /
+   * Active Short she sets in the Sheet - and they are what an Active Now tile and the detail page's
+   * att-chip read before the mechanical feed has anything to add. They lived as literals inside
+   * att-module, in both pages, which is exactly the second-writer shape this file exists to end: the
+   * card above them was reworded on 2026-11-07 and these did not move, because nothing connected them.
    *
-   * Shown only at the MAXIMUM band - within 0.5% of the near edge - so it stays rare enough to mean
-   * something. A label that flashes on every watch is wallpaper. The threshold is the engine's own
-   * bandOrd, not a new number.
+   * `triggered` is a TEMPLATE over the other two rather than a third literal, so the stem can only ever
+   * be written once. Its separator is a bare em dash, deliberately unlike CARD_STATE_WORDS.TRIGGERED's
+   * NBSP-wrapped one: this string is short and sits in a chip that does not wrap, and changing the bytes
+   * would change what renders for no reason anyone asked for. If it ever grows, give it the NBSPs.
    *
-   * PROVISIONAL, like every other string in this file: Ang's words, not yet Chelsea's.
+   * PROVISIONAL, like every other string here: these are the board's existing words, never Chelsea's
+   * confirmed ones.
    */
-  var ATTENTION_LABELS = {
-    approaching_zone: 'APPROACHING TRIGGER ZONE',
+  var SHEET_STATUS_LABELS = {
+    active_long: 'ACTIVE LONG',
+    active_short: 'ACTIVE SHORT',
+    triggered: 'TRIGGERED — {LABEL}',
   };
 
   /*
@@ -250,7 +255,7 @@
   root.LevelUpWords = {
     CARD_STATE_WORDS: CARD_STATE_WORDS,
     LADDER_MARKS: LADDER_MARKS,
-    ATTENTION_LABELS: ATTENTION_LABELS,
+    SHEET_STATUS_LABELS: SHEET_STATUS_LABELS,
     DEAD_WATCH_SENTENCE: DEAD_WATCH_SENTENCE,
     STALE_TRADE_NOTICE: STALE_TRADE_NOTICE,
     fill: fill,

@@ -693,8 +693,8 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
  */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory(require(process.env.LEVELUP_CORE || '../../LevelUp_Monitor_Rebuild/core/levelup-core.js'));
-  else root.LevelUpAttention = factory(root.LevelUpCore);
-})(typeof self !== 'undefined' ? self : this, function (C) {
+  else root.LevelUpAttention = factory(root.LevelUpCore, root.LevelUpWords);
+})(typeof self !== 'undefined' ? self : this, function (C, W) {
   'use strict';
 
   /* ---- IDENTICAL to monitor/engine.js (lines 18, 19, 52, 53) ---- */
@@ -814,11 +814,28 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
       /* `.key` indexes `setups` and the price map; `.asset` is the TICKER, which is what gets compared
          against ticker lists and what a price is fetched for. They are the same string for a single-sided
          asset and differ for a side of a pair - see assetOf() below. */
-      if (cls === 'ACTIVE_LONG' || cls === 'ACTIVE_SHORT') out.push({ key: k, asset: assetOf(k), cls, side: cls === 'ACTIVE_LONG' ? 'long' : 'short', label: cls === 'ACTIVE_LONG' ? 'ACTIVE LONG' : 'ACTIVE SHORT', status_text: s.status.text, status_iso: s.status.iso || null, setup: s });
+      if (cls === 'ACTIVE_LONG' || cls === 'ACTIVE_SHORT') out.push({ key: k, asset: assetOf(k), cls, side: cls === 'ACTIVE_LONG' ? 'long' : 'short', label: sheetStatusLabel(cls), status_text: s.status.text, status_iso: s.status.iso || null, setup: s });
     });
     return out;
   }
-  const triggeredLabel = (cls) => 'TRIGGERED — ' + (cls === 'ACTIVE_SHORT' ? 'ACTIVE SHORT' : 'ACTIVE LONG');
+  /* MEMBER-FACING STATUS WORDS COME FROM levelup-words.js, NEVER FROM HERE (Ang, 2026-11-09).
+     These two were literals in this block, in BOTH pages, which is the second-writer shape the words file
+     exists to end - the card_state wording was changed on 2026-11-07 and these did not move, because
+     nothing connected them. They label CHELSEA'S administrative status, not a card_state, so they live
+     under SHEET_STATUS_LABELS rather than in the card_state table.
+     `W` is the words table handed in by the UMD above. Without it these return null and the caller shows
+     nothing - the same "say nothing rather than invent wording" every other surface here follows, and the
+     reason the literals are not kept as a fallback: a fallback IS a second copy. */
+  const sheetStatusLabel = (cls) => {
+    const L = W && W.SHEET_STATUS_LABELS;
+    if (!L) return null;
+    return cls === 'ACTIVE_SHORT' ? L.active_short : L.active_long;
+  };
+  const triggeredLabel = (cls) => {
+    const L = W && W.SHEET_STATUS_LABELS;
+    const lbl = sheetStatusLabel(cls);
+    return (L && lbl) ? W.fill(L.triggered, { LABEL: lbl }) : null;
+  };
 
   /* Visual tier from the engine band (0..4) — presentation only. */
   function tier(prox) {
@@ -854,7 +871,7 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
     return { prices: out, sources: src, at: Date.now() };
   }
 
-  return { BAND_NAMES, bandOrd, sidePre, distTo, SCALE_SLIP_FACTOR, offScale, applicable, triggerProximity, sortAttention, fmtPct, fmtPrice, zoneText, tier, fetchPrices, RANK, activeNow, triggeredLabel };
+  return { BAND_NAMES, bandOrd, sidePre, distTo, SCALE_SLIP_FACTOR, offScale, applicable, triggerProximity, sortAttention, fmtPct, fmtPrice, zoneText, tier, fetchPrices, RANK, activeNow, triggeredLabel, sheetStatusLabel };
 });
 
 </script>
