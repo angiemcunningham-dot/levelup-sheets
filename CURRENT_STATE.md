@@ -636,6 +636,51 @@ the board, not after. `scripts/sync-board-fixtures.js --write` reads whichever c
 `origin/main`; run the suite against a locally-written fixture of the branch and these 27 would have been
 found before anything shipped, instead of in the window between the two pushes.
 
+## BOARD FREEZE 2026-11-09, 07:46-10:03 - I CAUSED IT
+
+**Ang: "board not updating."** She was right. Every cycle from 07:46 to 09:46 failed its replay gate and
+published nothing; the board served the 07:18 feed for 2h17m.
+
+**Cause: I edited the board work clone and left the edits in the working tree.** The replay gate reads
+whichever board clone has the newest `origin/main` - `boardDir()`, `scripts/sync-board-fixtures.js` - and
+that is `C:/dev/work/levelup-sheets`. ATT-1 reads the pages from **DISK**, not from git, so it compared the
+runner's fixtures against my uncommitted `att-module` changes and failed. The gate did exactly its job.
+
+**This doc already warned about it, in these words:** *"editing the board WORK clone changes what the live
+gate reads (boardDir() picks the newest origin/main). A local reproduction there broke the 08:46 cycle.
+Never simulate origin/main in a clone the runner can choose."* The warning was not enough, because the
+trap is not "simulating origin/main" - it is **any uncommitted edit at all**, which is the normal state of
+doing board work in the only clone we are told to do board work in.
+
+**Fix applied:** the work is parked on branch `beam-and-words` (board clone, commit `9276cda`) and the
+working tree is back to `origin/main`. The 10:01 cycle passed its gate and published (`f2d9b08`). The
+preview is unaffected - `preview-c4e8de` still carries the change for review.
+
+Two separate things went wrong today and only the second was mine. The 07:31 cycle failed on a transient
+`git ls-remote` network reset during `restore state from monitor-data`; it failed closed, changed nothing,
+and would have recovered on its own. The gate failures start at **07:46**.
+
+### The structural fix, not yet built - Ang's call
+
+`BOARD_CLONES = ['C:/dev/work/levelup-sheets', 'C:/dev/monitor-task/sheets']` and `boardDir()` takes the
+newest `origin/main`, falling back to the FIRST that exists. The human's working clone is first in that
+list, so it wins ties - and it is the one clone guaranteed to have uncommitted work in it.
+
+The runner's own clone (`C:/dev/monitor-task/sheets`) is hard-reset to `origin/main` every cycle, so it is
+always exactly what is deployed, which is what the gate is actually asking about. Options:
+
+1. **Prefer the runner's clone in `boardDir()`** - one-line reorder plus a tie-break rule. The gate stops
+   being able to see a working tree at all. Risk: a board change pushed seconds before a cycle could be
+   compared against a clone that has not reset yet; the existing "newest origin/main" rule exists partly
+   to avoid that, so this needs the fetch-time check kept.
+2. **Have the gate read `git show origin/main:<page>` instead of disk**, as `readPage()` already does
+   elsewhere in the same file. ATT-1 deliberately reads disk to catch a one-page hand-edit, so this
+   weakens it unless the disk check moves to a separate, non-gating test.
+3. **Leave it and never leave board edits uncommitted** - which is what today proves does not hold.
+
+My recommendation is (1) with the fetch-time check retained. **Not built: this is gate behaviour and
+belongs to Ang, not to the session that just broke it.**
+
 ## Evidence
 
 The full audit from 2026-11-05 is at `C:\Users\angie\LEVELUP_AUDIT`. Start with `INVENTORY.md`. It holds the claims check, loops, rewrites, skipped work and duplicates, with file and line for each.
