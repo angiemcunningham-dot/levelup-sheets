@@ -755,6 +755,73 @@ load();setInterval(load,60000);
   const offScale = (ref, price) => !!(ref > 0 && price > 0
     && Math.max(ref / price, price / ref) >= SCALE_SLIP_FACTOR);
 
+  /* THE GUARD HAS TO LIVE WHERE THE PRICE ENTERS, NOT WHERE IT IS DRAWN
+     (Ang, 2026-11-09, second pass).
+
+     The first pass guarded triggerProximity() and sixLineProxFor(), which are
+     two READERS of the price. BEAM's Active Now card draws the number
+     straight from ps.prices and never asks either of them, so it still
+     printed "LIVE $0.0652 (Binance)" - a different token's price, on a card
+     about Chelsea's setup. Counting the writers found ten of them across the
+     two pages. Patching ten render sites would have left the eleventh.
+
+     There is exactly one door: fill(), inside fetchPrices(). Every price from
+     every source - the Binance batch, the Binance per-symbol retry, the
+     Coinbase fallback - goes through it, and every consumer on both pages
+     reads what it produced. One guard there covers all of them, including the
+     ones nobody has written yet.
+
+     AND IT RECOVERS THE RIGHT PRICE RATHER THAN JUST SUPPRESSING ONE.
+     Rejecting Binance's number leaves priced(a) false, so the loop below
+     falls through to Coinbase - which for BEAM returns $0.004008, the price
+     that matches Chelsea's levels. The card shows the true number instead of
+     no number.
+
+     The reference is Chelsea's OWN published level, registered per asset by
+     whichever page parsed the Sheet. An asset nobody registered has no
+     reference, offScale() returns false for a null ref, and its price is
+     passed through exactly as before - so this can only ever subtract a wrong
+     number, never invent a missing one. */
+  const SCALE_REF = {};
+
+  function setScaleRef(key, ref) {
+    const a = assetOf(key);
+    if (a && ref > 0 && isFinite(ref)) SCALE_REF[a] = ref;
+    return SCALE_REF[a] || null;
+  }
+
+  /* Any PRESENT level with a zone is on her scale - trigger, stop or target.
+     Taking the first rather than insisting on the trigger means a setup whose
+     trigger is text-only still gets a reference. Walks `sides` first, because
+     a paired asset keys its levels one level down. */
+  function refFromSetup(s, depth) {
+    if (!s || (depth || 0) > 2) return null;
+    if (s.sides) {
+      for (const d of Object.keys(s.sides)) {
+        const r = refFromSetup(s.sides[d], (depth || 0) + 1);
+        if (r) return r;
+      }
+    }
+    for (const l of (s.levels || [])) {
+      if (l && l.state === 'present' && l.zone && l.zone.low > 0) return l.zone.low;
+    }
+    return null;
+  }
+
+  /* Called by each page straight after it parses the Sheet. Accepts the
+     by-asset map or a single setup. */
+  function registerScaleRefs(setupsByAsset) {
+    if (!setupsByAsset) return 0;
+    let n = 0;
+    for (const k of Object.keys(setupsByAsset)) {
+      const r = refFromSetup(setupsByAsset[k], 0);
+      if (r && setScaleRef(k, r)) n++;
+    }
+    return n;
+  }
+
+  const scaleRefFor = (key) => SCALE_REF[assetOf(key)] || null;
+
   /* A SHEET KEY IS NOT A TICKER (2026-11-05).
      The shared parser keys a two-sided asset `BTC|LONG` / `BTC|SHORT`; the board's own embedded copy keys it
      `BTC`. This module used to build exchange symbols out of whatever key it was handed, so the first time
@@ -887,7 +954,16 @@ load();setInterval(load,60000);
        one request instead of two, and both of its sides receive the same price. */
     const want = []; const keysFor = {};
     for (const k of keys) { const a = assetOf(k); if (!keysFor[a]) { keysFor[a] = []; want.push(a); } keysFor[a].push(k); }
-    const fill = (a, p, s) => { if (p > 0) keysFor[a].forEach((k) => { out[k] = p; src[k] = s; }); };
+    /* THE ONE GATE. A price that is off-scale against Chelsea's own published
+       level is not accepted from any source, so it reaches no consumer on
+       either page. Refusing it here also leaves priced(a) false, which is what
+       lets the Coinbase fallback below supply the correct number. */
+    const fill = (a, p, s) => {
+      if (!(p > 0)) return false;
+      if (offScale(scaleRefFor(a), p)) return false;
+      keysFor[a].forEach((k) => { out[k] = p; src[k] = s; });
+      return true;
+    };
     const priced = (a) => out[keysFor[a][0]] > 0;
     try {
       const url = 'https://data-api.binance.vision/api/v3/ticker/price?symbols=' + encodeURIComponent(JSON.stringify(want.map(sym)));
@@ -895,13 +971,19 @@ load();setInterval(load,60000);
     } catch (e) { /* fall through to per-asset */ }
     for (const a of want) {
       if (priced(a)) continue;
-      try { const r = await f('https://data-api.binance.vision/api/v3/ticker/price?symbol=' + sym(a)); if (r.ok) { const p = parseFloat((await r.json()).price); if (p > 0) { fill(a, p, 'binance'); continue; } } } catch (e) { /* next */ }
+      /* `fill(...)`, not `p > 0`, decides whether to stop looking. A price can be a
+         real number and still be the wrong market's; when the guard refuses it this
+         must fall THROUGH to Coinbase rather than skip it. Written the other way
+         first, and SG-8 caught it: BEAM lost its Binance price and never got its
+         Coinbase one, so the guard turned a wrong number into no number. */
+      try { const r = await f('https://data-api.binance.vision/api/v3/ticker/price?symbol=' + sym(a)); if (r.ok) { const p = parseFloat((await r.json()).price); if (p > 0 && fill(a, p, 'binance')) { continue; } } } catch (e) { /* next */ }
       try { const cb = (ov[a] && ov[a].coinbase) || (a + '-USD'); const r = await f('https://api.exchange.coinbase.com/products/' + cb + '/ticker'); if (r.ok) { const p = parseFloat((await r.json()).price); if (p > 0) { fill(a, p, 'coinbase'); } } } catch (e) { /* unavailable */ }
     }
     return { prices: out, sources: src, at: Date.now() };
   }
 
-  return { BAND_NAMES, bandOrd, sidePre, distTo, SCALE_SLIP_FACTOR, offScale, applicable, triggerProximity, sortAttention, fmtPct, fmtPrice, zoneText, tier, fetchPrices, RANK, activeNow, triggeredLabel, sheetStatusLabel };
+  return { BAND_NAMES, bandOrd, sidePre, distTo, SCALE_SLIP_FACTOR, offScale,
+           setScaleRef, scaleRefFor, registerScaleRefs, refFromSetup, applicable, triggerProximity, sortAttention, fmtPct, fmtPrice, zoneText, tier, fetchPrices, RANK, activeNow, triggeredLabel, sheetStatusLabel };
 });
 
 </script>
@@ -1508,7 +1590,7 @@ load();setInterval(load,60000);
        no-op DOM guard that stops the observer loop, and is-dead muting the distance-to-trigger number
        and the tier tag (2026-10-21, Angela). */
     function loadSheet() {
-      return fetch(CSV + (CSV.indexOf('?') > -1 ? '&' : '?') + 't=' + Date.now()).then(function (r) { return r.text(); }).then(function (t) { setups = C.buildAllByAsset(t); sheetErr = false; renderActive();
+      return fetch(CSV + (CSV.indexOf('?') > -1 ? '&' : '?') + 't=' + Date.now()).then(function (r) { return r.text(); }).then(function (t) { setups = C.buildAllByAsset(t); /* the scale guard's reference, from Chelsea's own levels, before any price is drawn */ A.registerScaleRefs(setups); sheetErr = false; renderActive();
         /* ACROSS THE IIFE BOUNDARY, DEFENSIVELY (fixed 2026-11-06). These two passes are declared inside
            mech-feed, which is a separate IIFE, so they were never visible here: this line had been calling
            applyCannotTriggerPanels() and applyStaleTradeNotices() as bare names, and every Sheet load threw a
