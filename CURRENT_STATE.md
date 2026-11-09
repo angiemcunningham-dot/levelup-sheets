@@ -636,6 +636,105 @@ the board, not after. `scripts/sync-board-fixtures.js --write` reads whichever c
 `origin/main`; run the suite against a locally-written fixture of the branch and these 27 would have been
 found before anything shipped, instead of in the window between the two pushes.
 
+## BEAM, and "triggered vs triggering" (2026-11-09) - IN THE PREVIEW, NOT LIVE
+
+Preview: `https://angiemcunningham-dot.github.io/levelup-sheets/preview-c4e8de/`. Three changes, one gate.
+
+### 1. BEAM was telling members a live falsehood
+
+Chelsea published BEAM at 05:49 with levels around **$0.0040** (Sheet row 436). The card read:
+
+> BEAM · Watching · ▲ LONG · **1521.9% past the floor** · **Cleared the floor** ·
+> *"Price is currently above the real floor ($0.0652 vs $0.00402) - watching for a 1H candle to open there
+> and confirm."*
+
+Price was **below** the floor. The $0.0652 came from Binance's `BEAMUSDT`, which is a **different token**;
+Coinbase's `BEAM-USD` was `$0.004008` the same minute, matching Chelsea exactly. A 16x gap.
+
+**The monitor was right the whole time** - `card_state: WATCHING`, floor `$0.00402`, `not_tracked: null`,
+never triggered. The fault was browser-side only: `fetchPrices` reached for the wrong market, and nothing
+downstream questioned the number.
+
+**Why the existing guard could not help.** `scaleSlip()` / `SCALE_SLIP_FACTOR = 5` in `monitor/engine.js:603`
+is exactly this rule - it is what stopped SHIB on 2026-11-02 - but it only ever sees the MONITOR'S price,
+which was correct. So the same rule now also runs where the bad number actually appears:
+
+- `offScale(ref, price)` in `att-module`, mirroring the engine's constant the way ATT-17 already pins the
+  four band helpers. **SG-1 fails if the two numbers ever drift apart.**
+- `triggerProximity()` returns the existing `NOPRICE` state (plus `off_scale: true`) rather than a new
+  state - "we cannot say where price is relative to this trigger" is what NOPRICE already means.
+- `sixLineProxFor()` in `att-ui` guards against the monitor's floor. **This is the one that printed BEAM's
+  actual sentence**; guarding only `triggerProximity` would have left the exact string in place.
+
+**What a member sees now:** BEAM keeps its ordinary published-setup card - nothing published is ever
+deleted - and simply loses the Live Attention tile with the false distance. Verified on the preview.
+
+The bar stays coarse on purpose, and SG-4 pins both ends: 2.5x (the widest genuine ratio across all 67
+priced assets) is NOT caught, 10x (a decimal slip) is.
+
+### 2. "TRIGGERING" lasted one day
+
+Ang, 2026-11-09: *"Triggered and triggering looks so similar it's confusing."* Correct - and there were
+**three** near-identical live labels, not two (`levelup-words.js` x2, plus `triggeredLabel` at
+`index.html:806`). The verb no longer varies at all; only what follows the dash does:
+
+| before | after |
+| --- | --- |
+| `SHORT TRIGGERING` | `SHORT TRIGGERED — NO TARGET YET` |
+| `SHORT TRIGGERED — TP1 REACHED` | unchanged |
+
+Still words-only: `status` keeps its shape, so neither composer moved. Verified on the preview - all four
+live cards now read one stem.
+
+### 3. "APPROACHING TRIGGER ZONE", on the right state
+
+**Ang first asked for `TRIGGERING` to BECOME "approaching trigger zone". That was refused and re-scoped,
+and the reason is worth keeping:** `TRIGGERING` means the trade HAS triggered and is running. Relabelling
+it "approaching" would have told members a live trade had not entered yet - the opposite of the fact, on
+the one board where that costs money. **TW-3 now fails if the word "approach" appears in ANY `card_state`
+wording**, so it cannot drift back onto a running trade.
+
+`APPROACHING` was already the internal state name for the genuine pre-trigger case
+(`index.html` `triggerProximity`); it was simply never printed. It is printed now, at the **MAXIMUM band
+only** - within 0.5% of the near edge, which is `bandOrd`'s own threshold, not a new number - and it
+pulses. `INSIDE` is excluded on principle: price has arrived, so "approaching" would be false.
+
+Both tag writers go through one `tagHtml()`, so neither grows its own copy of the rule.
+
+**The pulse:** 1.5s, chosen by Ang over a fast blink. 0.67 flashes/sec against a 3/sec accessibility
+threshold, opacity never below 0.55 so the text stays legible mid-cycle, and `prefers-reduced-motion`
+stops it outright rather than slowing it. Nothing is within 0.5% today, so it has nothing real to attach
+to yet - `LEVELUP_AUDIT\preview_check\v3_approaching_tag_{a,b}.png` show it rendered with the page's own
+stylesheet at two points in the cycle.
+
+### Tests: 1176 run, 1169 pass, **1 fail**, 6 todo
+
+The one failure is **ATT-1** (every copy of att-module byte-identical) and it is **expected until this
+deploys**: it compares the work clone against `test/fixtures/board/`, which comes from `origin/main`.
+Applying the lesson recorded at the side-by-side go-live, this was checked BEFORE pushing rather than
+after - fixtures regenerated from the working tree, suite re-run: **ATT-1 passes**, and the only reds are
+BFS-2/3/4, which fire because a hand-copied fixture lacks the do-not-edit banner. That is the fixture-sync
+guard working. Fixtures were then restored to `origin/main`.
+
+New: `test/scale-guard-and-trigger-words.test.js`, **SG-1..SG-6 and TW-1..TW-6**. It reads the work clone
+(page + both script files from one named path, via `publish-staging.BOARD_DIR`), for the same reason
+`pair-side-by-side.test.js` does.
+
+### Still open from this round
+
+- **All of this wording is PROVISIONAL** - Ang's words, not Chelsea's, like every other string in
+  `levelup-words.js`.
+- **`triggeredLabel` at `index.html:806`** (`TRIGGERED — ACTIVE SHORT`) is a third live string outside the
+  words table. It already opens with the same stem so it no longer reads as a look-alike, but it is still
+  wording living outside the one place wording belongs.
+- **`fetchPrices` still prefers the wrong market for BEAM.** The guard means nothing false is PRINTED, but
+  BEAM shows no live price at all. A `symbolOverrides` entry (the hook exists at `index.html:817`, unused
+  by every caller) would give it the correct Coinbase price. Ang chose the guard over the override; the
+  override is still available as a follow-up.
+- **TLB-2 / TLB-3** are todo tests from another session describing an INVENTED TRIGGER
+  (`engine.js:632`, an inclusive filter re-presenting an already-folded candle). Not touched here, not
+  mine, and it is the most serious-sounding open item in the suite.
+
 ## Evidence
 
 The full audit from 2026-11-05 is at `C:\Users\angie\LEVELUP_AUDIT`. Start with `INVENTORY.md`. It holds the claims check, loops, rewrites, skipped work and duplicates, with file and line for each.
