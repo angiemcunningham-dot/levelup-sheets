@@ -130,6 +130,11 @@ Do these in order. Each step is done only when its check passes, and the result 
 - [ ] **5. Delete the browser copies.** Remove the duplicated side, state and warning logic from both `mech-feed` blocks. Done when `currentBatch`, `expiredFor` and both "Not a live watch" writers are gone from the pages.
   - **Mostly done by step 4** (2026-11-06), because the copies could not be left behind once one field answered them. Gone from both pages: `expiredFor`, `stopBreachedFor`, `cannotTriggerFor`, `notTrackedFor`, `expiredBadgeHtml`, `cannotTriggerBadgeHtml`, `notTrackedBadgeHtml`, `applyStopBreachFlags`, `currentBatch`, `activityRank`, `beatsAtRank`, `sideFinished`, `sideRank`, `sideOver`, `pickSide`, `currentBatchDirs`, and the three state booleans `mechanicalFor` used to hand out. OD-8 is the guard and reads the pages with their comments stripped, so a tombstone comment cannot satisfy it. What is LEFT for step 5: the two `mech-feed` blocks are still two blocks (known problem 1), which is a different job from removing the duplicated decisions.
 - [ ] **6. One shared price fetch and one Sheet read per page.** Done when each page has one price timer and one Sheet fetch.
+  - **AND THE PRICE MUST COME FROM THE SAME EXCHANGE AS THE MONITOR (Ang, 2026-11-09, from the BEAM review).** This is now part of step 6, not a separate job. The board fetches its own price in the browser and the monitor fetches its own server-side, and on 2026-11-09 they disagreed about what BEAM even is: Chelsea published it around $0.0040, Coinbase's BEAM-USD agreed, and Binance's BEAMUSDT is a DIFFERENT token at $0.0652. The browser reached for Binance first and the card told members price had "Cleared the floor" by 1521.9% when price was in fact below it.
+    - The scale guard shipped in this release stops the board PRINTING a wrong-market price, which is the bleeding stopped. It does not make the two agree.
+    - **NO `symbolOverrides` entry for BEAM (Ang, 2026-11-09): "the board's price must come from the same exchange as the monitor."** An override would paper over one ticker and leave the next one to be found by a member. **BEAM shows no live price until step 6 lands**, which is the honest state and what the guard now produces on its own.
+    - The real fix is that the board stops sourcing prices at all and reads the one the monitor already publishes on `monitor-feed.json`. That removes the disagreement by removing the second fetcher - rule 4, a fix removes a copy.
+  - **The APPROACHING TRIGGER ZONE label waits here too** - see "built, held until step 6" below.
 - [ ] **7. Clean up.** Commit or drop PLS-20b, rename the OneDrive clone to `_OLD_DO_NOT_USE`, and replace the TURBO hardcode with a Sheet status.
   - [x] **Frozen clone retired in CODE, 2026-11-06 (`9d81e04`).** It is gone from the `boardDir()` candidate list and from every active default: `scripts/sync-board-fixture.js` DEFAULT_SOURCE and `test/att-module.test.js` BOARD_DIR now point at the work clone. The refusal lists in `sync-board-core.js` / `publish-staging.js` and the tests asserting the refusal deliberately still name it. **BCS-14 enforces it**: the path may appear in a comment or a denial list, never as a value. The runner needed no change - it uses its own `monitor-task\sheets`.
   - [ ] **The folder itself is NOT yet renamed.** `C:\dev\levelup-sheets` still exists: Windows refuses the rename because a lingering `bash.exe` from the overnight agents holds a directory handle on it. Four attempts, two shells. Nothing reads it any more, so it is inert - but finish the job from a fresh session with: `Rename-Item C:\dev\levelup-sheets _OLD_DO_NOT_USE_levelup-sheets`.
@@ -686,7 +691,46 @@ Ang, 2026-11-09: *"Triggered and triggering looks so similar it's confusing."* C
 Still words-only: `status` keeps its shape, so neither composer moved. Verified on the preview - all four
 live cards now read one stem.
 
-### 3. "APPROACHING TRIGGER ZONE", on the right state
+### APPROACHING TRIGGER ZONE - BUILT, HELD UNTIL STEP 6 (Ang's review verdict, 2026-11-09)
+
+A pink pulsing label on a watch card sitting within 0.5% of its trigger zone. It was built, reviewed in the
+preview, and **removed from this release** - code, CSS and the two tests that existed only for it. Three
+reasons, and the second is the one that decides it:
+
+1. **Rule 2: no new features before fix plan step 6.** It is a new thing on the card, not a fix to one.
+2. **It was driven by the BROWSER's price - known problem 5 - which is the thing that had just failed.**
+   The same release exists because the browser's price source handed the board a different token's price for
+   BEAM. Shipping a new label whose whole job is to react to that same number, in the same release that
+   proves the number cannot be trusted, is building on the fault being patched.
+3. **Its wording needs Chelsea.** "APPROACHING TRIGGER ZONE" is Ang's phrasing, and it is a claim about what
+   price is about to do - the kind of sentence this board is careful never to make on its own authority.
+
+**What came out** (recoverable in full: `git show beam-and-words:index.html` before 2026-11-09):
+`approachingTag()` and the branch in `tagHtml()` that printed it; `.att-tag.att-approaching`, the
+`att-approach-pulse` keyframes and the `prefers-reduced-motion` rule; `ATTENTION_LABELS` from
+`levelup-words.js`, whose only consumer it was; and TW-4 / TW-5.
+
+**What stayed, on purpose:**
+- **`tagHtml(p, fallback)` is still a function**, still taking `p`, even though it now only wraps its
+  fallback. One place builds an `att-tag` span, so the label returns by changing one function and no call
+  site. Deleting it would mean re-deriving that structure later.
+- **TW-3**, which asserts no `card_state` ever describes itself as "approaching". Ang asked for this
+  explicitly. The label was originally going to relabel the RUNNING state, which would have told members a
+  live trade had not entered yet; that mistake is still possible without the feature, so the guard outlives
+  it. TW-3 no longer asserts the label exists - only that the word stays out of `card_state` wording.
+- TW-4 and TW-5 were **deleted, not marked todo**. A todo means "reproduced, waiting on a fix"; these test
+  code that no longer exists, and leaving them as todos would be two permanent warnings about a feature
+  nobody is working on.
+
+**When it comes back:** at step 6, reading proximity from the monitor feed rather than from a price the
+browser fetched itself - and with Chelsea's words, not Ang's.
+
+### 3. "APPROACHING TRIGGER ZONE", on the right state  -  HELD 2026-11-09, SEE ABOVE
+
+*The label described below was BUILT and then held out of this release by Ang review verdict. The
+reasoning here is still the reasoning - in particular why it was never allowed to relabel the RUNNING
+state - and TW-3 still enforces that half. What is NOT true any more is that it ships: the code, the
+CSS and TW-4/TW-5 were removed. Read the held note above first.*
 
 **Ang first asked for `TRIGGERING` to BECOME "approaching trigger zone". That was refused and re-scoped,
 and the reason is worth keeping:** `TRIGGERING` means the trade HAS triggered and is running. Relabelling
