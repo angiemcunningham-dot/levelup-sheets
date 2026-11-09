@@ -254,6 +254,19 @@ a.att-card:hover{transform:translateY(-2px);box-shadow:0 10px 26px var(--tg)}
 .att-pct b{font-family:Archivo,Inter,sans-serif;font-weight:900;font-size:30px;line-height:1;color:var(--tc);letter-spacing:-.02em}
 .att-pct span{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--tc)}
 .att-tag{display:inline-block;margin-top:8px;font-size:9.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;padding:4px 9px;border-radius:999px;border:2px solid var(--tc);color:var(--tc);background:#fff}
+/* APPROACHING TRIGGER ZONE - the slow pulse (Ang, 2026-11-09, chose ~1.5s over a fast blink).
+   0.67 flashes/second, well under the 3/s accessibility threshold, and the text never drops below 0.55
+   opacity so it stays readable at every point in the cycle - a hard on/off is unreadable half the time
+   on a phone. The border and the glow carry most of the movement for the same reason.
+   prefers-reduced-motion is honoured by stopping the animation outright rather than slowing it: the
+   label still reads, in full colour, it simply does not move. */
+@keyframes att-approach-pulse{
+  0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(250,3,152,.42)}
+  50%    {opacity:.55;box-shadow:0 0 0 7px rgba(250,3,152,0)}
+}
+.att-tag.att-approaching{border-color:var(--pink);color:var(--pink);background:#fff;
+  animation:att-approach-pulse 1.5s ease-in-out infinite}
+@media(prefers-reduced-motion:reduce){.att-tag.att-approaching{animation:none}}
 .att-bar{height:6px;border-radius:99px;background:#F3F4F6;margin-top:10px;overflow:hidden}
 .att-bar i{display:block;height:100%;border-radius:99px;background:var(--tc);transition:width .6s}
 .att-meta{font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--gray);margin-top:8px;line-height:1.55}
@@ -726,6 +739,28 @@ load();setInterval(load,60000);
   const bandOrd = (d) => (d == null || !isFinite(d) ? null : d <= 0.5 ? 4 : d <= 1 ? 3 : d <= 2 ? 2 : d <= 3 ? 1 : 0);
   const sidePre = (p, e) => (e.pre === 'below' ? (p < e.near ? 'pre' : p <= e.far ? 'inside' : 'beyond') : (p > e.near ? 'pre' : p >= e.far ? 'inside' : 'beyond'));
   const distTo = (p, edge) => Math.abs(p - edge) / edge * 100;
+  /* ---- AND THIS ONE TOO: IDENTICAL to monitor/engine.js SCALE_SLIP_FACTOR (line 603) ----
+
+     AN OFF-SCALE PRICE IS THE WRONG MARKET, NOT A SIGNAL (2026-11-09, Ang: "beam it should not be
+     watching"). Chelsea published BEAM at 05:49 with levels around $0.0040. Coinbase's BEAM-USD agreed
+     ($0.004008). Binance's BEAMUSDT is a DIFFERENT token at $0.0652, the browser's price source reached
+     for it first, and the card told members "1521.9% past the floor - Cleared the floor - price is
+     currently above the real floor ($0.0652 vs $0.00402), watching for a 1H candle to open there and
+     confirm". Price was in fact below the floor. The strongest claim this surface makes, on the wrong
+     asset's price.
+
+     The MONITOR already refuses this exact thing - scaleSlip() in engine.js, same 5x bar, which is how
+     SHIB was stopped on 2026-11-02 - but it never sees the browser's price, so it could not help. This is
+     the same rule on the same constant, applied where the bad number actually appears. It is mirrored, not
+     reinvented: ATT-17 pins the four helpers above against the engine byte-for-byte and ATT-18 does the
+     same for this factor, so the two can never drift apart.
+
+     The bar is coarse on purpose, and the engine's own comment records why: measured across all 67 priced
+     assets the widest GENUINE ratio was 2.5x, and a decimal slip is 10x. 5x sits in the empty space
+     between them, so a legitimately distant call is never caught and a wrong market never escapes. */
+  const SCALE_SLIP_FACTOR = 5;
+  const offScale = (ref, price) => !!(ref > 0 && price > 0
+    && Math.max(ref / price, price / ref) >= SCALE_SLIP_FACTOR);
 
   /* A SHEET KEY IS NOT A TICKER (2026-11-05).
      The shared parser keys a two-sided asset `BTC|LONG` / `BTC|SHORT`; the board's own embedded copy keys it
@@ -758,6 +793,13 @@ load();setInterval(load,60000);
     const trig = setup.levels.filter((l) => l.kind === 'trigger' && l.state === 'present' && l.zone);
     if (!trig.length) return { state: 'NA' };
     if (price == null || !isFinite(price) || price <= 0) return { state: 'NOPRICE', direction: dir, triggers: trig.map((l) => ({ id: l.id, zone: l.zone })) };
+    /* A price from the wrong market is NO price (2026-11-09). It takes the existing NOPRICE path rather
+       than a new state, because "we cannot say where price is relative to this trigger" is exactly what
+       NOPRICE already means and every caller already renders it honestly. `off_scale` is carried only so a
+       surface CAN say why if it wants to; nothing is required to read it. */
+    if (trig.some((l) => offScale(l.zone.low, price))) {
+      return { state: 'NOPRICE', off_scale: true, direction: dir, triggers: trig.map((l) => ({ id: l.id, zone: l.zone })) };
+    }
     let best = null;
     for (const level of trig) {
       const ed = C.edges(level, dir); const s = sidePre(price, ed);
@@ -849,7 +891,7 @@ load();setInterval(load,60000);
     return { prices: out, sources: src, at: Date.now() };
   }
 
-  return { BAND_NAMES, bandOrd, sidePre, distTo, applicable, triggerProximity, sortAttention, fmtPct, fmtPrice, zoneText, tier, fetchPrices, RANK, activeNow, triggeredLabel };
+  return { BAND_NAMES, bandOrd, sidePre, distTo, SCALE_SLIP_FACTOR, offScale, applicable, triggerProximity, sortAttention, fmtPct, fmtPrice, zoneText, tier, fetchPrices, RANK, activeNow, triggeredLabel };
 });
 
 </script>
@@ -1038,6 +1080,11 @@ load();setInterval(load,60000);
       var r = a && a.trigger_readiness;
       if (!r || r.floor == null) return null;
       if (livePrice == null || !isFinite(livePrice) || livePrice <= 0) return { state: 'NOPRICE', real: true, floor: r.floor, direction: r.direction };
+      /* THE SENTENCE BEAM ACTUALLY PRINTED CAME FROM HERE (2026-11-09). This function never reads
+         Chelsea's levels - it compares live price to the MONITOR's floor, which is already on her scale -
+         so the same 5x bar applied against the floor catches the same fault. Without it a wrong market's
+         price renders as "Cleared the floor", which is the strongest claim this tile makes. */
+      if (A.offScale(r.floor, livePrice)) return { state: 'NOPRICE', real: true, off_scale: true, floor: r.floor, direction: r.direction };
       var cleared = r.direction === 'short' ? livePrice < r.floor : livePrice > r.floor;
       var distPct = Math.abs(livePrice - r.floor) / r.floor * 100;
       var ord = A.bandOrd(distPct);
@@ -1100,6 +1147,29 @@ load();setInterval(load,60000);
       return { fresh: fresh, items: items, watch: watch };
     }
 
+    /* RIGHT ON TOP OF THE ZONE, AND SAYING SO (Ang, 2026-11-09).
+       Both tag writers below used to print a BAND NAME here - "MAXIMUM" - which is the engine's own word
+       for an ordering, not something a member reads as "this is about to happen". At the top band only
+       (within 0.5% of the near edge, A.bandOrd's own threshold, not a new number) they say it in words
+       instead and the tag pulses.
+
+       ONE FUNCTION, BOTH WRITERS. tagFor() and realTag differ in what they call the top state - "Trigger
+       zone" vs "Cleared the floor", because one measures Chelsea's published zone and the other the
+       moving-average floor - so the approach wording is applied around them rather than inside either,
+       and neither grows a second copy of the threshold.
+
+       NOT shown for INSIDE/cleared: price is there, not approaching. That distinction is the whole reason
+       this label is on a pre-trigger surface and not on a running trade. */
+    function approachingTag(p) {
+      if (!p || p.state !== 'APPROACHING' || p.band_ord !== 4) return null;
+      var W = window.LevelUpWords;
+      return (W && W.ATTENTION_LABELS && W.ATTENTION_LABELS.approaching_zone) || null;
+    }
+    function tagHtml(p, fallback) {
+      var near = approachingTag(p);
+      if (near) return '<span class="att-tag att-approaching">' + esc(near) + '</span>';
+      return fallback ? '<span class="att-tag">' + esc(fallback) + '</span>' : '';
+    }
     function tagFor(p) { return p.state === 'INSIDE' ? 'Trigger zone' : (p.band_ord >= 1 ? p.band : ''); }
     function cardHtml(it) {
       var p = it.prox, t = A.tier(p), dir = p.direction === 'short' ? '▼ SHORT' : '▲ LONG', gauge = Math.max(0, Math.min(100, 100 - p.distance_pct * 20));
@@ -1120,14 +1190,14 @@ load();setInterval(load,60000);
         return '<a class="att-card tier-' + t + '" href="sheet.html?asset=' + encodeURIComponent(it.asset) + '" data-asset="' + esc(it.asset) + '" data-tier="' + t + '" data-pct="' + p.distance_pct.toFixed(4) + '">' +
           '<div class="att-top"><span class="att-asset">' + esc(it.asset) + '</span><span class="att-dir">Watching · ' + dir + '</span></div>' +
           '<div class="att-pct"><b>' + A.fmtPct(p.distance_pct) + '%</b><span>' + (p.inside ? 'past the floor' : currentSideWord + ' the floor') + '</span></div>' +
-          (realTag ? '<span class="att-tag">' + esc(realTag) + '</span>' : '') +
+          tagHtml(p, realTag) +
           '<div class="att-bar" aria-hidden="true"><i style="width:' + gauge.toFixed(0) + '%"></i></div>' +
           '<div class="att-meta">' + body + (pubZone ? '<br><span style="opacity:.65">Chelsea’s published zone (reference only): $' + pubZone + '</span>' : '') + '</div></a>';
       }
       return '<a class="att-card tier-' + t + '" href="sheet.html?asset=' + encodeURIComponent(it.asset) + '" data-asset="' + esc(it.asset) + '" data-tier="' + t + '" data-pct="' + p.distance_pct.toFixed(4) + '">' +
         '<div class="att-top"><span class="att-asset">' + esc(it.asset) + '</span><span class="att-dir">Watching · ' + dir + '</span></div>' +
         '<div class="att-pct"><b>' + A.fmtPct(p.distance_pct) + '%</b><span>to trigger</span></div>' +
-        (tag ? '<span class="att-tag">' + esc(tag) + '</span>' : '') +
+        tagHtml(p, tag) +
         '<div class="att-bar" aria-hidden="true"><i style="width:' + gauge.toFixed(0) + '%"></i></div>' +
         '<div class="att-meta">LIVE $' + A.fmtPrice(it.price) + ' <span title="market price, not a Chelsea level">(' + (srcName[ps.sources[it.asset]] || 'live') + ')</span><br>Chelsea trigger $' + A.zoneText(p.zone) + '</div></a>';
     }

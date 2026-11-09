@@ -702,6 +702,28 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
   const bandOrd = (d) => (d == null || !isFinite(d) ? null : d <= 0.5 ? 4 : d <= 1 ? 3 : d <= 2 ? 2 : d <= 3 ? 1 : 0);
   const sidePre = (p, e) => (e.pre === 'below' ? (p < e.near ? 'pre' : p <= e.far ? 'inside' : 'beyond') : (p > e.near ? 'pre' : p >= e.far ? 'inside' : 'beyond'));
   const distTo = (p, edge) => Math.abs(p - edge) / edge * 100;
+  /* ---- AND THIS ONE TOO: IDENTICAL to monitor/engine.js SCALE_SLIP_FACTOR (line 603) ----
+
+     AN OFF-SCALE PRICE IS THE WRONG MARKET, NOT A SIGNAL (2026-11-09, Ang: "beam it should not be
+     watching"). Chelsea published BEAM at 05:49 with levels around $0.0040. Coinbase's BEAM-USD agreed
+     ($0.004008). Binance's BEAMUSDT is a DIFFERENT token at $0.0652, the browser's price source reached
+     for it first, and the card told members "1521.9% past the floor - Cleared the floor - price is
+     currently above the real floor ($0.0652 vs $0.00402), watching for a 1H candle to open there and
+     confirm". Price was in fact below the floor. The strongest claim this surface makes, on the wrong
+     asset's price.
+
+     The MONITOR already refuses this exact thing - scaleSlip() in engine.js, same 5x bar, which is how
+     SHIB was stopped on 2026-11-02 - but it never sees the browser's price, so it could not help. This is
+     the same rule on the same constant, applied where the bad number actually appears. It is mirrored, not
+     reinvented: ATT-17 pins the four helpers above against the engine byte-for-byte and ATT-18 does the
+     same for this factor, so the two can never drift apart.
+
+     The bar is coarse on purpose, and the engine's own comment records why: measured across all 67 priced
+     assets the widest GENUINE ratio was 2.5x, and a decimal slip is 10x. 5x sits in the empty space
+     between them, so a legitimately distant call is never caught and a wrong market never escapes. */
+  const SCALE_SLIP_FACTOR = 5;
+  const offScale = (ref, price) => !!(ref > 0 && price > 0
+    && Math.max(ref / price, price / ref) >= SCALE_SLIP_FACTOR);
 
   /* A SHEET KEY IS NOT A TICKER (2026-11-05).
      The shared parser keys a two-sided asset `BTC|LONG` / `BTC|SHORT`; the board's own embedded copy keys it
@@ -734,6 +756,13 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
     const trig = setup.levels.filter((l) => l.kind === 'trigger' && l.state === 'present' && l.zone);
     if (!trig.length) return { state: 'NA' };
     if (price == null || !isFinite(price) || price <= 0) return { state: 'NOPRICE', direction: dir, triggers: trig.map((l) => ({ id: l.id, zone: l.zone })) };
+    /* A price from the wrong market is NO price (2026-11-09). It takes the existing NOPRICE path rather
+       than a new state, because "we cannot say where price is relative to this trigger" is exactly what
+       NOPRICE already means and every caller already renders it honestly. `off_scale` is carried only so a
+       surface CAN say why if it wants to; nothing is required to read it. */
+    if (trig.some((l) => offScale(l.zone.low, price))) {
+      return { state: 'NOPRICE', off_scale: true, direction: dir, triggers: trig.map((l) => ({ id: l.id, zone: l.zone })) };
+    }
     let best = null;
     for (const level of trig) {
       const ed = C.edges(level, dir); const s = sidePre(price, ed);
@@ -825,7 +854,7 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
     return { prices: out, sources: src, at: Date.now() };
   }
 
-  return { BAND_NAMES, bandOrd, sidePre, distTo, applicable, triggerProximity, sortAttention, fmtPct, fmtPrice, zoneText, tier, fetchPrices, RANK, activeNow, triggeredLabel };
+  return { BAND_NAMES, bandOrd, sidePre, distTo, SCALE_SLIP_FACTOR, offScale, applicable, triggerProximity, sortAttention, fmtPct, fmtPrice, zoneText, tier, fetchPrices, RANK, activeNow, triggeredLabel };
 });
 
 </script>

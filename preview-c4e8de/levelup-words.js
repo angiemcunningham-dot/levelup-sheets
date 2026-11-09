@@ -117,15 +117,25 @@
        - The separator in progress_tp is NBSP + em dash + NBSP, as the old status string had. It is
          the longest string this state produces, and index.html:1562 records what happens without it:
          the label wraps across three or four lines with the dash stranded on its own.
-       - "TRIGGERING" is present tense on purpose. It replaces "CONDITION MET", which was chosen on
-         2026-10-22 precisely because it states a fact instead of declaring a trade. "TRIGGERING"
-         keeps that - it says what price is doing, not what a member should do - and it is the live
-         half of the same word the TP form uses, so the two read as one sequence instead of as two
-         separate vocabularies. */
+       - ONE STEM, TWO ENDINGS (Ang, 2026-11-09). This read "TRIGGERING" for one day. It was chosen
+         on 2026-11-07 as the live half of the same word the TP form uses - and that is exactly what
+         went wrong: "SHORT TRIGGERING" and "SHORT TRIGGERED — TP1 REACHED" differ by two
+         letters in the middle of a line, and Ang read them as the same thing. "Triggered and
+         triggering looks so similar it's confusing."
+
+         So the verb no longer varies at all. Both forms now open with TRIGGERED and differ only in
+         what follows the dash, which is the part that actually carries the news:
+
+             SHORT TRIGGERED — NO TARGET YET
+             SHORT TRIGGERED — TP1 REACHED
+
+         It still states a fact and never declares, which is the 2026-10-22 rule that "CONDITION MET"
+         was written for: "no target yet" says where price has got to, not what a member should do.
+         And it is still WORDS ONLY - the shape of `status` is unchanged, so neither composer moved. */
     TRIGGERED: {
       status: '{DIR} {PROGRESS}',
       progress_tp: 'TRIGGERED — TP{N} REACHED',
-      progress_none: 'TRIGGERING',
+      progress_none: 'TRIGGERED — NO TARGET YET',
       sub: null,
       tone: 'active',
       provisional: true,
@@ -168,6 +178,25 @@
       tone: 'closed',
       provisional: true,
     },
+  };
+
+  /*
+   * THE PRE-TRIGGER ATTENTION LABEL (new 2026-11-09, Ang).
+   *
+   * Said of a setup that has NOT triggered and is sitting right on top of its trigger zone. It is the
+   * one place the word "approaching" is correct, and keeping it here is what stops it drifting onto a
+   * RUNNING trade - which is what Ang first asked for and which would have told members a live trade
+   * had not entered yet. APPROACHING is already the internal state name for this case
+   * (index.html triggerProximity), it was simply never printed.
+   *
+   * Shown only at the MAXIMUM band - within 0.5% of the near edge - so it stays rare enough to mean
+   * something. A label that flashes on every watch is wallpaper. The threshold is the engine's own
+   * bandOrd, not a new number.
+   *
+   * PROVISIONAL, like every other string in this file: Ang's words, not yet Chelsea's.
+   */
+  var ATTENTION_LABELS = {
+    approaching_zone: 'APPROACHING TRIGGER ZONE',
   };
 
   /*
@@ -221,6 +250,7 @@
   root.LevelUpWords = {
     CARD_STATE_WORDS: CARD_STATE_WORDS,
     LADDER_MARKS: LADDER_MARKS,
+    ATTENTION_LABELS: ATTENTION_LABELS,
     DEAD_WATCH_SENTENCE: DEAD_WATCH_SENTENCE,
     STALE_TRADE_NOTICE: STALE_TRADE_NOTICE,
     fill: fill,
