@@ -1,0 +1,146 @@
+# ==================================================================================================
+# STALE-FEED ALERT — the [cloud check] layer of fix plan step 8.
+#
+# WHY HERE. This repo is PUBLIC, so Actions minutes are free and unmetered. The monitor repo is
+# private and metered, and "Actions minutes" is already on record there as one of three causes of a
+# board freeze — putting a 15-minute cron in it would be ~2,880 billed runs a month against a
+# 2,000-minute allowance. This repo also already serves the feed being watched.
+#
+# WHY THIS LAYER IS THE AUTHORITY. It keeps working when Ang's PC is off or asleep — the one failure
+# a local watchdog can never cover, and the reason the plan's original "local primary" design was
+# inverted on 2026-11-12.
+#
+# WHAT IT DELIBERATELY IS NOT. It is not a precision alarm. GitHub queues scheduled workflows, so a
+# `*/15` cron does not mean every 15 minutes; CURRENT_STATE.md in the monitor repo records runs
+# arriving 4-6 times a day against 24 expected. That is useless as a 45-minute alarm and entirely
+# adequate as a dead-man's switch for a multi-hour outage — both real outages were 13h15m and 44h.
+# The real 45-minute alarm is the [PC check] layer, which runs the SAME script locally.
+#
+# WHAT IT MUST NEVER TOUCH: main's index.html / sheet.html, monitor-feed.json, or anything the
+# monitor's publish path writes. It only ever reads the published feed over HTTPS and writes one
+# state file on a dedicated orphan branch. It never runs in the monitor's replay gate.
+# ==================================================================================================
+name: Stale feed alert
+
+on:
+  # Offset from the runner's own :01/:16/:31/:46 cycle so a check never reads the feed mid-publish.
+  schedule:
+    - cron: '8,23,38,53 * * * *'
+  # So the whole thing can be exercised by hand without waiting for the queue.
+  workflow_dispatch:
+    inputs:
+      send_test:
+        description: 'Send one real TEST notification instead of checking (yes/no)'
+        required: false
+        default: 'no'
+
+# Deliberately NOT `on: push`. The monitor pushes a new feed to main every 15 minutes; triggering on
+# that would tie the alarm's schedule to the health of the thing it is watching, which is the exact
+# mistake known problem 22 is about.
+
+permissions:
+  contents: write        # only to push the `watchdog-state` orphan branch; nothing else is written
+
+concurrency:
+  # Two overlapping runs would both read the same prior state and could double-alert.
+  group: stale-feed-alert
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out this repo (read-only use of main)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # The workflow runs the alert's own fixture tests before it is allowed to alert. They never
+      # touch the live feed, so this can never fail because the board is currently unhealthy — it
+      # fails only if the alerting POLICY is broken, in which case alerting is exactly what must not
+      # happen on trust.
+      - name: Fixture tests for the alerting policy
+        run: node --test watchdog/stale-feed-check.test.js
+
+      - name: One real test notification (manual dispatch only)
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.send_test == 'yes'
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+        run: node watchdog/stale-feed-check.js --layer cloud --send-test
+
+      # Restore the previous state from the orphan branch. Absent branch = first ever run, which the
+      # script treats as "fresh, nothing known" and which therefore cannot alert spuriously.
+      - name: Restore state from the watchdog-state branch
+        if: github.event.inputs.send_test != 'yes'
+        run: |
+          mkdir -p "$RUNNER_TEMP/wd"
+          if git ls-remote --exit-code --heads origin watchdog-state >/dev/null 2>&1; then
+            git fetch --depth=1 origin watchdog-state
+            git show FETCH_HEAD:state.json > "$RUNNER_TEMP/wd/state.json" 2>/dev/null || true
+            echo "restored:"; cat "$RUNNER_TEMP/wd/state.json" 2>/dev/null || echo "(branch exists but no state.json)"
+          else
+            echo "no watchdog-state branch yet - treating this as the first run"
+          fi
+
+      - name: Check the published feed
+        id: check
+        if: github.event.inputs.send_test != 'yes'
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+        run: |
+          set -o pipefail
+          node watchdog/stale-feed-check.js \
+            --layer cloud \
+            --state "$RUNNER_TEMP/wd/state.json" | tee "$RUNNER_TEMP/wd/out.txt"
+          # STATE_CHANGED is the script's own answer to "is there anything new to persist", so the
+          # branch is written ONLY on a state change (Ang, 2026-11-12) rather than every 15 minutes.
+          grep -q 'STATE_CHANGED=1' "$RUNNER_TEMP/wd/out.txt" && echo "changed=1" >> "$GITHUB_OUTPUT" || echo "changed=0" >> "$GITHUB_OUTPUT"
+
+      # Written only when something actually changed. Committed in a throwaway clone so main's
+      # working tree is never involved and cannot be disturbed.
+      - name: Persist state (only when it changed)
+        if: steps.check.outputs.changed == '1'
+        run: |
+          set -e
+          work="$RUNNER_TEMP/statebranch"
+          url="https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git"
+          if git ls-remote --exit-code --heads origin watchdog-state >/dev/null 2>&1; then
+            # commit on top of the existing branch - no force push, history is auditable
+            git clone --depth 1 --branch watchdog-state --single-branch "$url" "$work"
+          else
+            git clone --depth 1 "$url" "$work"
+            git -C "$work" checkout --orphan watchdog-state
+            git -C "$work" rm -rqf . || true
+          fi
+          cp "$RUNNER_TEMP/wd/state.json" "$work/state.json"
+          cat > "$work/README.md" <<'EOF'
+          # watchdog-state
+
+          State for the stale-feed alert's [cloud check] layer (fix plan step 8). One file,
+          `state.json`, holding the last known feed state and when the last notification was sent, so
+          "once when stale, every 3 hours while stale, once on recovery" survives between runs -
+          GitHub Actions runners are ephemeral and have nowhere else to remember it.
+
+          This branch is ORPHAN on purpose: it shares no history with `main`, is not served by GitHub
+          Pages, and nothing on `main` reads it. It is written only when the state CHANGES, so an
+          outage costs a handful of commits rather than one every 15 minutes.
+
+          It contains no secrets. The ntfy topic lives only in the `NTFY_TOPIC` repository secret.
+          EOF
+          cd "$work"
+          git config user.name 'levelup-watchdog-bot'
+          git config user.email 'actions@github.com'
+          git add state.json README.md
+          # No-op commits are possible if only the file mtime moved; --quiet exit 1 means nothing staged.
+          if git diff --cached --quiet; then
+            echo "nothing to persist after all"
+          else
+            git commit -qm "watchdog: feed state changed"
+            git push -q origin watchdog-state
+            echo "state persisted"
+          fi
