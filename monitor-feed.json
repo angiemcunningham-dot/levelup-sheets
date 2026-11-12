@@ -1,10 +1,10 @@
 {
  "schema_version": 1,
  "kind": "levelup-public-feed",
- "generated_at": "2026-11-12T21:03:00.913Z",
+ "generated_at": "2026-11-12T21:18:00.730Z",
  "notice": "Mechanical observations of Chelsea's published levels. Not a Sheet status, not a signal, and not a record of anyone's entry or exit.",
  "monitor": {
-  "last_successful_check_at": "2026-11-12T21:03:00.913Z"
+  "last_successful_check_at": "2026-11-12T21:18:00.730Z"
  },
  "assets": {
   "AAVE": {
@@ -120,9 +120,9 @@
      "ema200": 126.15586488015134
     },
     "floor": 114.4742980936885,
-    "price": 114.6,
-    "distance_pct": 0.1098079729727747,
-    "cleared": true
+    "price": 114.3,
+    "distance_pct": 0.152259587165895,
+    "cleared": false
    },
    "confirmation_strength": {
     "schema_version": 1,
@@ -352,8 +352,8 @@
      "ema200": 0.1801755619967331
     },
     "floor": 0.17200501535770238,
-    "price": 0.1727,
-    "distance_pct": 0.40404905685588327,
+    "price": 0.1728,
+    "distance_pct": 0.4621868964950684,
     "cleared": true
    },
    "confirmation_strength": {
@@ -549,8 +549,8 @@
      "ema200": 0.1801755619967331
     },
     "floor": 0.17124444444444442,
-    "price": 0.1727,
-    "distance_pct": 0.8499870230988931,
+    "price": 0.1728,
+    "distance_pct": 0.9083830781209636,
     "cleared": false
    },
    "confirmation_strength": {
@@ -996,15 +996,15 @@
    "trigger_readiness": null,
    "confirmation_strength": {
     "schema_version": 1,
-    "word": "Weak",
-    "gate": false,
+    "word": "Strong",
+    "gate": true,
     "votes": {
      "stoch": true,
      "macd": true,
-     "triple": false,
+     "triple": true,
      "rsi": false
     },
-    "count": 2,
+    "count": 3,
     "order": [
      "stoch",
      "sma_smma",
@@ -1013,17 +1013,17 @@
      "rsi"
     ],
     "readings": {
-     "price": 0.0875,
-     "sma9": 0.0870888888888889,
-     "smma7": 0.08758199359839218,
-     "stoch_k": 56.48148148148143,
-     "stoch_d": 52.95295295295288,
-     "rsi": 41.6626366080788,
-     "rsi6": 50.40320455078429,
-     "rsi12": 42.19297577950114,
-     "rsi24": 42.89852639291214,
-     "macd": -0.0006658468799058959,
-     "macd_signal": -0.0007085394316802308
+     "price": 0.0877,
+     "sma9": 0.08711111111111111,
+     "smma7": 0.08761056502696361,
+     "stoch_k": 58.333333333333336,
+     "stoch_d": 53.57023690357018,
+     "rsi": 44.032712219454986,
+     "rsi6": 55.22927491957809,
+     "rsi12": 44.94009848258531,
+     "rsi24": 44.26262998386312,
+     "macd": -0.0006498924639514736,
+     "macd_signal": -0.0007053485484893463
     },
     "note": "Entry conditions only. Not a signal, not a position size, and not advice to take or skip a trade.",
     "as_of": "2026-11-12T21:00:00.000Z",
@@ -1174,8 +1174,8 @@
      "ema200": 0.1726850522702626
     },
     "floor": 0.1487019559264475,
-    "price": 0.1504,
-    "distance_pct": 1.1419110548837779,
+    "price": 0.1502,
+    "distance_pct": 1.0074138327363222,
     "cleared": true
    },
    "confirmation_strength": {
@@ -1336,8 +1336,8 @@
      "ema200": 1.5962707041136253
     },
     "floor": 1.406,
-    "price": 1.416,
-    "distance_pct": 0.7112375533428172,
+    "price": 1.418,
+    "distance_pct": 0.8534850640113806,
     "cleared": true
    },
    "confirmation_strength": {
@@ -1514,8 +1514,8 @@
      "ema200": 8.452714300370644
     },
     "floor": 8.400265488419683,
-    "price": 8.344,
-    "distance_pct": 0.6698060733586196,
+    "price": 8.347,
+    "distance_pct": 0.6340929163859524,
     "cleared": false
    },
    "confirmation_strength": {
@@ -1537,17 +1537,17 @@
      "rsi"
     ],
     "readings": {
-     "price": 8.342,
-     "sma9": 8.340444444444444,
-     "smma7": 8.391951466165597,
-     "stoch_k": 21.097046413502028,
-     "stoch_d": 21.589310829817013,
-     "rsi": 41.10395387958171,
-     "rsi6": 38.678718397477574,
-     "rsi12": 39.803436866973726,
-     "rsi24": 46.94072165539787,
-     "macd": -0.05551233469582861,
-     "macd_signal": -0.039029528635104074
+     "price": 8.347,
+     "sma9": 8.341,
+     "smma7": 8.392665751879884,
+     "stoch_k": 21.448663853726988,
+     "stoch_d": 21.70651664322533,
+     "rsi": 41.61667866553026,
+     "rsi6": 40.18742087130151,
+     "rsi12": 40.424008089656446,
+     "rsi24": 47.203883959498675,
+     "macd": -0.055113474296968334,
+     "macd_signal": -0.03894975655533202
     },
     "note": "Entry conditions only. Not a signal, not a position size, and not advice to take or skip a trade.",
     "as_of": "2026-11-12T21:00:00.000Z",
@@ -1664,8 +1664,8 @@
      "ema200": 8.43989447926199
     },
     "floor": 8.348222222222224,
-    "price": 8.344,
-    "distance_pct": 0.05057630367080831,
+    "price": 8.347,
+    "distance_pct": 0.014640508957361647,
     "cleared": true
    },
    "confirmation_strength": {
@@ -1800,8 +1800,8 @@
      "ema200": 0.1260656203506708
     },
     "floor": 0.12141509404095896,
-    "price": 0.1224,
-    "distance_pct": 0.8111890591698432,
+    "price": 0.1227,
+    "distance_pct": 1.058275306863894,
     "cleared": true
    },
    "confirmation_strength": {
@@ -1970,8 +1970,8 @@
      "ema200": 252.84632106135186
     },
     "floor": 226.5508810959324,
-    "price": 225.9,
-    "distance_pct": 0.28730018298043036,
+    "price": 226,
+    "distance_pct": 0.24315998828498375,
     "cleared": false
    },
    "confirmation_strength": {
@@ -2220,7 +2220,10 @@
      "ema50": 0.004375784987610187,
      "ema200": 0.004269532512983766
     },
-    "floor": 0.004402444444444445
+    "floor": 0.004402444444444445,
+    "price": 0.0044,
+    "distance_pct": 0.055524708495285575,
+    "cleared": false
    },
    "confirmation_strength": {
     "schema_version": 1,
@@ -2566,14 +2569,14 @@
      "ema200": 688.1400698884501
     },
     "floor": 655.7622222222221,
-    "price": 655.08,
-    "distance_pct": 0.10403499913584616,
-    "cleared": true
+    "price": 656.82,
+    "distance_pct": 0.16130508009341518,
+    "cleared": false
    },
    "confirmation_strength": {
     "schema_version": 1,
-    "word": "Mixed",
-    "gate": true,
+    "word": "Weak",
+    "gate": false,
     "votes": {
      "stoch": false,
      "macd": true,
@@ -2589,17 +2592,17 @@
      "rsi"
     ],
     "readings": {
-     "price": 654.88,
-     "sma9": 655.2177777777778,
-     "smma7": 659.4324204462773,
-     "stoch_k": 20.057519197228096,
-     "stoch_d": 20.21256211574403,
-     "rsi": 27.50444066743286,
-     "rsi6": 28.865937311758472,
-     "rsi12": 26.68851534311716,
-     "rsi24": 32.962864280388075,
-     "macd": -6.561021754161629,
-     "macd_signal": -5.897144615261358
+     "price": 656.78,
+     "sma9": 655.4288888888889,
+     "smma7": 659.7038490177059,
+     "stoch_k": 22.621621761330626,
+     "stoch_d": 21.067262970444872,
+     "rsi": 32.470452478755846,
+     "rsi6": 40.570248576842765,
+     "rsi12": 32.51847223539805,
+     "rsi24": 35.762812301750074,
+     "macd": -6.409454802594723,
+     "macd_signal": -5.866831224947977
     },
     "note": "Entry conditions only. Not a signal, not a position size, and not advice to take or skip a trade.",
     "as_of": "2026-11-12T21:00:00.000Z",
@@ -2704,8 +2707,8 @@
      "ema200": 75081.5654392999
     },
     "floor": 72253.17841907681,
-    "price": 71491.45,
-    "distance_pct": 1.054249011245842,
+    "price": 71580,
+    "distance_pct": 0.9316938490543566,
     "cleared": false
    },
    "confirmation_strength": {
@@ -2727,17 +2730,17 @@
      "rsi"
     ],
     "readings": {
-     "price": 71469.01,
-     "sma9": 71764.05111111113,
-     "smma7": 72141.10528407281,
-     "stoch_k": 11.26889562229095,
-     "stoch_d": 15.73933377217614,
-     "rsi": 22.73449092883739,
-     "rsi6": 16.67036095491777,
-     "rsi12": 20.905375517582684,
-     "rsi24": 30.498549832809104,
-     "macd": -609.6268941511371,
-     "macd_signal": -473.69766132383376
+     "price": 71580.01,
+     "sma9": 71776.38444444445,
+     "smma7": 72156.96242692995,
+     "stoch_k": 12.784146416773801,
+     "stoch_d": 16.244417370337093,
+     "rsi": 26.01260884252426,
+     "rsi6": 25.07520093084848,
+     "rsi12": 24.813977161436043,
+     "rsi24": 32.23851658253278,
+     "macd": -600.7721932964341,
+     "macd_signal": -471.92672115289315
     },
     "note": "Entry conditions only. Not a signal, not a position size, and not advice to take or skip a trade.",
     "as_of": "2026-11-12T21:00:00.000Z",
@@ -2843,8 +2846,8 @@
      "ema200": 75122.97871192712
     },
     "floor": 71924.11111111111,
-    "price": 71491.45,
-    "distance_pct": 0.6015522533781766,
+    "price": 71580,
+    "distance_pct": 0.47843637661300187,
     "cleared": true
    },
    "confirmation_strength": {
@@ -3346,8 +3349,8 @@
      "ema200": 21.935495558314237
     },
     "floor": 19.863333333333333,
-    "price": 19.99,
-    "distance_pct": 0.6376908877328334,
+    "price": 20.01,
+    "distance_pct": 0.7383789226380346,
     "cleared": false
    },
    "confirmation_strength": {
@@ -3616,17 +3619,17 @@
      "rsi"
     ],
     "readings": {
-     "price": 0.2405,
-     "sma9": 0.23729999999999998,
-     "smma7": 0.2382380763216066,
-     "stoch_k": 91.59460167714887,
-     "stoch_d": 84.7045839380745,
-     "rsi": 53.2405554019587,
-     "rsi6": 72.88140249626935,
-     "rsi12": 55.695359718234116,
-     "rsi24": 47.96600309310168,
-     "macd": -0.0011648675052703672,
-     "macd_signal": -0.0020551512611014073
+     "price": 0.2407,
+     "sma9": 0.2373222222222222,
+     "smma7": 0.23826664775017803,
+     "stoch_k": 92.22353249475896,
+     "stoch_d": 84.91422754394453,
+     "rsi": 53.77987573332077,
+     "rsi6": 73.77193471105457,
+     "rsi12": 56.31040199496052,
+     "rsi24": 48.28700542654884,
+     "macd": -0.0011489130893159727,
+     "macd_signal": -0.0020519603779105286
     },
     "note": "Entry conditions only. Not a signal, not a position size, and not advice to take or skip a trade.",
     "as_of": "2026-11-12T21:00:00.000Z",
@@ -3851,8 +3854,8 @@
      "ema200": 0.07029011468976055
     },
     "floor": 0.0661951514757055,
-    "price": 0.06586,
-    "distance_pct": 0.5063081936272926,
+    "price": 0.06604,
+    "distance_pct": 0.23438495455734049,
     "cleared": false
    },
    "confirmation_strength": {
@@ -3861,11 +3864,11 @@
     "gate": false,
     "votes": {
      "stoch": false,
-     "macd": false,
+     "macd": true,
      "triple": false,
      "rsi": false
     },
-    "count": 0,
+    "count": 1,
     "order": [
      "stoch",
      "sma_smma",
@@ -3874,17 +3877,17 @@
      "rsi"
     ],
     "readings": {
-     "price": 0.06584,
-     "sma9": 0.06575777777777778,
-     "smma7": 0.06614421804920353,
-     "stoch_k": 47.45762711864404,
-     "stoch_d": 49.94350282485876,
-     "rsi": 37.47703898945684,
-     "rsi6": 38.71840027114307,
-     "rsi12": 37.157023309393736,
-     "rsi24": 40.675730680458564,
-     "macd": -0.0005079995707796547,
-     "macd_signal": -0.0005062138282664335
+     "price": 0.06604,
+     "sma9": 0.06578,
+     "smma7": 0.06617278947777495,
+     "stoch_k": 49.71751412429382,
+     "stoch_d": 50.696798493408686,
+     "rsi": 40.79940129305664,
+     "rsi6": 47.35746965078393,
+     "rsi12": 41.08830290899832,
+     "rsi24": 42.52346262829079,
+     "macd": -0.0004920451548252464,
+     "macd_signal": -0.0005030229450755518
     },
     "note": "Entry conditions only. Not a signal, not a position size, and not advice to take or skip a trade.",
     "as_of": "2026-11-12T21:00:00.000Z",
@@ -4013,8 +4016,8 @@
      "ema200": 0.07029355248970207
     },
     "floor": 0.06581666666666668,
-    "price": 0.06586,
-    "distance_pct": 0.06583945302607107,
+    "price": 0.06604,
+    "distance_pct": 0.33932641174979794,
     "cleared": false
    },
    "confirmation_strength": {
@@ -4286,8 +4289,8 @@
      "ema200": 1.0168307931545826
     },
     "floor": 0.8313417116916353,
-    "price": 0.828,
-    "distance_pct": 0.4019660802097287,
+    "price": 0.83,
+    "distance_pct": 0.1613911190508147,
     "cleared": false
    },
    "confirmation_strength": {
@@ -4476,8 +4479,8 @@
      "ema200": 0.23850591778729316
     },
     "floor": 0.2086628501121876,
-    "price": 0.1405,
-    "distance_pct": 32.66650008640246,
+    "price": 0.1407,
+    "distance_pct": 32.570651687948946,
     "cleared": false
    },
    "confirmation_strength": null,
@@ -4602,8 +4605,8 @@
      "ema200": 7.654813824007602
     },
     "floor": 6.609610738549428,
-    "price": 6.63,
-    "distance_pct": 0.3084790051501094,
+    "price": 6.64,
+    "distance_pct": 0.45977384527853765,
     "cleared": true
    },
    "confirmation_strength": {
@@ -4799,8 +4802,8 @@
      "ema200": 2145.3867191233553
     },
     "floor": 2013.8477777777775,
-    "price": 2017.96,
-    "distance_pct": 0.20419727188915027,
+    "price": 2018.99,
+    "distance_pct": 0.25534314355659815,
     "cleared": false
    },
    "confirmation_strength": {
@@ -5190,8 +5193,8 @@
      "ema200": 0.9280394480619322
     },
     "floor": 0.7397444444444443,
-    "price": 0.745,
-    "distance_pct": 0.7104555627318914,
+    "price": 0.7448,
+    "distance_pct": 0.6834191988224361,
     "cleared": false
    },
    "confirmation_strength": {
@@ -5517,8 +5520,8 @@
      "ema200": 75.79759044965027
     },
     "floor": 71.39069213423588,
-    "price": 71.97,
-    "distance_pct": 0.8114613382299888,
+    "price": 71.9,
+    "distance_pct": 0.7134093402631219,
     "cleared": true
    },
    "confirmation_strength": {
@@ -5656,8 +5659,8 @@
      "ema200": 75.9111380610058
     },
     "floor": 71.13111111111111,
-    "price": 71.97,
-    "distance_pct": 1.1793558061795115,
+    "price": 71.9,
+    "distance_pct": 1.0809459839420255,
     "cleared": false
    },
    "confirmation_strength": {
@@ -5679,17 +5682,17 @@
      "rsi"
     ],
     "readings": {
-     "price": 71.92,
-     "sma9": 71.29333333333332,
-     "smma7": 71.4661338125573,
-     "stoch_k": 87.92650918635151,
-     "stoch_d": 79.1903174732915,
-     "rsi": 53.521221506159804,
-     "rsi6": 69.07531334214724,
-     "rsi12": 55.26103901452961,
-     "rsi24": 51.08535432645008,
-     "macd": -0.13852685550155286,
-     "macd_signal": -0.2504314650879285
+     "price": 71.9,
+     "sma9": 71.29111111111109,
+     "smma7": 71.46327666970015,
+     "stoch_k": 87.66404199475052,
+     "stoch_d": 79.1028284094245,
+     "rsi": 53.2934595002625,
+     "rsi6": 68.63695473733705,
+     "rsi12": 54.9972921635507,
+     "rsi24": 50.95679812990633,
+     "macd": -0.14012229709699398,
+     "macd_signal": -0.25075055340701674
     },
     "note": "Entry conditions only. Not a signal, not a position size, and not advice to take or skip a trade.",
     "as_of": "2026-11-12T21:00:00.000Z",
@@ -5813,8 +5816,8 @@
      "ema200": 2.861688942906009
     },
     "floor": 2.552885756771087,
-    "price": 2.547,
-    "distance_pct": 0.2305530811739568,
+    "price": 2.552,
+    "distance_pct": 0.03469629491792242,
     "cleared": false
    },
    "confirmation_strength": {
@@ -6238,8 +6241,8 @@
      "ema200": 7.872221320799502
     },
     "floor": 7.43623436017334,
-    "price": 7.425,
-    "distance_pct": 0.15107592941810044,
+    "price": 7.411,
+    "distance_pct": 0.3393432609989988,
     "cleared": false
    },
    "confirmation_strength": {
@@ -6594,8 +6597,8 @@
      "ema200": 10.61251152941287
     },
     "floor": 10.03710275507943,
-    "price": 10.068,
-    "distance_pct": 0.3078303139313227,
+    "price": 10.067,
+    "distance_pct": 0.29786727953383796,
     "cleared": true
    },
    "confirmation_strength": {
@@ -6761,8 +6764,8 @@
      "ema200": 10.613376620301922
     },
     "floor": 9.990111111111112,
-    "price": 10.068,
-    "distance_pct": 0.7796598858871417,
+    "price": 10.067,
+    "distance_pct": 0.7696499872095661,
     "cleared": false
    },
    "confirmation_strength": {
@@ -7046,8 +7049,8 @@
      "ema200": 58.63295063629715
     },
     "floor": 49.641124136109696,
-    "price": 50.08,
-    "distance_pct": 0.8840973517984012,
+    "price": 50.15,
+    "distance_pct": 1.0251094687038709,
     "cleared": true
    },
    "confirmation_strength": {
@@ -7548,8 +7551,8 @@
      "ema200": 3.7136690423050993
     },
     "floor": 3.411666666666667,
-    "price": 3.44,
-    "distance_pct": 0.8304836345871874,
+    "price": 3.436,
+    "distance_pct": 0.7132388861748765,
     "cleared": false
    },
    "confirmation_strength": {
@@ -7802,8 +7805,8 @@
      "ema200": 0.3703874261776172
     },
     "floor": 0.35197475993269783,
-    "price": 0.3551,
-    "distance_pct": 0.8879159596272698,
+    "price": 0.3545,
+    "distance_pct": 0.7174491908979516,
     "cleared": true
    },
    "confirmation_strength": {
@@ -7825,17 +7828,17 @@
      "rsi"
     ],
     "readings": {
-     "price": 0.3547,
-     "sma9": 0.3505444444444445,
-     "smma7": 0.3523636293531028,
-     "stoch_k": 80.18506230185073,
-     "stoch_d": 69.5881636097139,
-     "rsi": 49.5573527753674,
-     "rsi6": 71.80107198766598,
-     "rsi12": 51.77881927471886,
-     "rsi24": 47.03664964267133,
-     "macd": -0.0026921726668482915,
-     "macd_signal": -0.003682371560007308
+     "price": 0.3545,
+     "sma9": 0.35052222222222224,
+     "smma7": 0.3523350579245313,
+     "stoch_k": 79.68001179680014,
+     "stoch_d": 69.41981344136371,
+     "rsi": 49.0506834653143,
+     "rsi6": 70.97005762771761,
+     "rsi12": 51.1888569334543,
+     "rsi24": 46.76447980617157,
+     "macd": -0.0027081270828027137,
+     "macd_signal": -0.0036855624431981924
     },
     "note": "Entry conditions only. Not a signal, not a position size, and not advice to take or skip a trade.",
     "as_of": "2026-11-12T21:00:00.000Z",
@@ -7968,8 +7971,8 @@
      "ema200": 0.37069773665785927
     },
     "floor": 0.3499666666666667,
-    "price": 0.3551,
-    "distance_pct": 1.4668063625107122,
+    "price": 0.3545,
+    "distance_pct": 1.29536146299646,
     "cleared": false
    },
    "confirmation_strength": {
@@ -8223,8 +8226,8 @@
      "ema200": 0.000004916032406384738
     },
     "floor": 0.00000444894050019613,
-    "price": 0.00000453,
-    "distance_pct": 1.821995591990858,
+    "price": 0.00000455,
+    "distance_pct": 2.2715408263925796,
     "cleared": true
    },
    "confirmation_strength": {
@@ -8474,8 +8477,8 @@
      "ema200": 0.000004925888562217056
     },
     "floor": 0.000004404444444444444,
-    "price": 0.00000453,
-    "distance_pct": 2.850655903128167,
+    "price": 0.00000455,
+    "distance_pct": 3.304742684157426,
     "cleared": false
    },
    "confirmation_strength": {
@@ -8636,8 +8639,8 @@
      "ema200": 0.09681673249231217
     },
     "floor": 0.08591333710708031,
-    "price": 0.08782,
-    "distance_pct": 2.2192862681416594,
+    "price": 0.08831,
+    "distance_pct": 2.789628448412553,
     "cleared": true
    },
    "confirmation_strength": {
@@ -8825,10 +8828,7 @@
      "ema50": 0.033070299400721294,
      "ema200": 0.035539727099771434
     },
-    "floor": 0.03210222782153704,
-    "price": 0.03174,
-    "distance_pct": 1.128357270251583,
-    "cleared": false
+    "floor": 0.03210222782153704
    },
    "confirmation_strength": {
     "schema_version": 1,
@@ -8988,8 +8988,8 @@
      "ema200": 0.06512969827484799
     },
     "floor": 0.0645877622610773,
-    "price": 0.06642,
-    "distance_pct": 2.8368187328063965,
+    "price": 0.06699,
+    "distance_pct": 3.7193388574329895,
     "cleared": true
    },
    "confirmation_strength": {
@@ -9204,8 +9204,8 @@
      "ema200": 186.0067983628543
     },
     "floor": 163.57836166204865,
-    "price": 162.24,
-    "distance_pct": 0.8181776907716457,
+    "price": 162.34,
+    "distance_pct": 0.7570449107487028,
     "cleared": false
    },
    "confirmation_strength": {
@@ -9227,17 +9227,17 @@
      "rsi"
     ],
     "readings": {
-     "price": 162.3,
-     "sma9": 162.51222222222222,
-     "smma7": 163.39466053132583,
-     "stoch_k": 26.13981762917955,
-     "stoch_d": 25.408376724278828,
-     "rsi": 33.54586736067121,
-     "rsi6": 40.27301620353583,
-     "rsi12": 34.13725821094337,
-     "rsi24": 33.15186572683456,
-     "macd": -3.041555310500172,
-     "macd_signal": -3.31959548059685
+     "price": 162.34,
+     "sma9": 162.51666666666665,
+     "smma7": 163.4003748170401,
+     "stoch_k": 26.342451874366947,
+     "stoch_d": 25.475921472674628,
+     "rsi": 33.73622142366803,
+     "rsi6": 40.80856874493444,
+     "rsi12": 34.36720815771365,
+     "rsi24": 33.2536087831873,
+     "macd": -3.03836442730929,
+     "macd_signal": -3.3189573039586735
     },
     "note": "Entry conditions only. Not a signal, not a position size, and not advice to take or skip a trade.",
     "as_of": "2026-11-12T21:00:00.000Z",
@@ -9367,9 +9367,9 @@
      "ema200": 1.7641842324398238
     },
     "floor": 1.5142871849628352,
-    "price": 1.518,
-    "distance_pct": 0.24518566055592222,
-    "cleared": true
+    "price": 1.512,
+    "distance_pct": 0.1510403697229553,
+    "cleared": false
    },
    "confirmation_strength": {
     "schema_version": 1,
@@ -9531,8 +9531,8 @@
      "ema200": 0.056704795278984234
     },
     "floor": 0.0429908920241281,
-    "price": 0.04324,
-    "distance_pct": 0.5794436080370089,
+    "price": 0.04327,
+    "distance_pct": 0.6492258307067901,
     "cleared": true
    },
    "confirmation_strength": {
@@ -9953,9 +9953,9 @@
      "stoch": false,
      "macd": false,
      "triple": false,
-     "rsi": true
+     "rsi": false
     },
-    "count": 1,
+    "count": 0,
     "order": [
      "stoch",
      "sma_smma",
@@ -9964,17 +9964,17 @@
      "rsi"
     ],
     "readings": {
-     "price": 0.00000434,
-     "sma9": 0.000004310000000000001,
-     "smma7": 0.000004322934988875372,
-     "stoch_k": 89.74358974358982,
-     "stoch_d": 85.16483516483527,
-     "rsi": 49.96875614103256,
-     "rsi6": 64.34020319682838,
-     "rsi12": 51.76305080981673,
-     "rsi24": 47.415748226404055,
-     "macd": -1.8015029780476346e-8,
-     "macd_signal": -2.7436781676739884e-8
+     "price": 0.00000435,
+     "sma9": 0.0000043111111111111115,
+     "smma7": 0.000004324363560303944,
+     "stoch_k": 89.92673992673998,
+     "stoch_d": 85.2258852258853,
+     "rsi": 52.41954550431757,
+     "rsi6": 68.56209682718506,
+     "rsi12": 54.541678330803094,
+     "rsi24": 48.87643036681589,
+     "macd": -1.7217308982754856e-8,
+     "macd_signal": -2.7277237517195587e-8
     },
     "note": "Entry conditions only. Not a signal, not a position size, and not advice to take or skip a trade.",
     "as_of": "2026-11-12T21:00:00.000Z",
@@ -10095,8 +10095,8 @@
      "ema200": 87.38900282527638
     },
     "floor": 81.94872696822563,
-    "price": 81.39,
-    "distance_pct": 0.6818006684133917,
+    "price": 81.57,
+    "distance_pct": 0.46215113063620955,
     "cleared": false
    },
    "confirmation_strength": {
@@ -10292,8 +10292,8 @@
      "ema200": 87.29702678083508
     },
     "floor": 81.5788888888889,
-    "price": 81.39,
-    "distance_pct": 0.23154138461749008,
+    "price": 81.57,
+    "distance_pct": 0.010896065158488769,
     "cleared": true
    },
    "confirmation_strength": {
@@ -10488,8 +10488,8 @@
      "ema200": 2.5285743621019923
     },
     "floor": 2.106537801342806,
-    "price": 2.112,
-    "distance_pct": 0.2592974431178981,
+    "price": 2.111,
+    "distance_pct": 0.2118261848588513,
     "cleared": true
    },
    "confirmation_strength": {
@@ -10659,8 +10659,8 @@
      "ema200": 0.3481829924467456
     },
     "floor": 0.2922874278897871,
-    "price": 0.2841,
-    "distance_pct": 2.8011563647801974,
+    "price": 0.2847,
+    "distance_pct": 2.5958789758990615,
     "cleared": false
    },
    "confirmation_strength": {
@@ -10837,8 +10837,8 @@
      "ema200": 0.8470447084436101
     },
     "floor": 0.7982555555555556,
-    "price": 0.8019,
-    "distance_pct": 0.4565510905724851,
+    "price": 0.8039,
+    "distance_pct": 0.70709742076471,
     "cleared": false
    },
    "confirmation_strength": {
@@ -10860,17 +10860,17 @@
      "rsi"
     ],
     "readings": {
-     "price": 0.8019,
-     "sma9": 0.7983888888888889,
-     "smma7": 0.8033850379458393,
-     "stoch_k": 54.59459459459453,
-     "stoch_d": 52.98841040529019,
-     "rsi": 41.45688189259894,
-     "rsi6": 48.01744760301831,
-     "rsi12": 41.628319425361745,
-     "rsi24": 44.15728797373446,
-     "macd": -0.006225487240425376,
-     "macd_signal": -0.006556562146026153
+     "price": 0.8039,
+     "sma9": 0.7986111111111112,
+     "smma7": 0.8036707522315536,
+     "stoch_k": 56.396396396396334,
+     "stoch_d": 53.5890110058908,
+     "rsi": 43.88143782143497,
+     "rsi6": 53.39226614825872,
+     "rsi12": 44.4664096716351,
+     "rsi24": 45.49370971221107,
+     "macd": -0.006065943080881153,
+     "macd_signal": -0.006524653314117309
     },
     "note": "Entry conditions only. Not a signal, not a position size, and not advice to take or skip a trade.",
     "as_of": "2026-11-12T21:00:00.000Z",
@@ -10971,8 +10971,8 @@
      "ema200": 221.92009293808286
     },
     "floor": 209.13333333333333,
-    "price": 211.6,
-    "distance_pct": 1.1794708320051015,
+    "price": 211.9,
+    "distance_pct": 1.3229199872489705,
     "cleared": false
    },
    "confirmation_strength": {
@@ -10994,17 +10994,17 @@
      "rsi"
     ],
     "readings": {
-     "price": 211.6,
-     "sma9": 209.27777777777774,
-     "smma7": 210.99646595043217,
-     "stoch_k": 57.264957264957246,
-     "stoch_d": 52.99145299145298,
-     "rsi": 45.35841536915775,
-     "rsi6": 59.10743229439601,
-     "rsi12": 46.454386439034415,
-     "rsi24": 45.71984005575968,
-     "macd": -1.9547215412713967,
-     "macd_signal": -2.2118269749011565
+     "price": 211.9,
+     "sma9": 209.3111111111111,
+     "smma7": 211.03932309328934,
+     "stoch_k": 58.11965811965813,
+     "stoch_d": 53.276353276353284,
+     "rsi": 46.474198090326645,
+     "rsi6": 61.171059318165156,
+     "rsi12": 47.741097749743396,
+     "rsi24": 46.34857185665134,
+     "macd": -1.93078991733978,
+     "macd_signal": -2.207040650114833
     },
     "note": "Entry conditions only. Not a signal, not a position size, and not advice to take or skip a trade.",
     "as_of": "2026-11-12T21:00:00.000Z",
@@ -11170,8 +11170,8 @@
      "ema200": 0.4685345080582743
     },
     "floor": 0.49842222222222227,
-    "price": 0.4304,
-    "distance_pct": 13.647509920192613,
+    "price": 0.4326,
+    "distance_pct": 13.206117080565349,
     "cleared": false
    },
    "confirmation_strength": null,
@@ -11485,8 +11485,8 @@
      "ema200": 0.0007637465245738239
     },
     "floor": 0.0006766715456491554,
-    "price": 0.000679,
-    "distance_pct": 0.3441040732118916,
+    "price": 0.00068,
+    "distance_pct": 0.4918862588867286,
     "cleared": true
    },
    "confirmation_strength": null,
@@ -11607,8 +11607,8 @@
      "ema200": 6.761274601668366
     },
     "floor": 6.074948010569473,
-    "price": 6.053,
-    "distance_pct": 0.36128721647143675,
+    "price": 6.045,
+    "distance_pct": 0.49297558624976634,
     "cleared": false
    },
    "confirmation_strength": {
@@ -11743,8 +11743,8 @@
      "ema200": 6.760799913910006
     },
     "floor": 6.029222222222223,
-    "price": 6.053,
-    "distance_pct": 0.39437554134492203,
+    "price": 6.045,
+    "distance_pct": 0.2616884433223283,
     "cleared": false
    },
    "confirmation_strength": {
@@ -11983,8 +11983,8 @@
      "ema200": 20.581171155104624
     },
     "floor": 18.99342222222222,
-    "price": 19.0797,
-    "distance_pct": 0.4542508283569488,
+    "price": 19.0691,
+    "distance_pct": 0.3984420337333121,
     "cleared": false
    },
    "confirmation_strength": {
@@ -12292,8 +12292,8 @@
      "ema200": 0.5488355189834511
     },
     "floor": 0.5546243984562519,
-    "price": 0.3023,
-    "distance_pct": 45.494644512317635,
+    "price": 0.3025,
+    "distance_pct": 45.45858407203468,
     "cleared": true
    },
    "confirmation_strength": null,
@@ -12407,8 +12407,8 @@
      "ema200": 0.151425778016903
     },
     "floor": 0.1463814184797462,
-    "price": 0.149,
-    "distance_pct": 1.7888756287848848,
+    "price": 0.1494,
+    "distance_pct": 2.0621343553051203,
     "cleared": true
    },
    "confirmation_strength": {
@@ -12546,8 +12546,8 @@
      "ema200": 1.1258326878177383
     },
     "floor": 1.0355187679589835,
-    "price": 1.0369,
-    "distance_pct": 0.13338551494715045,
+    "price": 1.0386,
+    "distance_pct": 0.29755443709529744,
     "cleared": true
    },
    "confirmation_strength": {
@@ -12569,17 +12569,17 @@
      "rsi"
     ],
     "readings": {
-     "price": 1.036,
-     "sma9": 1.0308111111111111,
-     "smma7": 1.035582265818498,
-     "stoch_k": 46.28712871287133,
-     "stoch_d": 41.391639163916416,
-     "rsi": 43.82250055030946,
-     "rsi6": 54.47402206414311,
-     "rsi12": 44.58440315879032,
-     "rsi24": 43.78492157544913,
-     "macd": -0.005736867779000621,
-     "macd_signal": -0.006026886443289448
+     "price": 1.0386,
+     "sma9": 1.0311000000000001,
+     "smma7": 1.0359536943899268,
+     "stoch_k": 48.43234323432342,
+     "stoch_d": 42.10671067106711,
+     "rsi": 46.67971085900657,
+     "rsi6": 60.68646566628902,
+     "rsi12": 47.92831991542657,
+     "rsi24": 45.40003743115535,
+     "macd": -0.005529460371593187,
+     "macd_signal": -0.005985404961807961
     },
     "note": "Entry conditions only. Not a signal, not a position size, and not advice to take or skip a trade.",
     "as_of": "2026-11-12T21:00:00.000Z",
@@ -12711,8 +12711,8 @@
      "ema200": 1.1256797836172665
     },
     "floor": 1.0309555555555554,
-    "price": 1.0369,
-    "distance_pct": 0.5765956070959065,
+    "price": 1.0386,
+    "distance_pct": 0.7414911732373537,
     "cleared": false
    },
    "confirmation_strength": {
@@ -12962,8 +12962,8 @@
      "ema200": 1133.5334558824995
     },
     "floor": 957.7355555555556,
-    "price": 953.86,
-    "distance_pct": 0.4046582099906995,
+    "price": 954.64,
+    "distance_pct": 0.32321610465427225,
     "cleared": true
    },
    "confirmation_strength": {
@@ -13102,17 +13102,17 @@
      "rsi"
     ],
     "readings": {
-     "price": 1.536,
-     "sma9": 1.5243333333333333,
-     "smma7": 1.5326100309326594,
-     "stoch_k": 44.17670682730912,
-     "stoch_d": 36.14457831325286,
-     "rsi": 50.15701969372708,
-     "rsi6": 55.11347792637688,
-     "rsi12": 49.91824163848751,
-     "rsi24": 53.43215094997854,
-     "macd": -0.007476356031243636,
-     "macd_signal": -0.006980171114303748
+     "price": 1.537,
+     "sma9": 1.5244444444444443,
+     "smma7": 1.5327528880755164,
+     "stoch_k": 44.578313253011885,
+     "stoch_d": 36.27844712182044,
+     "rsi": 50.482848933192095,
+     "rsi6": 55.90342733532437,
+     "rsi12": 50.31010899150544,
+     "rsi24": 53.5958085614887,
+     "macd": -0.00739658395147158,
+     "macd_signal": -0.006964216698349337
     },
     "note": "Entry conditions only. Not a signal, not a position size, and not advice to take or skip a trade.",
     "as_of": "2026-11-12T21:00:00.000Z",
