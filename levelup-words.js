@@ -108,7 +108,20 @@
        `banked` with the targets that were reached, or empty when all of them were. */
     FINISHED_WIN: {
       status: 'COMPLETE{BANKED}',
-      banked: ' — {TPS} REACHED',
+      /* SEPARATOR CHANGED 2026-11-12 (Ang): NBSP + em dash + NBSP, matching `all_targets` below and
+         the progress labels above. It was a plain space either side - the exact shape
+         index.html:1562 records as leaving the dash stranded on its own line, and the form TW-2
+         already polices everywhere else. */
+      banked: ' — {TPS} REACHED',
+      /* EVERY TARGET REACHED - CHELSEA'S OWN WORDS, 2026-11-12: "✓ COMPLETE: ALL 3 TARGETS HIT".
+         Two deliberate departures from what she typed, both approved by Ang the same day:
+           - her colon became the board's separator, because she asked to keep the board's separator
+             style and those are different things;
+           - the 3 became {N}, filled from objectives.defined, because a 2- or 4-target ladder would
+             otherwise read wrong. Her sentence is about the ladder being complete, not about three.
+         {DATE} is when the LAST target was reached - the date a member wants on a finished trade. */
+      all_targets: '✓ COMPLETE — ALL {N} TARGETS HIT',
+      all_targets_date: '{DATE}',
       sub: null,
       tone: 'complete',
       provisional: true,
@@ -170,6 +183,27 @@
     stop_pre_entry_on_watch: 'Stop passed before entry — back on watch',
   };
 
+  /* A LEVEL CHELSEA DID NOT ACTUALLY PUBLISH (Ang, 2026-11-12).
+   *
+   * The live case is the 2026-10-22 PEPE long, whose `Stp` field in the Sheet literally contains
+   * "$0.00". The parser is already right about it: that level comes out `state: "ambiguous"` with
+   * `zone: null`, and the setup carries `data_quality_flags: ["AMBIGUOUS_LEVEL"]`. What went wrong is
+   * downstream - the ladder put a NULL zone through a price formatter and printed `$0.000000`, which
+   * reads as a real level of zero.
+   *
+   * Ang's rule: never print $0.000000, and NEVER HIDE THE ROW. Chelsea published a stop field, so the
+   * row belongs on the card; what it must say is that the level cannot be read. Hiding it would make
+   * a data-quality problem invisible to the one person who can fix it.
+   *
+   * PLACEHOLDER - these are not Chelsea's words yet, and `provisionalMarks()` reports them so a
+   * reviewer can see what is still waiting. It applies to ANY level whose state is not "present",
+   * not just a stop: the same thing happens to an unreadable trigger or target. */
+  var LEVEL_NOT_PUBLISHED = {
+    text: 'Not published',
+    detail: 'Chelsea did not give a readable number for this level.',
+    provisional: true,
+  };
+
   /* A string substitution and nothing more: {NAME} is replaced by vars.NAME, and an unsupplied name
      becomes empty rather than appearing on a member's screen as a brace. */
   function fill(tpl, vars) {
@@ -193,6 +227,7 @@
   root.LevelUpWords = {
     CARD_STATE_WORDS: CARD_STATE_WORDS,
     LADDER_MARKS: LADDER_MARKS,
+    LEVEL_NOT_PUBLISHED: LEVEL_NOT_PUBLISHED,
     DEAD_WATCH_SENTENCE: DEAD_WATCH_SENTENCE,
     STALE_TRADE_NOTICE: STALE_TRADE_NOTICE,
     fill: fill,

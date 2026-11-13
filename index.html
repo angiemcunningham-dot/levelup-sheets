@@ -2250,6 +2250,38 @@ load();setInterval(load,60000);
          not which one has moved. Once the feed is in, this upgrades it: BTC's long triggered this morning, so
          BTC reads green rather than a noncommittal pink. A pair with no activity on either side keeps the
          neutral border, which is the honest answer. Idempotent - decorate() runs on every feed poll. */
+      /* RULE 1 (Ang, 2026-11-12): THE PAIR LINE COMES OFF WHEN BOTH SIDES SHOULD NOT SHOW TOGETHER.
+         "Both sides" and its sub-line are rendered by the main script from the SHEET alone, which at
+         that point knows only that Chelsea published two directions - it cannot know whether the older
+         one has finished. So the decision belongs HERE, in the pass that already re-colours a paired
+         card once card_state is in, using the SAME predicate sheet.html uses: LevelUpCore
+         .showBothSides, reading card_state only. It never touches `paired_with`, which the monitor
+         needs for Chelsea's Diamond comeback.
+         Only the pair LINE is removed. The card itself stays, because Chelsea published it. */
+      try {
+        var CoreP = (typeof window !== 'undefined' && window.LevelUpCore) || null;
+        if (CoreP && CoreP.showBothSides && feed && feed.assets) {
+          Array.prototype.forEach.call(document.querySelectorAll('a.card.is-both, a.act-card.is-both'), function (c) {
+            var mm = /[?&]asset=([^&]+)/.exec(c.getAttribute('href') || '');
+            if (!mm) return;
+            var asset = decodeURIComponent(mm[1]).toUpperCase();
+            var keys = Object.keys(feed.assets).filter(function (k) { return (feed.assets[k].asset || k) === asset; });
+            if (keys.length !== 2) return;          /* not two sides in the feed: leave it exactly as it was */
+            var sideOf = function (k) {
+              var e = feed.assets[k];
+              var cs = (e.card_state && e.card_state.value) || null;
+              if (e.lifecycle && e.lifecycle.voided) cs = null;   /* a withdrawn claim must not decide this */
+              var t = e.instance_published_at ? Date.parse(e.instance_published_at) : NaN;
+              return { published_ms: isFinite(t) ? t : null, card_state: cs };
+            };
+            if (CoreP.showBothSides(sideOf(keys[0]), sideOf(keys[1]))) return;
+            var chip = c.querySelector('.bothchip'); if (chip) chip.parentNode.removeChild(chip);
+            var note = c.querySelector('.bothnote'); if (note) note.parentNode.removeChild(note);
+            c.className = c.className.replace(/\s*is-both/g, '');
+          });
+        }
+      } catch (e) { console.warn('pair-line pass skipped:', e && e.message); }
+
       try {
         var paired = document.querySelectorAll('a.card.is-both');
         Array.prototype.forEach.call(paired, function (c) {
