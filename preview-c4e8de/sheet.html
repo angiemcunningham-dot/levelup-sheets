@@ -2024,7 +2024,19 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
          columns now, each headed with its own direction, so the sentence points at the labelled column
          instead. The GUARD is unchanged and still worth having for the same reason as before: it cannot
          fire while the two layers agree about which side leads. */
-      if (shown && reported && reported !== shown) {
+      /* PAIR-ONLY, AND NOW GATED ON IT (Ang, 2026-11-12). Every sentence in this paragraph describes a
+         two-column layout - "Chelsea published both", "Each column below is labelled with its own side",
+         "read the X column". After RULE 1 a page can legitimately show ONE side, and this still fired
+         there, telling a member to read a column that is not on the screen. Ang found it on
+         sheet.html?asset=PEPE.
+         The gate is the presence of `.sidepair`, which bodyHTML() emits only when showBothSides() said
+         yes - so this is behind the same single predicate rather than a second opinion about pairing,
+         and it needs no new global. The GUARD ITSELF is unchanged and still worth having for the
+         original reason: it cannot fire while the two layers agree about which side leads.
+         No replacement wording is invented for the single-side case - that would be new member-facing
+         text, which is Chelsea's to write. */
+      var pairShown = !!document.querySelector('.sidepair');
+      if (pairShown && shown && reported && reported !== shown) {
         msgs.push('<b>Read the direction carefully: the state at the top of this page is the ' + reported
           + ' side, and the ladder beside it is headed ' + shown + '.</b> Chelsea published both.'
           + ' Each column below is labelled with its own side - read the ' + reported + ' column for the'
