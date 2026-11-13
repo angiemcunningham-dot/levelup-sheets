@@ -148,6 +148,21 @@ audio,iframe.audio{width:100%;margin-top:10px;border:0;height:80px}
    would reintroduce the dropdown on the device most members read the board on. Breakpoint is 860px, not
    640px: two ladders with a price column stop fitting well before the page's other mobile rules kick in. */
 @media(max-width:860px){.sidepair{grid-template-columns:1fr;gap:10px}}
+/* RULE 2 (Ang, 2026-11-12): a finished side must LOOK finished. Dimming is applied to the whole
+   column (a pair) or the whole page body (#app, single side) by ensureFinishedTreatment(), which
+   keys off card_state only. A side that WON is never red - .is-finished-win keeps the complete
+   tone and only loses saturation, while a stop keeps its own existing stopped colouring. */
+.is-finished{opacity:.72;filter:saturate(.75)}
+.is-finished .sect h2,.is-finished .rl{color:#6B7280}
+.is-finished-win{filter:saturate(.85)}
+.is-finished-win .sidecol-state,.is-finished-win .mech-headline{border-color:var(--green,#16a34a)}
+.mech-complete-banner{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;width:100%;box-sizing:border-box;
+  margin:0 0 14px;padding:12px 16px;border-radius:12px;background:rgba(22,163,74,.10);
+  border:2px solid rgba(22,163,74,.55);opacity:1;filter:none}
+.mech-complete-banner .mcb-main{font-weight:800;font-size:15px;letter-spacing:.01em;color:#14532d}
+.mech-complete-banner .mcb-date{font-size:12.5px;color:#4b5563}
+.rp-unpublished{font-weight:700;color:#8a5a00}
+@media(max-width:430px){.mech-complete-banner{padding:10px 12px}.mech-complete-banner .mcb-main{font-size:13.5px}}
 </style>
 <style id="att-css">
 /* ===== LIVE ATTENTION (staging addon) — presentation only; tiers map 1:1 to the monitor's attention bands ===== */
@@ -490,7 +505,24 @@ async function load(){
     const T=[1,2,3].map(i=>get(Srow,"trigger "+i)).filter(Boolean);
     if(T.length){x+=`<div class="sect"><div class="bar"></div><h2>The Levels</h2></div>`;T.forEach((t,i)=>x+=`<div class="card soft"><h3>Trigger ${i+1}</h3><p>${esc(t)}</p></div>`);}
     if(Lrows.length){x+=`<div class="sect"><div class="bar"></div><h2>The Ladder</h2><div class="hint">live price</div></div><div class="ladder"${primary?` id="ladder"`:""}${dir?` data-dir="${esc(String(dir).toLowerCase())}"`:""}>`;
-      const rowsH=Lrows.map(l=>`<div class="row" data-p="${l.price}"><div class="dot d-${l.kind}"></div><div><div class="rl">${esc(l.role)}</div><div class="rn">${esc(l.note)}</div></div><div class="rp">${fmt(l.price)}<small>${l.kind==="tp"?"target":l.kind==="stop"?"invalidation":"level"}</small></div></div>`);
+      /* A LEVEL CHELSEA DID NOT GIVE A READABLE NUMBER FOR (Ang, 2026-11-12, RULE 2d).
+         The live case is the 2026-10-22 PEPE long, whose Sheet `Stp` cell literally contains "$0.00".
+         That parses to a real 0, and fmt() sends anything under 0.01 through toFixed(6), so the card
+         printed "$0.000000" - which reads as a published level of zero rather than a missing one.
+         The row STAYS, by instruction: Chelsea published a stop field, so it belongs on the card, and
+         hiding it would make a data-quality problem invisible to the only person who can fix it. The
+         words come from levelup-words.js (LEVEL_NOT_PUBLISHED), flagged provisional - no member-facing
+         wording is invented here.
+         The test is "not a usable price", not "is it zero": a null, a negative or a NaN are the same
+         situation and all of them used to render as something that looked like a number. */
+      const WPn=(typeof window!=="undefined"&&window.LevelUpWords)||null;
+      const notPublished=(WPn&&WPn.LEVEL_NOT_PUBLISHED)||{text:"Not published",detail:""};
+      const priceCell=(l)=>{
+        const usable=typeof l.price==="number"&&isFinite(l.price)&&l.price>0;
+        if(usable)return `${fmt(l.price)}<small>${l.kind==="tp"?"target":l.kind==="stop"?"invalidation":"level"}</small>`;
+        return `<span class="rp-unpublished" title="${esc(notPublished.detail||"")}">${esc(notPublished.text)}</span><small>${l.kind==="tp"?"target":l.kind==="stop"?"invalidation":"level"}</small>`;
+      };
+      const rowsH=Lrows.map(l=>`<div class="row" data-p="${l.price}"><div class="dot d-${l.kind}"></div><div><div class="rl">${esc(l.role)}</div><div class="rn">${esc(l.note)}</div></div><div class="rp">${priceCell(l)}</div></div>`);
       x+=rowsH.join("")+`</div>`;}
     if(get(Srow,"warning"))x+=`<div class="sect"><div class="bar"></div><h2>Warning</h2></div><div class="warn"><div class="wh">Heads up</div><div class="wb">${esc(get(Srow,"warning"))}</div></div>`;
     if(get(Srow,"confidence up")||get(Srow,"confidence down"))x+=`<div class="sect"><div class="bar"></div><h2>Confidence Check</h2></div><div class="grid2"><div class="inv up"><div class="ih">▲ Confidence up</div><div class="ib">${esc(get(Srow,"confidence up"))}</div></div><div class="inv dn"><div class="ih">▼ Confidence down</div><div class="ib">${esc(get(Srow,"confidence down"))}</div></div></div>`;
@@ -2074,6 +2106,95 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
        where the sentence goes.
        Idempotent like every other ensure* here: it rewrites the slot's contents from scratch, so a second
        pass after a feed refresh cannot stack two strips or leave a stale one behind. */
+    /* ============================================================================================
+       A FINISHED TRADE MUST NOT BE MISTAKEN FOR A LIVE ONE (Ang, 2026-11-12, RULE 2).
+       ONE pass, state from card_state ONLY, every word from levelup-words.js.
+
+       WHAT WAS ALREADY WORKING, verified by rendering the preview before touching anything: the
+       finished-ladder pass (ensureNowRowTruth) DOES fire - a FINISHED_STOPPED page already carries
+       `mech-now-closed`, the caption already reads "closed", and neither "LIVE PRICE" nor "Live price.
+       Everything above this line is earned" appears. Ang's report of live-price wording on PEPE was
+       against an older preview build. Nothing here re-fixes it.
+
+       WHAT THIS ADDS, each a confirmed gap in that same render:
+         - the kicker still said "LIVE SETUP" on a finished page, because it is chosen from Chelsea's
+           SHEET STATUS TEXT (`noTradeLike`, sheet.html:434) rather than from card_state. It now uses
+           the EXISTING "CURRENT STATUS" variant - no new wording - chosen from card_state.
+         - the whole finished side is dimmed, and a side that WON is never red: the class says which.
+         - FINISHED_WIN with every target reached gets the full-width banner, words and date from the
+           table.
+       FINISHED_STOPPED and EXPIRED get the same dimming with their own existing words, which the
+       status strip above them already renders.
+
+       Scope: a finished COLUMN of a same-day pair AND a single-side finished page. The column case
+       keys off .sidecol[data-dir]; the single-side case off #app, so one function covers both. */
+    var FINISHED_STATES = ['FINISHED_WIN', 'FINISHED_STOPPED', 'EXPIRED'];
+    function ensureFinishedTreatment() {
+      var W = (typeof window !== 'undefined' && window.LevelUpWords) || null;
+      var cols = document.querySelectorAll('.sidecol[data-dir]');
+      var targets = [];
+      if (cols && cols.length) {
+        Array.prototype.forEach.call(cols, function (el) {
+          targets.push({ el: el, dir: el.getAttribute('data-dir') });
+        });
+      } else {
+        var app = document.getElementById('app');
+        if (app) targets.push({ el: app, dir: (typeof shownSideFor === 'function' ? shownSideFor(ASSET_) : null) });
+      }
+
+      var anyFinished = false;
+      targets.forEach(function (t) {
+        var st = null;
+        try { st = cardStateFor(ASSET_, t.dir || undefined); } catch (e) { st = null; }
+        var done = FINISHED_STATES.indexOf(st) > -1;
+        /* idempotent - applyAll() runs on every feed poll */
+        t.el.classList.toggle('is-finished', done);
+        t.el.classList.toggle('is-finished-win', done && st === 'FINISHED_WIN');
+        t.el.classList.toggle('is-finished-stopped', done && st === 'FINISHED_STOPPED');
+        t.el.classList.toggle('is-finished-expired', done && st === 'EXPIRED');
+        if (done) anyFinished = true;
+
+        /* (a) the all-targets banner. Only when the monitor says every published target was reached -
+           objectives.all_reached is the monitor's own field, never re-derived here. */
+        var old = t.el.querySelector(':scope > .mech-complete-banner')
+          || (t.el.id === 'app' ? t.el.querySelector('.mech-complete-banner') : null);
+        var want = null;
+        if (done && st === 'FINISHED_WIN' && W && W.CARD_STATE_WORDS) {
+          var e = null;
+          try { e = feedEntryFor(ASSET_, t.dir || undefined); } catch (err) { e = null; }
+          var lc = e && e.lifecycle;
+          var obj = (lc && lc.objectives) || null;
+          if (obj && obj.all_reached && obj.defined > 0) {
+            var wds = W.CARD_STATE_WORDS.FINISHED_WIN;
+            var hits = ((lc.targets || []).filter(function (x) { return x.reached_at; })
+              .map(function (x) { return Date.parse(x.reached_at); }).filter(isFinite));
+            var last = hits.length ? Math.max.apply(null, hits) : null;
+            var dateTxt = last ? new Date(last).toLocaleDateString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', year: 'numeric' }) : '';
+            want = '<div class="mech-complete-banner"><span class="mcb-main">'
+              + escH(W.fill(wds.all_targets, { N: obj.defined })) + '</span>'
+              + (dateTxt ? '<span class="mcb-date">' + escH(W.fill(wds.all_targets_date, { DATE: dateTxt })) + '</span>' : '')
+              + '</div>';
+          }
+        }
+        if (!want) { if (old) old.parentNode.removeChild(old); }
+        else if (!old) { t.el.insertAdjacentHTML('afterbegin', want); }
+        else if (old.outerHTML !== want) { old.outerHTML = want; }
+      });
+
+      /* (f) THE KICKER. "LIVE SETUP" is a claim that the setup is live. On a finished page it uses the
+         page's EXISTING "CURRENT STATUS" variant instead - the same string the no-trade/closed branch
+         has always used, so nothing new is written. PENDING CHELSEA: whether "CURRENT STATUS" is the
+         word she wants on a finished trade, or something of her own. */
+      var kick = document.querySelector('.kicker');
+      if (kick) {
+        if (!kick.dataset.original) kick.dataset.original = kick.textContent;
+        var base = kick.dataset.original;
+        var finishedTxt = base.replace(/·\s*LIVE SETUP\s*$/, '· CURRENT STATUS');
+        var wantK = anyFinished ? finishedTxt : base;
+        if (kick.textContent !== wantK) kick.textContent = wantK;
+      }
+    }
+
     function ensureSideColumnStates() {
       var slots = document.querySelectorAll('.sidecol-state-slot');
       Array.prototype.forEach.call(slots || [], function (slot) {
@@ -2450,7 +2571,7 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
       if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(el, anchor.nextSibling);
       else { var app2 = document.getElementById('app'); if (app2) app2.appendChild(el); }
     }
-    function applyAll() { ensure(); ensureStaleTradeNotice(); ensureHeadline(); ensureReadiness(); ensureSixLineFlag(); ensureSideTruth(); ensureSideColumnStates(); ensureStrengthMeter(); ensureLadderHits(); ensureNowRowTruth(); ensureHeroState(); suppressStaleChip(); ensureAttnChip(); loadLivePrice(); loadReadinessPrice(); }
+    function applyAll() { ensure(); ensureStaleTradeNotice(); ensureHeadline(); ensureReadiness(); ensureSixLineFlag(); ensureSideTruth(); ensureSideColumnStates(); ensureFinishedTreatment(); ensureStrengthMeter(); ensureLadderHits(); ensureNowRowTruth(); ensureHeroState(); suppressStaleChip(); ensureAttnChip(); loadLivePrice(); loadReadinessPrice(); }
     var obs = new MutationObserver(function () { obs.disconnect(); applyAll(); obs.observe(app, { childList: true }); });
     function load() { return fetchFeed().then(function (f) { feed = f; applyAll(); }); }
     load();
