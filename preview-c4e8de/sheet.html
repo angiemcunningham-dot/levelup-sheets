@@ -2139,7 +2139,12 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
         });
       } else {
         var app = document.getElementById('app');
-        if (app) targets.push({ el: app, dir: (typeof shownSideFor === 'function' ? shownSideFor(ASSET_) : null) });
+        /* SINGLE-SIDE PAGE: read the state the PAGE is showing, not a side guessed separately.
+           Caught by rendering: shownSideFor() resolved the long while the page displayed the short, so a
+           stopped page was tagged is-finished-win. cardStateFor(ASSET_) with no dir is the same
+           page-level answer the headline above it already uses, so the dimming can never disagree with
+           the words a member is reading. */
+        if (app) targets.push({ el: app, dir: undefined });
       }
 
       var anyFinished = false;
