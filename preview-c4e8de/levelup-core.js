@@ -909,6 +909,62 @@
     EXPIRED: 1,
     NOT_TRACKED: 0,
   };
+
+  /* ============================================================================================
+   * SHOULD BOTH SIDES SHOW TOGETHER? (Ang, 2026-11-12 - RULE 1)
+   *
+   * A DISPLAY QUESTION AND NOTHING ELSE. It is deliberately NOT a redefinition of `paired_with`,
+   * and that distinction is the whole point of this comment.
+   *
+   * `paired_with` answers "did Chelsea publish both sides of this coin?". The MONITOR depends on
+   * that meaning: engine.js's dormantFor() opens with `if (!setup.paired_with) return true;
+   * // pairs only`, and returning true means STAYS DORMANT, NO COMEBACK. Narrowing what counts as
+   * a pair would therefore revoke Chelsea's confirmed Diamond rule for exactly the sides it was
+   * written for - ADA, BTC, DOGE, ONDO, XRP - with no test failing, because no test asserts a
+   * comeback that SHOULD happen. `pairBatch`/`PAIR_BATCH_WINDOW_MS` are untouched too: they decide
+   * which side LEADS, a third question again.
+   *
+   * Two questions, each with one answer in one place:
+   *   paired_with      - is this a pair at all?        (relationship; the monitor reads it)
+   *   showBothSides()  - should both columns be drawn?  (display; both pages read it)
+   *
+   * THE RULE, Ang's three cases:
+   *   - both sides published the same day (ET)                                       -> yes
+   *   - different days, and the OLDER side is finished / stopped / expired / dormant  -> no
+   *   - different days, and the OLDER side is still live (running, or watching)       -> yes
+   *
+   * The dormant-side-that-came-back case needs no special handling, on purpose: when Chelsea's
+   * comeback rule reactivates a side the monitor's card_state becomes WATCHING, so card_state
+   * alone already says "live". Which is also why this reads CARD_STATE ONLY - no new state logic
+   * in the browser, Ang's standing rule since step 4.
+   *
+   * Inputs are two plain `{ published_ms, card_state }` objects, so the detail page, the index card
+   * and a test can all call it without agreeing on a richer shape.
+   * ========================================================================================== */
+  const OVER_CARD_STATES = ['FINISHED_WIN', 'FINISHED_STOPPED', 'EXPIRED', 'DORMANT'];
+
+  /* The ET calendar day a moment falls in, as 'YYYY-MM-DD'. Chelsea publishes on ET mornings, so
+     "the same day" must mean HER day: a 7:51pm ET publication is the same ET day as a 5:39am one
+     and a DIFFERENT UTC day. */
+  function etDayKey(utcMs) {
+    if (utcMs == null || !isFinite(utcMs) || !_etFmt) return null;
+    const p = {}; _etFmt.formatToParts(new Date(utcMs)).forEach((x) => { p[x.type] = x.value; });
+    return p.year + '-' + String(+p.month).padStart(2, '0') + '-' + String(+p.day).padStart(2, '0');
+  }
+
+  function cardStateIsOver(value) { return OVER_CARD_STATES.indexOf(String(value || '')) > -1; }
+
+  function showBothSides(a, b) {
+    if (!a || !b) return false;
+    const am = a.published_ms, bm = b.published_ms;
+    /* No usable publication time is not a reason to hide a side Chelsea published - fall back to
+       showing both, which is what happened before this predicate existed. */
+    if (am == null || bm == null || !isFinite(am) || !isFinite(bm)) return true;
+    const dayA = etDayKey(am), dayB = etDayKey(bm);
+    if (dayA && dayB && dayA === dayB) return true;
+    const older = am <= bm ? a : b;
+    return !cardStateIsOver(older.card_state);
+  }
   /* An UNMAPPED terminal state - today only SIX_LINE_EXIT, whose display words are an open decision
      waiting on Chelsea - still ranks as a side that has ENDED, which is exactly what all three copies
      this replaces already did with it. That is an ORDERING fact and was never the open question; what
@@ -986,5 +1042,6 @@
     extractLevels, levelFingerprint, edges, groupByAsset, groupBySetup, directionProbe, selectRows, buildSetup,
     buildAll, buildAllByAsset, assetOf, sideOf, keyOf, KEY_SEP,
     PAIR_BATCH_WINDOW_MS, CARD_STATE_RANK, pairSideRank, pairBatch, pickPairSide,
+    showBothSides, cardStateIsOver, etDayKey, OVER_CARD_STATES,
   };
 });

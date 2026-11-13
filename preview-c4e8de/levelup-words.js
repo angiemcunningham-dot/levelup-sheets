@@ -93,49 +93,11 @@
     },
 
     /* The condition was met and the trade has not ended. {PROGRESS} is `progress_tp` with the highest
-       target reached, else `progress_none`. The board states a fact; it never declares (2026-10-22).
-
-       REWORDED 2026-11-07 (Ang). It used to read:
-
-           ACTIVE SHORT - CONDITION MET      ->   SHORT TRIGGERING
-           ACTIVE SHORT - TP1 REACHED        ->   SHORT TRIGGERED - TP1 REACHED
-
-       The two forms now differ in SHAPE and not only in the trailing fragment, so the verb moved INTO
-       `progress_*` and `status` holds just the side and the fragment. That is what keeps this a
-       WORDS-ONLY change: both composers (index.html resolveCurrentState :1990, sheet.html
-       resolveCurrentState :1541) already fill `progress_*` FIRST - which is what resolves {N} - and
-       then fill `status` with {DIR} and {PROGRESS}. So neither page needed an edit and no second
-       writer was introduced. Every surface that shows this state reads one of those two functions:
-       the landing cards, the Active Now tiles (decorateActiveNow patches `.act-status` with the same
-       text), the page-top headline, the side-by-side column strips (ensureSideColumnStates) and the
-       pair signpost line ("▼ SHORT SIDE ...").
-
-       BOTH STRINGS ARE PROVISIONAL - Ang's words, pending Chelsea's confirmation. Same standing as
-       every other string in this table, and reported under this state's key by provisionalStates().
-
-       Two details that are deliberate, not accidents:
-       - The separator in progress_tp is NBSP + em dash + NBSP, as the old status string had. It is
-         the longest string this state produces, and index.html:1562 records what happens without it:
-         the label wraps across three or four lines with the dash stranded on its own.
-       - ONE STEM, TWO ENDINGS (Ang, 2026-11-09). This read "TRIGGERING" for one day. It was chosen
-         on 2026-11-07 as the live half of the same word the TP form uses - and that is exactly what
-         went wrong: "SHORT TRIGGERING" and "SHORT TRIGGERED — TP1 REACHED" differ by two
-         letters in the middle of a line, and Ang read them as the same thing. "Triggered and
-         triggering looks so similar it's confusing."
-
-         So the verb no longer varies at all. Both forms now open with TRIGGERED and differ only in
-         what follows the dash, which is the part that actually carries the news:
-
-             SHORT TRIGGERED — NO TARGET YET
-             SHORT TRIGGERED — TP1 REACHED
-
-         It still states a fact and never declares, which is the 2026-10-22 rule that "CONDITION MET"
-         was written for: "no target yet" says where price has got to, not what a member should do.
-         And it is still WORDS ONLY - the shape of `status` is unchanged, so neither composer moved. */
+       target reached, else `progress_none`. The board states a fact; it never declares (2026-10-22). */
     TRIGGERED: {
-      status: '{DIR} {PROGRESS}',
-      progress_tp: 'TRIGGERED — TP{N} REACHED',
-      progress_none: 'TRIGGERED — NO TARGET YET',
+      status: 'ACTIVE {DIR} — {PROGRESS}',
+      progress_tp: 'TP{N} REACHED',
+      progress_none: 'CONDITION MET',
       sub: null,
       tone: 'active',
       provisional: true,
@@ -146,7 +108,20 @@
        `banked` with the targets that were reached, or empty when all of them were. */
     FINISHED_WIN: {
       status: 'COMPLETE{BANKED}',
-      banked: ' — {TPS} REACHED',
+      /* SEPARATOR CHANGED 2026-11-12 (Ang): NBSP + em dash + NBSP, matching `all_targets` below and
+         the progress labels above. It was a plain space either side - the exact shape
+         index.html:1562 records as leaving the dash stranded on its own line, and the form TW-2
+         already polices everywhere else. */
+      banked: ' — {TPS} REACHED',
+      /* EVERY TARGET REACHED - CHELSEA'S OWN WORDS, 2026-11-12: "✓ COMPLETE: ALL 3 TARGETS HIT".
+         Two deliberate departures from what she typed, both approved by Ang the same day:
+           - her colon became the board's separator, because she asked to keep the board's separator
+             style and those are different things;
+           - the 3 became {N}, filled from objectives.defined, because a 2- or 4-target ladder would
+             otherwise read wrong. Her sentence is about the ladder being complete, not about three.
+         {DATE} is when the LAST target was reached - the date a member wants on a finished trade. */
+      all_targets: '✓ COMPLETE — ALL {N} TARGETS HIT',
+      all_targets_date: '{DATE}',
       sub: null,
       tone: 'complete',
       provisional: true,
@@ -181,30 +156,6 @@
   };
 
   /*
-   * THE SHEET-STATUS LABELS (moved here 2026-11-09, Ang's review verdict: "move triggeredLabel into
-   * levelup-words.js so every member-facing string lives in that one file").
-   *
-   * These are NOT card_state words. They label CHELSEA'S OWN administrative status - the Active Long /
-   * Active Short she sets in the Sheet - and they are what an Active Now tile and the detail page's
-   * att-chip read before the mechanical feed has anything to add. They lived as literals inside
-   * att-module, in both pages, which is exactly the second-writer shape this file exists to end: the
-   * card above them was reworded on 2026-11-07 and these did not move, because nothing connected them.
-   *
-   * `triggered` is a TEMPLATE over the other two rather than a third literal, so the stem can only ever
-   * be written once. Its separator is a bare em dash, deliberately unlike CARD_STATE_WORDS.TRIGGERED's
-   * NBSP-wrapped one: this string is short and sits in a chip that does not wrap, and changing the bytes
-   * would change what renders for no reason anyone asked for. If it ever grows, give it the NBSPs.
-   *
-   * PROVISIONAL, like every other string here: these are the board's existing words, never Chelsea's
-   * confirmed ones.
-   */
-  var SHEET_STATUS_LABELS = {
-    active_long: 'ACTIVE LONG',
-    active_short: 'ACTIVE SHORT',
-    triggered: 'TRIGGERED — {LABEL}',
-  };
-
-  /*
    * THE LADDER MARKERS (moved here 2026-11-06, with two new ones).
    *
    * What a reached level says on the ladder row. These four strings were inline in sheet.html; they are
@@ -232,6 +183,27 @@
     stop_pre_entry_on_watch: 'Stop passed before entry — back on watch',
   };
 
+  /* A LEVEL CHELSEA DID NOT ACTUALLY PUBLISH (Ang, 2026-11-12).
+   *
+   * The live case is the 2026-10-22 PEPE long, whose `Stp` field in the Sheet literally contains
+   * "$0.00". The parser is already right about it: that level comes out `state: "ambiguous"` with
+   * `zone: null`, and the setup carries `data_quality_flags: ["AMBIGUOUS_LEVEL"]`. What went wrong is
+   * downstream - the ladder put a NULL zone through a price formatter and printed `$0.000000`, which
+   * reads as a real level of zero.
+   *
+   * Ang's rule: never print $0.000000, and NEVER HIDE THE ROW. Chelsea published a stop field, so the
+   * row belongs on the card; what it must say is that the level cannot be read. Hiding it would make
+   * a data-quality problem invisible to the one person who can fix it.
+   *
+   * PLACEHOLDER - these are not Chelsea's words yet, and `provisionalMarks()` reports them so a
+   * reviewer can see what is still waiting. It applies to ANY level whose state is not "present",
+   * not just a stop: the same thing happens to an unreadable trigger or target. */
+  var LEVEL_NOT_PUBLISHED = {
+    text: 'Not published',
+    detail: 'Chelsea did not give a readable number for this level.',
+    provisional: true,
+  };
+
   /* A string substitution and nothing more: {NAME} is replaced by vars.NAME, and an unsupplied name
      becomes empty rather than appearing on a member's screen as a brace. */
   function fill(tpl, vars) {
@@ -255,7 +227,7 @@
   root.LevelUpWords = {
     CARD_STATE_WORDS: CARD_STATE_WORDS,
     LADDER_MARKS: LADDER_MARKS,
-    SHEET_STATUS_LABELS: SHEET_STATUS_LABELS,
+    LEVEL_NOT_PUBLISHED: LEVEL_NOT_PUBLISHED,
     DEAD_WATCH_SENTENCE: DEAD_WATCH_SENTENCE,
     STALE_TRADE_NOTICE: STALE_TRADE_NOTICE,
     fill: fill,

@@ -541,6 +541,21 @@ async function load(){
         const r=byDir[d];const t=r?rowTs(r):NaN;return isFinite(t)?t:null;}):null);
       const pDir=byEvidence||dirs.find(d=>byDir[d]===S)||entry.primary_side||dirs[0];
       const qDir=dirs.find(d=>d!==pDir);
+
+      /* RULE 1 (Ang, 2026-11-12): SHOULD BOTH SIDES SHOW AT ALL?
+         This returned a pair whenever two directions had rows - no age test, no state test - so the
+         page put the finished 2026-10-22 PEPE long beside today's short, under the sentence "Chelsea
+         published both sides of this setup".
+         The answer lives in ONE place, LevelUpCore.showBothSides, which index.html calls too. It reads
+         card_state ONLY, so no state logic enters this page, and it deliberately does NOT touch
+         `paired_with`: the monitor needs that to keep meaning "Chelsea published both sides", because
+         engine.js's dormantFor() gates Chelsea's Diamond comeback on it.
+         Returning null renders the single leading side exactly as an unpaired asset already renders,
+         which takes the pair sentence off the page with it rather than needing its own condition. */
+      if(Core.showBothSides){
+        const asOf=d=>({published_ms:(()=>{const r=byDir[d];const t=r?rowTs(r):NaN;return isFinite(t)?t:sidePubMs(d);})(),card_state:sideCardState(d)});
+        if(!Core.showBothSides(asOf(pDir),asOf(qDir))) return null;
+      }
       return {primary:{dir:pDir,row:byDir[pDir]},quiet:{dir:qDir,row:byDir[qDir]}};
     }catch(err){return null;}
   };
@@ -693,8 +708,8 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
  */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory(require(process.env.LEVELUP_CORE || '../../LevelUp_Monitor_Rebuild/core/levelup-core.js'));
-  else root.LevelUpAttention = factory(root.LevelUpCore, root.LevelUpWords);
-})(typeof self !== 'undefined' ? self : this, function (C, W) {
+  else root.LevelUpAttention = factory(root.LevelUpCore);
+})(typeof self !== 'undefined' ? self : this, function (C) {
   'use strict';
 
   /* ---- IDENTICAL to monitor/engine.js (lines 18, 19, 52, 53) ---- */
@@ -702,95 +717,6 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
   const bandOrd = (d) => (d == null || !isFinite(d) ? null : d <= 0.5 ? 4 : d <= 1 ? 3 : d <= 2 ? 2 : d <= 3 ? 1 : 0);
   const sidePre = (p, e) => (e.pre === 'below' ? (p < e.near ? 'pre' : p <= e.far ? 'inside' : 'beyond') : (p > e.near ? 'pre' : p >= e.far ? 'inside' : 'beyond'));
   const distTo = (p, edge) => Math.abs(p - edge) / edge * 100;
-  /* ---- AND THIS ONE TOO: IDENTICAL to monitor/engine.js SCALE_SLIP_FACTOR (line 603) ----
-
-     AN OFF-SCALE PRICE IS THE WRONG MARKET, NOT A SIGNAL (2026-11-09, Ang: "beam it should not be
-     watching"). Chelsea published BEAM at 05:49 with levels around $0.0040. Coinbase's BEAM-USD agreed
-     ($0.004008). Binance's BEAMUSDT is a DIFFERENT token at $0.0652, the browser's price source reached
-     for it first, and the card told members "1521.9% past the floor - Cleared the floor - price is
-     currently above the real floor ($0.0652 vs $0.00402), watching for a 1H candle to open there and
-     confirm". Price was in fact below the floor. The strongest claim this surface makes, on the wrong
-     asset's price.
-
-     The MONITOR already refuses this exact thing - scaleSlip() in engine.js, same 5x bar, which is how
-     SHIB was stopped on 2026-11-02 - but it never sees the browser's price, so it could not help. This is
-     the same rule on the same constant, applied where the bad number actually appears. It is mirrored, not
-     reinvented: ATT-17 pins the four helpers above against the engine byte-for-byte and ATT-18 does the
-     same for this factor, so the two can never drift apart.
-
-     The bar is coarse on purpose, and the engine's own comment records why: measured across all 67 priced
-     assets the widest GENUINE ratio was 2.5x, and a decimal slip is 10x. 5x sits in the empty space
-     between them, so a legitimately distant call is never caught and a wrong market never escapes. */
-  const SCALE_SLIP_FACTOR = 5;
-  const offScale = (ref, price) => !!(ref > 0 && price > 0
-    && Math.max(ref / price, price / ref) >= SCALE_SLIP_FACTOR);
-
-  /* THE GUARD HAS TO LIVE WHERE THE PRICE ENTERS, NOT WHERE IT IS DRAWN
-     (Ang, 2026-11-09, second pass).
-
-     The first pass guarded triggerProximity() and sixLineProxFor(), which are
-     two READERS of the price. BEAM's Active Now card draws the number
-     straight from ps.prices and never asks either of them, so it still
-     printed "LIVE $0.0652 (Binance)" - a different token's price, on a card
-     about Chelsea's setup. Counting the writers found ten of them across the
-     two pages. Patching ten render sites would have left the eleventh.
-
-     There is exactly one door: fill(), inside fetchPrices(). Every price from
-     every source - the Binance batch, the Binance per-symbol retry, the
-     Coinbase fallback - goes through it, and every consumer on both pages
-     reads what it produced. One guard there covers all of them, including the
-     ones nobody has written yet.
-
-     AND IT RECOVERS THE RIGHT PRICE RATHER THAN JUST SUPPRESSING ONE.
-     Rejecting Binance's number leaves priced(a) false, so the loop below
-     falls through to Coinbase - which for BEAM returns $0.004008, the price
-     that matches Chelsea's levels. The card shows the true number instead of
-     no number.
-
-     The reference is Chelsea's OWN published level, registered per asset by
-     whichever page parsed the Sheet. An asset nobody registered has no
-     reference, offScale() returns false for a null ref, and its price is
-     passed through exactly as before - so this can only ever subtract a wrong
-     number, never invent a missing one. */
-  const SCALE_REF = {};
-
-  function setScaleRef(key, ref) {
-    const a = assetOf(key);
-    if (a && ref > 0 && isFinite(ref)) SCALE_REF[a] = ref;
-    return SCALE_REF[a] || null;
-  }
-
-  /* Any PRESENT level with a zone is on her scale - trigger, stop or target.
-     Taking the first rather than insisting on the trigger means a setup whose
-     trigger is text-only still gets a reference. Walks `sides` first, because
-     a paired asset keys its levels one level down. */
-  function refFromSetup(s, depth) {
-    if (!s || (depth || 0) > 2) return null;
-    if (s.sides) {
-      for (const d of Object.keys(s.sides)) {
-        const r = refFromSetup(s.sides[d], (depth || 0) + 1);
-        if (r) return r;
-      }
-    }
-    for (const l of (s.levels || [])) {
-      if (l && l.state === 'present' && l.zone && l.zone.low > 0) return l.zone.low;
-    }
-    return null;
-  }
-
-  /* Called by each page straight after it parses the Sheet. Accepts the
-     by-asset map or a single setup. */
-  function registerScaleRefs(setupsByAsset) {
-    if (!setupsByAsset) return 0;
-    let n = 0;
-    for (const k of Object.keys(setupsByAsset)) {
-      const r = refFromSetup(setupsByAsset[k], 0);
-      if (r && setScaleRef(k, r)) n++;
-    }
-    return n;
-  }
-
-  const scaleRefFor = (key) => SCALE_REF[assetOf(key)] || null;
 
   /* A SHEET KEY IS NOT A TICKER (2026-11-05).
      The shared parser keys a two-sided asset `BTC|LONG` / `BTC|SHORT`; the board's own embedded copy keys it
@@ -823,13 +749,6 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
     const trig = setup.levels.filter((l) => l.kind === 'trigger' && l.state === 'present' && l.zone);
     if (!trig.length) return { state: 'NA' };
     if (price == null || !isFinite(price) || price <= 0) return { state: 'NOPRICE', direction: dir, triggers: trig.map((l) => ({ id: l.id, zone: l.zone })) };
-    /* A price from the wrong market is NO price (2026-11-09). It takes the existing NOPRICE path rather
-       than a new state, because "we cannot say where price is relative to this trigger" is exactly what
-       NOPRICE already means and every caller already renders it honestly. `off_scale` is carried only so a
-       surface CAN say why if it wants to; nothing is required to read it. */
-    if (trig.some((l) => offScale(l.zone.low, price))) {
-      return { state: 'NOPRICE', off_scale: true, direction: dir, triggers: trig.map((l) => ({ id: l.id, zone: l.zone })) };
-    }
     let best = null;
     for (const level of trig) {
       const ed = C.edges(level, dir); const s = sidePre(price, ed);
@@ -881,28 +800,11 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
       /* `.key` indexes `setups` and the price map; `.asset` is the TICKER, which is what gets compared
          against ticker lists and what a price is fetched for. They are the same string for a single-sided
          asset and differ for a side of a pair - see assetOf() below. */
-      if (cls === 'ACTIVE_LONG' || cls === 'ACTIVE_SHORT') out.push({ key: k, asset: assetOf(k), cls, side: cls === 'ACTIVE_LONG' ? 'long' : 'short', label: sheetStatusLabel(cls), status_text: s.status.text, status_iso: s.status.iso || null, setup: s });
+      if (cls === 'ACTIVE_LONG' || cls === 'ACTIVE_SHORT') out.push({ key: k, asset: assetOf(k), cls, side: cls === 'ACTIVE_LONG' ? 'long' : 'short', label: cls === 'ACTIVE_LONG' ? 'ACTIVE LONG' : 'ACTIVE SHORT', status_text: s.status.text, status_iso: s.status.iso || null, setup: s });
     });
     return out;
   }
-  /* MEMBER-FACING STATUS WORDS COME FROM levelup-words.js, NEVER FROM HERE (Ang, 2026-11-09).
-     These two were literals in this block, in BOTH pages, which is the second-writer shape the words file
-     exists to end - the card_state wording was changed on 2026-11-07 and these did not move, because
-     nothing connected them. They label CHELSEA'S administrative status, not a card_state, so they live
-     under SHEET_STATUS_LABELS rather than in the card_state table.
-     `W` is the words table handed in by the UMD above. Without it these return null and the caller shows
-     nothing - the same "say nothing rather than invent wording" every other surface here follows, and the
-     reason the literals are not kept as a fallback: a fallback IS a second copy. */
-  const sheetStatusLabel = (cls) => {
-    const L = W && W.SHEET_STATUS_LABELS;
-    if (!L) return null;
-    return cls === 'ACTIVE_SHORT' ? L.active_short : L.active_long;
-  };
-  const triggeredLabel = (cls) => {
-    const L = W && W.SHEET_STATUS_LABELS;
-    const lbl = sheetStatusLabel(cls);
-    return (L && lbl) ? W.fill(L.triggered, { LABEL: lbl }) : null;
-  };
+  const triggeredLabel = (cls) => 'TRIGGERED — ' + (cls === 'ACTIVE_SHORT' ? 'ACTIVE SHORT' : 'ACTIVE LONG');
 
   /* Visual tier from the engine band (0..4) — presentation only. */
   function tier(prox) {
@@ -924,16 +826,7 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
        one request instead of two, and both of its sides receive the same price. */
     const want = []; const keysFor = {};
     for (const k of keys) { const a = assetOf(k); if (!keysFor[a]) { keysFor[a] = []; want.push(a); } keysFor[a].push(k); }
-    /* THE ONE GATE. A price that is off-scale against Chelsea's own published
-       level is not accepted from any source, so it reaches no consumer on
-       either page. Refusing it here also leaves priced(a) false, which is what
-       lets the Coinbase fallback below supply the correct number. */
-    const fill = (a, p, s) => {
-      if (!(p > 0)) return false;
-      if (offScale(scaleRefFor(a), p)) return false;
-      keysFor[a].forEach((k) => { out[k] = p; src[k] = s; });
-      return true;
-    };
+    const fill = (a, p, s) => { if (p > 0) keysFor[a].forEach((k) => { out[k] = p; src[k] = s; }); };
     const priced = (a) => out[keysFor[a][0]] > 0;
     try {
       const url = 'https://data-api.binance.vision/api/v3/ticker/price?symbols=' + encodeURIComponent(JSON.stringify(want.map(sym)));
@@ -941,19 +834,13 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
     } catch (e) { /* fall through to per-asset */ }
     for (const a of want) {
       if (priced(a)) continue;
-      /* `fill(...)`, not `p > 0`, decides whether to stop looking. A price can be a
-         real number and still be the wrong market's; when the guard refuses it this
-         must fall THROUGH to Coinbase rather than skip it. Written the other way
-         first, and SG-8 caught it: BEAM lost its Binance price and never got its
-         Coinbase one, so the guard turned a wrong number into no number. */
-      try { const r = await f('https://data-api.binance.vision/api/v3/ticker/price?symbol=' + sym(a)); if (r.ok) { const p = parseFloat((await r.json()).price); if (p > 0 && fill(a, p, 'binance')) { continue; } } } catch (e) { /* next */ }
+      try { const r = await f('https://data-api.binance.vision/api/v3/ticker/price?symbol=' + sym(a)); if (r.ok) { const p = parseFloat((await r.json()).price); if (p > 0) { fill(a, p, 'binance'); continue; } } } catch (e) { /* next */ }
       try { const cb = (ov[a] && ov[a].coinbase) || (a + '-USD'); const r = await f('https://api.exchange.coinbase.com/products/' + cb + '/ticker'); if (r.ok) { const p = parseFloat((await r.json()).price); if (p > 0) { fill(a, p, 'coinbase'); } } } catch (e) { /* unavailable */ }
     }
     return { prices: out, sources: src, at: Date.now() };
   }
 
-  return { BAND_NAMES, bandOrd, sidePre, distTo, SCALE_SLIP_FACTOR, offScale,
-           setScaleRef, scaleRefFor, registerScaleRefs, refFromSetup, applicable, triggerProximity, sortAttention, fmtPct, fmtPrice, zoneText, tier, fetchPrices, RANK, activeNow, triggeredLabel, sheetStatusLabel };
+  return { BAND_NAMES, bandOrd, sidePre, distTo, applicable, triggerProximity, sortAttention, fmtPct, fmtPrice, zoneText, tier, fetchPrices, RANK, activeNow, triggeredLabel };
 });
 
 </script>
@@ -1000,7 +887,7 @@ load();setInterval(load,60000);setInterval(()=>livePrice(),30000);
       if (old) { if (old.outerHTML === chip.outerHTML) return; old.replaceWith(chip); } else banner.parentNode.insertBefore(chip, banner.nextSibling);
     }
     var obs = new MutationObserver(function () { obs.disconnect(); ensure(); obs.observe(app, { childList: true }); });
-    function loadSheet() { return fetch(CSV + (CSV.indexOf('?') > -1 ? '&' : '?') + 't=' + Date.now()).then(function (r) { return r.text(); }).then(function (t) { var all = C.buildAllByAsset(t); /* the scale guard's reference, from Chelsea's own levels, before any price is drawn */ A.registerScaleRefs(all); setup = all[ASSET_] || null; }).catch(function () {}); }
+    function loadSheet() { return fetch(CSV + (CSV.indexOf('?') > -1 ? '&' : '?') + 't=' + Date.now()).then(function (r) { return r.text(); }).then(function (t) { setup = C.buildAllByAsset(t)[ASSET_] || null; }).catch(function () {}); }
     function loadPrice() { if (!setup || A.triggerProximity(setup, 1).state === 'NA') { ensure(); return Promise.resolve(); } return A.fetchPrices([ASSET_]).then(function (r) { if (r.prices[ASSET_]) ps = r; ensure(); }).catch(function () { ensure(); }); }
     loadSheet().then(loadPrice);
     setInterval(function () { loadSheet().then(loadPrice); }, 60000);
