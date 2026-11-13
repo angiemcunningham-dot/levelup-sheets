@@ -2167,6 +2167,10 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
         if (done && st === 'FINISHED_WIN' && W && W.CARD_STATE_WORDS) {
           var e = null;
           try { e = feedEntryFor(ASSET_, t.dir || undefined); } catch (err) { e = null; }
+          /* An UNPAIRED asset has no side suffix, so feedEntryFor(asset, undefined) finds nothing and
+             the banner silently never rendered - caught by rendering COMP, whose data was perfect
+             (all_reached true, defined 3) while the element was absent. Fall back to the single entry. */
+          if (!e) { try { var allE = feedEntriesFor(ASSET_); if (allE && allE.length === 1) e = allE[0]; } catch (e2) { e = null; } }
           var lc = e && e.lifecycle;
           var obj = (lc && lc.objectives) || null;
           if (obj && obj.all_reached && obj.defined > 0) {
