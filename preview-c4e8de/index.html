@@ -1548,6 +1548,7 @@ load();setInterval(load,60000);
   background:var(--card,#fff);font-family:"Inter",sans-serif;font-size:13.5px;line-height:1.6;color:var(--gray)}
 .mech-today-moved b{color:var(--ink,#16161D);font-weight:700}
 .mech-headline{font-family:"Archivo",sans-serif;font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;margin:2px 0 4px}
+.mech-headline-sub{font-size:11px;line-height:1.45;color:var(--gray);margin:-4px 0 8px}
 .mech-headline.mech-active{color:var(--green-d)}
 .mech-headline.mech-stopped{color:var(--red-d)}
 .mech-headline.mech-closed{color:var(--gray)}
@@ -1739,7 +1740,12 @@ load();setInterval(load,60000);
        been removed rather than left unused, because an unused reader is the start of a second copy.
        Putting the line back is a wording decision and therefore Chelsea's: it is one entry in
        levelup-words.js and one read of card_state.since. Recorded in CURRENT_STATE.md. */
-    var FINISHED_CARD_STATES = { FINISHED_WIN: 1, FINISHED_STOPPED: 1, EXPIRED: 1, NOT_TRACKED: 1 };
+    /* FINISHED_CARD_STATES WAS DELETED HERE (fix 1, Ang 2026-11-18). It was this page's own list of
+       the states that move a card into Previous Calls, and it held NOT_TRACKED - so a setup Chelsea
+       published that morning (PIVERSE) was lifted out of Today's Setups the moment the feed loaded,
+       and the note beneath counted three setups where she had published four. The list lives ONCE
+       now, LevelUpCore.FINISHED_CARD_STATES / cardStateIsFinished, which sheet.html reads too, and
+       it does not hold NOT_TRACKED on either page. */
     var PAIR_SUFFIXES = ['|LONG', '|SHORT'];
     function feedEntriesFor(asset) {
       if (!feed || !feed.assets) return [];
@@ -1817,6 +1823,14 @@ load();setInterval(load,60000);
          renders exactly as it did before the mechanical layer existed. The receipt fallback below is held to the
          same rule, since a voided receipt keeps the ready:true display frozen at the moment it opened. */
       if (lc && lc.voided) return null;
+      /* fix 1 (Ang, 2026-11-18): A SIDE THE ENGINE IS NOT TRACKING HAS NO LADDER FACTS A CARD MAY SHOW.
+         PEPE's "$0.00" stop is the shape: a trigger sits in the lifecycle, but nothing is being measured
+         against it. Every reader of this function - the MET / TP tick row, att-ui's "moved to Active Now"
+         hide, the Active Now backfill, the coin - would otherwise present that trigger as a live fact under
+         a NOT TRACKED status, and the hide pass would then remove the card from today's list with no tile
+         anywhere to show for it. Same answer as a voided claim, for the same reason: the card goes down the
+         path a feed outage takes, and the status line (from card_state) is the only thing it says. */
+      if (cardStateValueOf(a) === 'NOT_TRACKED') return null;
       if (!lc) {
         var r = (feed.receipts || []).filter(function (x) { return x.asset === asset && x.setup_instance_key === currentInstanceKey && !x.voided; })[0];
         lc = r ? r.lifecycle : null;
@@ -2121,7 +2135,7 @@ load();setInterval(load,60000);
        and the monitor had already made. `state` is now passed in, so the row and the status line above it
        cannot disagree. Which TARGETS were reached stays a fact and stays here. */
     function badgeHtml(m, state) {
-      if (!m) return '';
+      if (!m) return '';   // a NOT_TRACKED side arrives here as null - see mechanicalFor (fix 1, 2026-11-18)
       var parts = ['<span class="mech-tick on">&#10003; MET</span>'];
       m.tp.forEach(function (hit, i) { parts.push('<span class="mech-tick' + (hit ? ' on' : '') + '">' + (hit ? '&#10003;' : '&#9675;') + ' TP' + (i + 1) + '</span>'); });
       if (state === 'FINISHED_STOPPED') parts.push('<span class="mech-tick stop">&#9632; STOPPED</span>');
@@ -2382,6 +2396,7 @@ load();setInterval(load,60000);
           var oldCoin = c.querySelector('.mech-coin-card'); if (oldCoin) oldCoin.remove();
           var pill = c.querySelector('.pill');
           var oldHead = c.querySelector('.mech-headline'); if (oldHead) oldHead.remove();
+          var oldSub = c.querySelector('.mech-headline-sub'); if (oldSub) oldSub.remove();
           var oldLabel = c.querySelector('.mech-pill-label'); if (oldLabel) oldLabel.remove();
           var resolved = resolveCurrentState(asset, side);
           /* ITEM 2: the pill's COLOUR follows card_state directly, so it is neutral for every non-WATCHING
@@ -2402,6 +2417,13 @@ load();setInterval(load,60000);
               }
               var hd = document.createElement('div'); hd.innerHTML = '<div class="mech-headline mech-' + resolved.kind + '">' + resolved.text + '</div>';
               pill.parentNode.insertBefore(hd.firstChild, pill);
+              /* fix 1 (Ang, 2026-11-18): a NOT_TRACKED card also carries the detail page's second sentence for
+                 that state - levelup-words.js NOT_TRACKED.sub, "... Read the chart." - so a card that stays in
+                 today's list says on its face why nothing on it will move. Same writer, same pass, same words. */
+              if (resolved.state === 'NOT_TRACKED' && resolved.sub) {
+                var sd = document.createElement('div'); sd.innerHTML = '<div class="mech-headline-sub">' + resolved.sub + '</div>';
+                pill.parentNode.insertBefore(sd.firstChild, pill);
+              }
               // label the demoted pill so it reads as Chelsea's source status, not a second current-state claim
               var lbl = document.createElement('span'); lbl.innerHTML = '<span class="mech-pill-label">Chelsea status:</span>';
               pill.parentNode.insertBefore(lbl.firstChild, pill);
@@ -2525,7 +2547,12 @@ load();setInterval(load,60000);
              2026-11-06: this used to ask resolved.kind for three of the four cases and notTrackedFor() for
              the fourth, because that fourth one could not reach `resolved` at all. All four are card_state
              values now, so it is one question: has this side finished being watched? */
-          if (FINISHED_CARD_STATES[cardStateFor(asset, side)] && inWatching) {
+          /* fix 1 (Ang, 2026-11-18): ONE predicate, LevelUpCore.cardStateIsFinished. It does not hold
+             NOT_TRACKED, so a not-tracked setup published today stays in today's list with the NOT TRACKED
+             words, and one published earlier stays in Currently Watching the same way. No core loaded means
+             nothing moves: the card stays where the Sheet put it, which is the safe answer. */
+          var CoreF = (typeof window !== 'undefined' && window.LevelUpCore) || null;
+          if (CoreF && CoreF.cardStateIsFinished && CoreF.cardStateIsFinished(cardStateFor(asset, side)) && inWatching) {
             if (histGrid) {
               var histEmpty = histGrid.querySelector('.empty'); if (histEmpty) histEmpty.remove();
               c.style.display = ''; // clear any display:none a prior cycle set while this was still a near/triggered card in #grid

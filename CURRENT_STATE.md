@@ -598,6 +598,23 @@ reversal recorded at its own site:
 - `index.html` is untouched. A card still links to `sheet.html?asset=X&side=Y`; the detail page now shows both
   sides whichever side was clicked, and `WANT_SIDE` still decides which one LEADS.
 
+## Fix 1, 2026-11-18: a NOT_TRACKED setup published today stays in today's list - PREVIEW ONLY
+
+Ang, 2026-11-18: four setups published this morning (VVV, MOG, LINK|SHORT triggered; PIVERSE NOT_TRACKED, no
+exchange symbol yet), the live board listed three and the note read "All 3 of today's setups are already shown
+above". Cause: `index.html`'s own `FINISHED_CARD_STATES` held NOT_TRACKED, so decorate() moved the card into
+Previous Calls. The Active Now filter near line 1310 was NOT the cause and is unchanged (NOT_TRACKED still
+never counts as Active).
+
+Shipped to `preview-c4e8de/` only (root pages untouched): one predicate `LevelUpCore.cardStateIsFinished`
+(FINISHED_WIN / FINISHED_STOPPED / EXPIRED; `OVER_CARD_STATES` is now that list plus DORMANT), read by
+index.html's relocation and by sheet.html's live-price row; both private lists deleted. `mechanicalFor()`
+answers null for a NOT_TRACKED side, so no MET/TP row, no hide-as-moved, no Active Now backfill, no coin.
+The card wears NOT TRACKED plus the words file's "Read the chart." sentence. Side effect, deliberate: an older
+NOT_TRACKED side (ZBCN, 2026-11-17) now stays in Currently Watching instead of moving to Previous Calls.
+Tests: monitor `test/today-not-tracked.test.js` NTT-0..5 green against the preview folder, NTT-6 todo until
+the root pages carry it. `config/symbols.overrides.json` untouched - the PIVERSE exchange is Chelsea's.
+
 ## Next item
 
 - [ ] **On phones, add a "Jump to the {other side} side" link at the top of a paired page (a link, not a

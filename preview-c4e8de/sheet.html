@@ -2302,7 +2302,10 @@ body.mech-hide-stale-attn-chip #att-chip:not(.act){display:none}
            today only SIX_LINE_EXIT, and the legacy retired flag. It carries no wording and names no outcome;
            it says the instance is over, which is all this row needs to know to stop pulsing. */
         var endedFlag = !!(picked && picked.entry && picked.entry.card_state && picked.entry.card_state.ended);
-        var done = nowState === 'FINISHED_WIN' || nowState === 'FINISHED_STOPPED' || nowState === 'EXPIRED' || endedFlag;
+        /* fix 1 (Ang, 2026-11-18): the list of finished states lives once, in LevelUpCore, and
+           index.html reads the same one. It still does not hold NOT_TRACKED. */
+        var CoreF = (typeof window !== 'undefined' && window.LevelUpCore) || null;
+        var done = (CoreF && CoreF.cardStateIsFinished ? CoreF.cardStateIsFinished(nowState) : false) || endedFlag;
         row.classList.toggle('mech-now-closed', done);
         var note = row.querySelector('.rn');
         if (note) {

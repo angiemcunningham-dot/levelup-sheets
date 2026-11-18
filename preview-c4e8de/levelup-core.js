@@ -941,7 +941,21 @@
    * Inputs are two plain `{ published_ms, card_state }` objects, so the detail page, the index card
    * and a test can all call it without agreeing on a richer shape.
    * ========================================================================================== */
-  const OVER_CARD_STATES = ['FINISHED_WIN', 'FINISHED_STOPPED', 'EXPIRED', 'DORMANT'];
+  /* IS THIS SIDE FINISHED? (fix 1, Ang 2026-11-18)
+   *
+   * The one list of card_state values that mean a side has ENDED - won, stopped, or expired without
+   * ever triggering. index.html uses it to move a card out of Today's Setups / Currently Watching
+   * into Previous Calls; sheet.html uses it to stop the live-price row pulsing. Both pages carried
+   * their own list before this, and index.html's copy also held NOT_TRACKED, which is how a setup
+   * Chelsea published THIS MORNING (PIVERSE, 2026-11-18) vanished from today's list into history.
+   *
+   * NOT_TRACKED is deliberately not here, on both pages, for the reason sheet.html already gave:
+   * "nothing is being tracked, which is not the same claim as 'this setup is closed'". It is the
+   * ABSENCE of a claim. The card stays where Chelsea's Sheet put it and wears the NOT TRACKED words.
+   * DORMANT is not here either: a dormant side can come back (Chelsea's Diamond rule). */
+  const FINISHED_CARD_STATES = ['FINISHED_WIN', 'FINISHED_STOPPED', 'EXPIRED'];
+  function cardStateIsFinished(value) { return FINISHED_CARD_STATES.indexOf(String(value || '')) > -1; }
+  const OVER_CARD_STATES = FINISHED_CARD_STATES.concat(['DORMANT']);
 
   /* The ET calendar day a moment falls in, as 'YYYY-MM-DD'. Chelsea publishes on ET mornings, so
      "the same day" must mean HER day: a 7:51pm ET publication is the same ET day as a 5:39am one
@@ -1043,5 +1057,6 @@
     buildAll, buildAllByAsset, assetOf, sideOf, keyOf, KEY_SEP,
     PAIR_BATCH_WINDOW_MS, CARD_STATE_RANK, pairSideRank, pairBatch, pickPairSide,
     showBothSides, cardStateIsOver, etDayKey, OVER_CARD_STATES,
+    cardStateIsFinished, FINISHED_CARD_STATES,
   };
 });
