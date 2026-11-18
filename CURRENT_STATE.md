@@ -615,6 +615,15 @@ NOT_TRACKED side (ZBCN, 2026-11-17) now stays in Currently Watching instead of m
 Tests: monitor `test/today-not-tracked.test.js` NTT-0..5 green against the preview folder, NTT-6 todo until
 the root pages carry it. `config/symbols.overrides.json` untouched - the PIVERSE exchange is Chelsea's.
 
+**Follow-up, same day (Ang's rule):** a NOT_TRACKED setup shows with today's setups ONLY on its publication day
+(ET); from the next ET day it belongs in Previous Calls, still labelled not tracked; never in Currently Watching
+or Active Now. Built as `LevelUpCore.belongsInPreviousCalls(side, nowMs)` in the preview core - finished states
+move whatever the day, NOT_TRACKED moves when `etDayKey(published) !== etDayKey(now)` - and index.html's
+relocation reads it; no calendar logic in the page. MON and ZBCN are back in Previous Calls, PIVERSE stays in
+today's list. NTT-7..10 cover publication day vs next day and the ET midnight boundary (fixed clock on the
+predicate, real clock on the page). Known problem 32 (monitor CURRENT_STATE.md): `node --test` rewrites this
+clone's root `levelup-core.js` via BCS-13; check `git status` here after any suite run.
+
 ## Next item
 
 - [ ] **On phones, add a "Jump to the {other side} side" link at the top of a paired page (a link, not a

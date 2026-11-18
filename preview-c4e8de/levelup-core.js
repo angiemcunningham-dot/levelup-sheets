@@ -957,6 +957,31 @@
   function cardStateIsFinished(value) { return FINISHED_CARD_STATES.indexOf(String(value || '')) > -1; }
   const OVER_CARD_STATES = FINISHED_CARD_STATES.concat(['DORMANT']);
 
+  /* WHERE A NOT-TRACKED SIDE BELONGS, BY THE CALENDAR (Ang, 2026-11-18, fix 1 follow-up).
+   *
+   * A NOT_TRACKED setup shows with today's setups ONLY on its publication day (ET). From the next ET
+   * day it belongs in Previous Calls, still labelled not tracked (the words file's own NOT TRACKED
+   * lines). It never belongs in Currently Watching or Active Now - Active Now is already closed to it
+   * (mechanicalFor() answers null for it), and this is what keeps it out of Currently Watching: the
+   * Sheet-driven partition would file yesterday's not-tracked watch there, and index.html's relocation
+   * pass asks this question and moves it on.
+   *
+   * A finished side belongs in Previous Calls whatever the day. Inputs are the same plain
+   * { published_ms, card_state } showBothSides takes, plus the moment to judge against, so a test can
+   * set the clock and the ET midnight boundary can be asserted exactly. "Today" is CHELSEA's day, ET -
+   * see etDayKey. No usable publication day means it cannot be today's, so it moves on.
+   */
+  function belongsInPreviousCalls(side, nowMs) {
+    if (!side) return false;
+    if (cardStateIsFinished(side.card_state)) return true;
+    if (String(side.card_state || '') !== 'NOT_TRACKED') return false;
+    const pm = side.published_ms;
+    const dayP = (pm != null && isFinite(pm)) ? etDayKey(pm) : null;
+    const dayN = etDayKey(nowMs == null ? Date.now() : nowMs);
+    if (!dayP || !dayN) return true;
+    return dayP !== dayN;
+  }
+
   /* The ET calendar day a moment falls in, as 'YYYY-MM-DD'. Chelsea publishes on ET mornings, so
      "the same day" must mean HER day: a 7:51pm ET publication is the same ET day as a 5:39am one
      and a DIFFERENT UTC day. */
@@ -1057,6 +1082,6 @@
     buildAll, buildAllByAsset, assetOf, sideOf, keyOf, KEY_SEP,
     PAIR_BATCH_WINDOW_MS, CARD_STATE_RANK, pairSideRank, pairBatch, pickPairSide,
     showBothSides, cardStateIsOver, etDayKey, OVER_CARD_STATES,
-    cardStateIsFinished, FINISHED_CARD_STATES,
+    cardStateIsFinished, FINISHED_CARD_STATES, belongsInPreviousCalls,
   };
 });

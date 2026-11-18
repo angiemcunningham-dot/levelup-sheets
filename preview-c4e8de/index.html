@@ -2547,12 +2547,17 @@ load();setInterval(load,60000);
              2026-11-06: this used to ask resolved.kind for three of the four cases and notTrackedFor() for
              the fourth, because that fourth one could not reach `resolved` at all. All four are card_state
              values now, so it is one question: has this side finished being watched? */
-          /* fix 1 (Ang, 2026-11-18): ONE predicate, LevelUpCore.cardStateIsFinished. It does not hold
-             NOT_TRACKED, so a not-tracked setup published today stays in today's list with the NOT TRACKED
-             words, and one published earlier stays in Currently Watching the same way. No core loaded means
-             nothing moves: the card stays where the Sheet put it, which is the safe answer. */
+          /* fix 1 (Ang, 2026-11-18): ONE predicate, LevelUpCore.belongsInPreviousCalls. A finished side
+             moves; a NOT_TRACKED side moves from the ET day AFTER its publication day and stays in today's
+             list on the day itself, with the NOT TRACKED words - the calendar rule lives in the core, not
+             here. The publication time is the feed's own instance_published_at, the clock this page has
+             always used (pairCandidatesFor). No core loaded means nothing moves: the card stays where the
+             Sheet put it, which is the safe answer. */
           var CoreF = (typeof window !== 'undefined' && window.LevelUpCore) || null;
-          if (CoreF && CoreF.cardStateIsFinished && CoreF.cardStateIsFinished(cardStateFor(asset, side)) && inWatching) {
+          var pickedF = feedEntryFor(asset, side);
+          var pubF = (pickedF && pickedF.entry && pickedF.entry.instance_published_at) ? Date.parse(pickedF.entry.instance_published_at) : NaN;
+          var sideF = { card_state: cardStateFor(asset, side), published_ms: isFinite(pubF) ? pubF : null };
+          if (CoreF && CoreF.belongsInPreviousCalls && CoreF.belongsInPreviousCalls(sideF, Date.now()) && inWatching) {
             if (histGrid) {
               var histEmpty = histGrid.querySelector('.empty'); if (histEmpty) histEmpty.remove();
               c.style.display = ''; // clear any display:none a prior cycle set while this was still a near/triggered card in #grid
