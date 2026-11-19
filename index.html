@@ -1068,7 +1068,20 @@ load();setInterval(load,60000);
       // grid itself below - ticker-only, see render()).
       var watch = [];
       Object.keys(setups).forEach(function (a) {
-        var s = setups[a]; if (!isWatchingLike(s)) return;
+        var s = setups[a];
+        /* A PAIR SPEAKS FOR THE SIDE THAT IS ACTUALLY WATCHING (BTC, 2026-11-19). The asset-level parse
+           takes its direction and trigger from the NEWEST Sheet row - BTC's long, posted three seconds after
+           its short - so this list read "BTC WATCHING · ▲ LONG 1.7% TO TRIGGER" on a day the feed had the
+           long DORMANT (stop closed through before any trigger) and the short WATCHING. The state gate in
+           mech-feed's applicable() wrapper passes on the pair's lead side, which was the short; the numbers
+           came from the long. When exactly one side's card_state is WATCHING, that side's own parse is the
+           setup here. Anything else (both watching, neither, no feed) is left exactly as it was. */
+        if (s && s.sides) {
+          var mfS = window.__mechFeed;
+          var liveSides = ['long', 'short'].filter(function (d) { return s.sides[d] && mfS && mfS.cardStateFor && mfS.cardStateFor(a, d) === 'WATCHING'; });
+          if (liveSides.length === 1) s = s.sides[liveSides[0]];
+        }
+        if (!isWatchingLike(s)) return;
         var price = fresh ? ps.prices[a] : null;
         var prox = A.triggerProximity(s, price, opts);
         if (prox.state === 'NA') { var approx = approxTriggerProximity(s, price); if (approx.state !== 'NA') prox = approx; }
