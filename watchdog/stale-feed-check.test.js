@@ -204,8 +204,9 @@ test('STALE-16 no message can carry a ticker, a level, or any of Chelsea’s tex
     assert.doesNotMatch(text, /\b(BTC|ETH|SOL|ZEC|AVAX|PEPE|SHIB|ADA|XRP|DOGE|LINK|HYPE|ONDO|BEAM|UNI)\b/,
       'no ticker may appear in a third-party notification');
     assert.doesNotMatch(text, /TP[123]|trigger|invalidation/i, 'no level language either');
-    assert.ok(text.indexOf('angiemcunningham-dot.github.io/levelup-sheets') > -1,
-      'the one link is the public board, which anyone can already open');
+    /* 2026-11-20: the board moved to an unguessable address. A message must carry NO link at all:
+       ntfy.sh is a third party and the address is the whole protection. */
+    assert.doesNotMatch(text, /github\.io|https?:\/\//, 'no address may appear in a third-party notification');
   }
 });
 

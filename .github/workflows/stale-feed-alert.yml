@@ -1,7 +1,9 @@
 # ==================================================================================================
 # STALE-FEED ALERT — the [cloud check] layer of fix plan step 8.
 #
-# WHY HERE. This repo is PUBLIC, so Actions minutes are free and unmetered. The monitor repo is
+# WHY HERE. Until 2026-11-20 this repo was PUBLIC, so Actions minutes were free. It is PRIVATE now (the
+# board moved to an unguessable address), so this cron is metered against the Pro allowance of 3,000
+# minutes a month; GitHub actually fires it 4-6 times a day, a few hundred minutes. The monitor repo is
 # private and metered, and "Actions minutes" is already on record there as one of three causes of a
 # board freeze — putting a 15-minute cron in it would be ~2,880 billed runs a month against a
 # 2,000-minute allowance. This repo also already serves the feed being watched.

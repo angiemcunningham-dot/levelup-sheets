@@ -71,8 +71,12 @@ const REMINDER_MS = 3 * 60 * 60 * 1000;
    it has not established. */
 const FAILURES_BEFORE_ALERT = 2;
 
-const FEED_URL = 'https://angiemcunningham-dot.github.io/levelup-sheets/monitor-feed.json';
-const BOARD_URL = 'https://angiemcunningham-dot.github.io/levelup-sheets/';
+/* THE ADDRESS LIVES IN ONE FILE (2026-11-20): board.config.json at the repo root. Both layers run
+   from a clone of this repo, so both read the same file. It is never written into a message:
+   ntfy.sh is a third party, and a guessed topic must not hand anyone the board's address. */
+const BOARD_CONFIG = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'board.config.json'), 'utf8'));
+const FEED_URL = BOARD_CONFIG.feed_url;
+const BOARD_URL = BOARD_CONFIG.board_url;
 
 const LAYERS = { pc: '[PC check]', cloud: '[cloud check]' };
 
@@ -120,7 +124,7 @@ function decide({ prev, fetched, nowMs, layer }) {
         title: tag + ' Cannot reach the board',
         message: 'The published feed could not be fetched on ' + next.consecutive_failures +
           ' checks in a row. This is not the same as a stale feed - the board may be fine and the' +
-          ' check blind. ' + BOARD_URL,
+          ' check blind.',
         priority: 'default', tags: 'warning',
       };
       return { next, alert };
@@ -132,7 +136,7 @@ function decide({ prev, fetched, nowMs, layer }) {
       alert = {
         title: tag + ' Still cannot reach the board',
         message: 'Unreachable for ' + human(nowMs - Date.parse(st.since || new Date(nowMs).toISOString())) +
-          '. ' + BOARD_URL,
+          '.',
         priority: 'default', tags: 'warning',
       };
     }
@@ -150,7 +154,7 @@ function decide({ prev, fetched, nowMs, layer }) {
       alert = {
         title: tag + ' Board feed is stale',
         message: 'The published feed is ' + human(age) + ' old (alarm at ' + mins(STALE_MS) +
-          ' min). Members see Chelsea\'s levels as normal, but nothing mechanical is updating. ' + BOARD_URL,
+          ' min). Members see Chelsea\'s levels as normal, but nothing mechanical is updating.',
         priority: 'high', tags: 'rotating_light',
       };
       return { next, alert };
@@ -160,7 +164,7 @@ function decide({ prev, fetched, nowMs, layer }) {
       next.last_alert_at = new Date(nowMs).toISOString();
       alert = {
         title: tag + ' Board feed still stale',
-        message: 'Still stale. The feed is now ' + human(age) + ' old. ' + BOARD_URL,
+        message: 'Still stale. The feed is now ' + human(age) + ' old.',
         priority: 'high', tags: 'rotating_light',
       };
     }
@@ -177,7 +181,7 @@ function decide({ prev, fetched, nowMs, layer }) {
       title: tag + ' Board is back',
       message: (st.state === STALE ? 'Publishing again' : 'Reachable again') +
         (was != null ? ' - was ' + (st.state === STALE ? 'stale' : 'unreachable') + ' ' + human(was) : '') +
-        '. The feed is ' + human(age) + ' old. ' + BOARD_URL,
+        '. The feed is ' + human(age) + ' old.',
       priority: 'default', tags: 'white_check_mark',
     };
     return { next, alert };
@@ -280,7 +284,7 @@ async function main() {
     const r = await notify(topic, {
       title: LAYERS[o.layer] + ' Test alert',
       message: 'Step 8 is installed and this layer can reach your phone. The board feed is ' + age +
-        ' old right now. This is a test - no alert condition was met. ' + BOARD_URL,
+        ' old right now. This is a test - no alert condition was met.',
       priority: 'default', tags: 'test_tube',
     });
     console.log('test notification: ' + (r.ok ? 'sent (HTTP ' + r.status + ')' : 'FAILED ' + (r.why || r.status)));
