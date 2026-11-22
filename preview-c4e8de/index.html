@@ -2399,6 +2399,20 @@ load();setInterval(load,60000);
           var oldSub = c.querySelector('.mech-headline-sub'); if (oldSub) oldSub.remove();
           var oldLabel = c.querySelector('.mech-pill-label'); if (oldLabel) oldLabel.remove();
           var resolved = resolveCurrentState(asset, side);
+          /* ONE ANSWER TO "IS THIS A PREVIOUS CALL?", READ TWICE (Ang, 2026-11-22). The relocation pass
+             further down asks LevelUpCore.belongsInPreviousCalls whether this card moves into Previous
+             Calls. The pill directly below asks the SAME answer to decide whether Chelsea's Sheet status is
+             still worth showing: a card that belongs in history carries a status she set before the trade
+             ended, so "Chelsea status: Watching" under COMPLETE / STOPPED / NO TRADE / NOT TRACKED read as
+             a contradiction on 59 of 81 history cards (measured on the live board, 2026-11-22). Computed
+             ONCE here, read by both, so the pill and the relocation can never disagree. The inputs are the
+             ones the relocation always used - this side's card_state and the feed's own publication time.
+             No core loaded means "no": nothing moves and nothing is hidden, the same safe answer as before. */
+          var CoreF = (typeof window !== 'undefined' && window.LevelUpCore) || null;
+          var pickedF = feedEntryFor(asset, side);
+          var pubF = (pickedF && pickedF.entry && pickedF.entry.instance_published_at) ? Date.parse(pickedF.entry.instance_published_at) : NaN;
+          var sideF = { card_state: cardStateFor(asset, side), published_ms: isFinite(pubF) ? pubF : null };
+          var isPreviousCall = !!(CoreF && CoreF.belongsInPreviousCalls && CoreF.belongsInPreviousCalls(sideF, Date.now()));
           /* ITEM 2: the pill's COLOUR follows card_state directly, so it is neutral for every non-WATCHING
              state even when resolveCurrentState() declines to speak (no words yet, or a trigger it cannot
              attribute to this instance). Same single read, no second decision. */
@@ -2408,6 +2422,14 @@ load();setInterval(load,60000);
             else pill.classList.remove('pill-neutral');
             if (resolved) {
               pill.classList.add('mech-demoted');
+              /* HIDDEN, NOT REMOVED, on a previous call (Ang, 2026-11-22: "hide the Chelsea status pill on
+                 finished history cards; keep it on live cards; do not change any wording"). The mechanical
+                 status line inserted just below is the card's one status there, so the stale Sheet pill and
+                 its "Chelsea status:" label come off. Only when the mechanical layer actually speaks
+                 (`resolved`): a finished card the feed cannot word keeps her pill, as it always has.
+                 Inline display, cleared on every other path, so a Sheet-driven re-render that recreates the
+                 card and the next pass of this same function always agree. */
+              pill.style.display = isPreviousCall ? 'none' : '';
               // 2026-09-29 (Angela-approved): the Coin moves out of the inline headline text into the blank
               // white space beside the asset ticker instead - see .mech-coin-card above.
               if (resolved.kind === 'complete' && coinEligible(asset, side)) {
@@ -2425,8 +2447,11 @@ load();setInterval(load,60000);
                 pill.parentNode.insertBefore(sd.firstChild, pill);
               }
               // label the demoted pill so it reads as Chelsea's source status, not a second current-state claim
-              var lbl = document.createElement('span'); lbl.innerHTML = '<span class="mech-pill-label">Chelsea status:</span>';
-              pill.parentNode.insertBefore(lbl.firstChild, pill);
+              // (no label for a hidden pill - a label with nothing after it is a stray word on the card)
+              if (!isPreviousCall) {
+                var lbl = document.createElement('span'); lbl.innerHTML = '<span class="mech-pill-label">Chelsea status:</span>';
+                pill.parentNode.insertBefore(lbl.firstChild, pill);
+              }
               /* AND THE SHEET HEADLINE STOPS CLAIMING A STATUS TOO (step 4, 2026-11-06).
                  cardHtml() writes "Long Watch" / "Short Watch" into .hl for a Watching row. On the BTC long
                  card that sat directly above a red "never triggered" sentence and a CANNOT TRIGGER chip -
@@ -2442,6 +2467,7 @@ load();setInterval(load,60000);
               }
             } else {
               pill.classList.remove('mech-demoted');
+              pill.style.display = '';
               /* and it comes straight back if the mechanical layer stops speaking - a feed outage must
                  leave the Sheet-driven card exactly as it renders without this addon */
               var hlBack = c.querySelector('.hl');
@@ -2552,12 +2578,10 @@ load();setInterval(load,60000);
              list on the day itself, with the NOT TRACKED words - the calendar rule lives in the core, not
              here. The publication time is the feed's own instance_published_at, the clock this page has
              always used (pairCandidatesFor). No core loaded means nothing moves: the card stays where the
-             Sheet put it, which is the safe answer. */
-          var CoreF = (typeof window !== 'undefined' && window.LevelUpCore) || null;
-          var pickedF = feedEntryFor(asset, side);
-          var pubF = (pickedF && pickedF.entry && pickedF.entry.instance_published_at) ? Date.parse(pickedF.entry.instance_published_at) : NaN;
-          var sideF = { card_state: cardStateFor(asset, side), published_ms: isFinite(pubF) ? pubF : null };
-          if (CoreF && CoreF.belongsInPreviousCalls && CoreF.belongsInPreviousCalls(sideF, Date.now()) && inWatching) {
+             Sheet put it, which is the safe answer.
+             2026-11-22: the answer itself is `isPreviousCall`, computed once near the top of this pass,
+             where the pill reads it too - one predicate, one call, two readers. */
+          if (isPreviousCall && inWatching) {
             if (histGrid) {
               var histEmpty = histGrid.querySelector('.empty'); if (histEmpty) histEmpty.remove();
               c.style.display = ''; // clear any display:none a prior cycle set while this was still a near/triggered card in #grid
