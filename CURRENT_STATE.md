@@ -754,3 +754,6 @@ The full audit from 2026-11-05 is at `C:\Users\angie\LEVELUP_AUDIT`. Start with 
 - `gitlog_*.txt` and `raw/`: the command output behind every claim
 
 Two audit findings were corrected on review. The Chelsea intake works (the audit flagged it as possibly dead from a stale note). The two `mech-feed` blocks are not near-copies; they share only about 240 of roughly 1,000 lines.
+
+## Member lessons (static pages, not part of the monitor)
+- `lessons/why-everything-sold-together.html` — plain-English macro lesson on the Nov 20–23 2026 selloff and rebound, built from `C:\dev\crypto-research` (source `scans/lesson_template.html`). Static; no Sheet or feed dependency. Added 2026-11-23.
