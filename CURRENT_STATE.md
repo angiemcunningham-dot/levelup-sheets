@@ -733,9 +733,12 @@ are untouched. **Waiting for Ang's phone verdict.**
 - **Side effect of publishing.** `scripts/publish-staging.js` pushes `main`, so the parked 2026-11-20 commit
   `8533b27` (board.config.json + watchdog) went up with the preview. Its `board.config.json` named a repo that does
   not exist (`lv-rpwdk80xkv7ab3` - never created; the repo is still `levelup-sheets` and public), so both watchdog
-  layers would read HTTP 404 after their next self-update and raise a false "unreachable" alert after two PC-layer
-  runs. The correction is committed locally as `12d7a44` and NOT pushed (the push was refused by the session's
-  permission layer); Ang pushes it.
+  layers read HTTP 404 from their next self-update. **Three false alerts went to Ang's phone**: PC layer "Cannot
+  reach the board" 16:56 ET and its 3-hour reminder 19:56 ET, cloud layer 21:55 ET. The board and the feed were
+  fresh the whole time. Correction `f53dac1` pushed by Ang at 22:56 ET; the PC layer recovered at 23:11 ET
+  ("Board is back"), the cloud layer recovers at its next scheduled run. Lesson: the preview script pushes
+  `main`, so any parked commit on the work clone's `main` ships with the next preview - check `git log
+  origin/main..HEAD` before publishing a preview.
 - **Also seen, not touched:** a Sheet row whose ticker is literally `BTC LONG` (status set 2026-11-20 05:06 ET,
   NOT TRACKED, `card_state` null) - a typo in the intake, to be fixed in the Sheet. The "What changed on this
   board" strip still says 21 October.
